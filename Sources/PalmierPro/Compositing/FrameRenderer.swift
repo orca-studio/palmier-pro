@@ -252,7 +252,7 @@ enum FrameRenderer {
         )
     }
 
-    /// Crop → effects → corner mask → transform → opacity, sampled from `layer.clip` at `frame`.
+    /// Crop → effects → path mask → corner mask → transform → opacity, sampled from `layer.clip` at `frame`.
     private static func applyClipPipeline(
         image input: CIImage,
         srcHeight: CGFloat,
@@ -289,6 +289,12 @@ enum FrameRenderer {
                 guard let descriptor = EffectRegistry.descriptor(id: effect.type) else { continue }
                 image = descriptor.render(image, effect: effect, atOffset: offset)
             }
+        }
+
+        // After effects so a grade or blur covers the whole source and the mask then
+        // cuts the result; before placement so the path rides with the content.
+        if let mask = clip.maskAt(frame: frame) {
+            image = PathMaskRasterizer.apply(image, shape: mask, extent: image.extent)
         }
 
         image = EdgeRoundingKernel.apply(
@@ -334,6 +340,9 @@ enum FrameRenderer {
                 guard let descriptor = EffectRegistry.descriptor(id: effect.type) else { continue }
                 image = descriptor.render(image, effect: effect, atOffset: offset)
             }
+        }
+        if let mask = clip.maskAt(frame: frame) {
+            image = PathMaskRasterizer.apply(image, shape: mask, extent: image.extent)
         }
         image = rotatedTextImage(image, clip: clip, frame: frame, renderSize: renderSize)
         image = image.premultiplyingAlpha()

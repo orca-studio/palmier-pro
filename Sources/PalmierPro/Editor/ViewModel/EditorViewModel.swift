@@ -142,6 +142,7 @@ final class EditorViewModel {
     /// Clip ids currently awaiting an AI-generated replacement.
     var pendingReplacements: Set<String> = []
     var cropEditingActive: Bool = false
+    var maskEditingActive: Bool = false
     var chromaKeySamplingClipId: String?
     /// Two-up in/out frames shown in the viewer while a slip drag is active.
     var slipPreview: SlipPreviewState?

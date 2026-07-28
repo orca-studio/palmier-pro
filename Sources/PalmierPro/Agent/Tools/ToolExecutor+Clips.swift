@@ -767,7 +767,7 @@ extension ToolExecutor {
 
     // MARK: set_keyframes
 
-    private static let keyframePropertyNames: Set<String> = ["volumeDb", "opacity", "rotation", "position", "scale", "crop"]
+    private static let keyframePropertyNames: Set<String> = ["volumeDb", "opacity", "rotation", "position", "scale", "crop", "maskPath"]
 
     func setKeyframes(_ editor: EditorViewModel, _ args: [String: Any]) throws -> ToolResult {
         let input: SetKeyframesInput = try decodeToolArgs(args, path: "set_keyframes")
@@ -817,6 +817,21 @@ extension ToolExecutor {
             let kfs = try Self.parseCropKeyframes(rows, path: "keyframes")
             applyKeyframes = {
                 editor.commitClipProperty(clipId: input.clipId) { $0.cropTrack = kfs.keyframes.isEmpty ? nil : kfs }
+            }
+        case "maskPath":
+            let kfs = try Self.parseMaskKeyframes(rows, path: "keyframes")
+            applyKeyframes = {
+                editor.commitClipProperty(clipId: input.clipId) { clip in
+                    clip.maskTrack = kfs.keyframes.isEmpty ? nil : kfs
+                    // Seed the static shape so feather/inverted survive a later clear.
+                    if let first = kfs.keyframes.first?.value {
+                        clip.mask = MaskShape(
+                            vertices: first.vertices,
+                            feather: clip.mask?.feather ?? 0,
+                            inverted: clip.mask?.inverted ?? false
+                        )
+                    }
+                }
             }
         default:
             throw ToolError("Unknown property '\(input.property)'")
@@ -1027,6 +1042,39 @@ extension ToolExecutor {
         try parseKeyframes(rows, path: path, fieldNames: ["a", "b"]) { AnimPair(a: $0[0], b: $0[1]) }
     }
 
+    /// Mask rows are `[frame, [[x, y], ...], interp?]` — the vertex list is nested rather
+    /// than flattened so a row's arity does not silently encode the point count.
+    ///
+    /// Every row must carry the SAME number of vertices: interpolation pairs anchors by
+    /// index, and a differing count has no correct pairing. Rejecting here keeps that
+    /// invariant at the boundary instead of letting `keyframeInterpolate` fall back to
+    /// hold and look like a broken animation.
+    fileprivate static func parseMaskKeyframes(_ rows: [Any], path: String) throws -> KeyframeTrack<MaskShape> {
+        var out: [Keyframe<MaskShape>] = []
+        var expectedCount: Int?
+        for (i, raw) in rows.enumerated() {
+            guard let row = raw as? [Any] else {
+                throw ToolError("\(path)[\(i)]: expected array [frame, vertices, interp?]")
+            }
+            guard row.count == 2 || row.count == 3 else {
+                throw ToolError("\(path)[\(i)]: expected [frame, vertices] or [frame, vertices, interp] (got \(row.count) elements)")
+            }
+            let frame = try kfInt(row[0], at: "\(path)[\(i)][0] (frame)")
+            let vertices = try maskVertices(row[1], path: "\(path)[\(i)][1] (vertices)")
+            if let expectedCount, vertices.count != expectedCount {
+                throw ToolError(
+                    "\(path)[\(i)]: every mask keyframe must have the same vertex count — "
+                    + "row 0 has \(expectedCount), this row has \(vertices.count). "
+                    + "Interpolation pairs vertices by index, so counts cannot differ within a track."
+                )
+            }
+            expectedCount = vertices.count
+            let interp = try kfInterp(row.count > 2 ? row[2] : nil, at: "\(path)[\(i)][2] (interp)")
+            out.append(Keyframe(frame: frame, value: MaskShape(vertices: vertices), interpolationOut: interp))
+        }
+        return KeyframeTrack(keyframes: sortAndDedupe(out))
+    }
+
     fileprivate static func parseCropKeyframes(_ rows: [Any], path: String) throws -> KeyframeTrack<Crop> {
         try parseKeyframes(rows, path: path, fieldNames: ["top", "right", "bottom", "left"]) {
             Crop(left: $0[3], top: $0[0], right: $0[1], bottom: $0[2])
@@ -1043,7 +1091,7 @@ extension ToolExecutor {
         return out
     }
 
-    private static func kfInt(_ raw: Any, at path: String) throws -> Int {
+    static func kfInt(_ raw: Any, at path: String) throws -> Int {
         guard !isJSONBoolean(raw) else { throw ToolError("\(path): expected integer") }
         if let v = raw as? Int { return v }
         if let v = raw as? Double, let i = safeInt(v) { return i }
@@ -1051,7 +1099,7 @@ extension ToolExecutor {
         throw ToolError("\(path): expected integer")
     }
 
-    private static func kfDouble(_ raw: Any, at path: String) throws -> Double {
+    static func kfDouble(_ raw: Any, at path: String) throws -> Double {
         guard !isJSONBoolean(raw) else { throw ToolError("\(path): expected number") }
         let v: Double
         if let d = raw as? Double { v = d }
@@ -1064,7 +1112,7 @@ extension ToolExecutor {
         return v
     }
 
-    private static func kfInterp(_ raw: Any?, at path: String) throws -> Interpolation {
+    static func kfInterp(_ raw: Any?, at path: String) throws -> Interpolation {
         guard let raw else { return .smooth }
         guard let s = raw as? String, let i = Interpolation(rawValue: s) else {
             throw ToolError("\(path): expected one of 'linear', 'hold', 'smooth' (got \(raw))")

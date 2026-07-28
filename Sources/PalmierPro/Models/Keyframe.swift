@@ -77,6 +77,37 @@ struct AnimPair: Codable, Sendable, Equatable, KeyframeInterpolatable {
     }
 }
 
+extension MaskShape: KeyframeInterpolatable {
+    /// Vertex-by-vertex, but only when the two paths agree on how many there are.
+    /// A mismatch means the track was edited without propagating the change to every
+    /// keyframe — morphing then pairs unrelated anchors and the path flails. Holding
+    /// is visibly wrong in one frame instead of subtly wrong in all of them.
+    static func keyframeInterpolate(_ a: MaskShape, _ b: MaskShape, t: Double) -> MaskShape {
+        guard a.vertices.count == b.vertices.count else { return a }
+        var out = a
+        out.vertices = zip(a.vertices, b.vertices).map { lhs, rhs in
+            var v = lhs
+            v.point = AnimPair.keyframeInterpolate(lhs.point, rhs.point, t: t)
+            v.inControl = interpolate(lhs.inControl, rhs.inControl, t: t)
+            v.outControl = interpolate(lhs.outControl, rhs.outControl, t: t)
+            return v
+        }
+        out.feather = Double.keyframeInterpolate(a.feather, b.feather, t: t)
+        out.inverted = a.inverted
+        return out
+    }
+
+    /// A handle that exists on one side only grows out of / collapses into its anchor.
+    private static func interpolate(_ a: AnimPair?, _ b: AnimPair?, t: Double) -> AnimPair? {
+        switch (a, b) {
+        case (nil, nil): nil
+        case let (lhs?, rhs?): AnimPair.keyframeInterpolate(lhs, rhs, t: t)
+        case let (lhs?, nil): AnimPair.keyframeInterpolate(lhs, AnimPair(a: 0, b: 0), t: t)
+        case let (nil, rhs?): AnimPair.keyframeInterpolate(AnimPair(a: 0, b: 0), rhs, t: t)
+        }
+    }
+}
+
 extension Crop: KeyframeInterpolatable {
     static func keyframeInterpolate(_ a: Crop, _ b: Crop, t: Double) -> Crop {
         Crop(
@@ -90,7 +121,7 @@ extension Crop: KeyframeInterpolatable {
 
 /// Identifies which clip property an inspector lane / stamp button drives.
 enum AnimatableProperty: String, CaseIterable, Sendable {
-    case opacity, position, scale, rotation, crop, volume
+    case opacity, position, scale, rotation, crop, volume, mask
 
     var displayName: String {
         switch self {
@@ -100,6 +131,7 @@ enum AnimatableProperty: String, CaseIterable, Sendable {
         case .rotation: "Rotation"
         case .crop:     "Crop"
         case .volume:   "Volume"
+        case .mask:     "Mask"
         }
     }
 }
@@ -125,6 +157,7 @@ extension Clip {
         case .rotation: offsets = rotationTrack?.keyframes.map(\.frame) ?? []
         case .crop:     offsets = cropTrack?.keyframes.map(\.frame) ?? []
         case .volume:   offsets = volumeTrack?.keyframes.map(\.frame) ?? []
+        case .mask:     offsets = maskTrack?.keyframes.map(\.frame) ?? []
         }
         return offsets.map(toAbs)
     }
@@ -138,6 +171,7 @@ extension Clip {
         case .rotation: return rotationTrack?.keyframes.first(where: { $0.frame == o })?.interpolationOut
         case .crop:     return cropTrack?.keyframes.first(where: { $0.frame == o })?.interpolationOut
         case .volume:   return volumeTrack?.keyframes.first(where: { $0.frame == o })?.interpolationOut
+        case .mask:     return maskTrack?.keyframes.first(where: { $0.frame == o })?.interpolationOut
         }
     }
 
@@ -173,6 +207,9 @@ extension Clip {
         case .volume:
             volumeTrack?.remove(at: o)
             if volumeTrack?.keyframes.isEmpty == true { volumeTrack = nil }
+        case .mask:
+            maskTrack?.remove(at: o)
+            if maskTrack?.keyframes.isEmpty == true { maskTrack = nil }
         }
     }
 
@@ -203,6 +240,10 @@ extension Clip {
             if let i = volumeTrack?.keyframes.firstIndex(where: { $0.frame == o }) {
                 volumeTrack?.keyframes[i].interpolationOut = interpolation
             }
+        case .mask:
+            if let i = maskTrack?.keyframes.firstIndex(where: { $0.frame == o }) {
+                maskTrack?.keyframes[i].interpolationOut = interpolation
+            }
         }
     }
 
@@ -215,6 +256,7 @@ extension Clip {
         case .rotation: rotationTrack?.move(from: fromO, to: toO)
         case .crop:     cropTrack?.move(from: fromO, to: toO)
         case .volume:   volumeTrack?.move(from: fromO, to: toO)
+        case .mask:     maskTrack?.move(from: fromO, to: toO)
         }
     }
 }

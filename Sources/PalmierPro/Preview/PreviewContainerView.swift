@@ -42,6 +42,8 @@ struct PreviewContainerView: View {
                         ChromaKeySamplerOverlayView()
                     } else if editor.cropEditingActive {
                         CropOverlayView()
+                    } else if editor.maskEditingActive {
+                        MaskOverlayView()
                     } else {
                         TransformOverlayView()
                     }
@@ -55,6 +57,7 @@ struct PreviewContainerView: View {
                         .onEnded { value in
                             guard isTimeline,
                                   !editor.cropEditingActive,
+                                  !editor.maskEditingActive,
                                   editor.chromaKeySamplingClipId == nil,
                                   let id = PreviewHitTester.clipID(
                                     at: value.location,

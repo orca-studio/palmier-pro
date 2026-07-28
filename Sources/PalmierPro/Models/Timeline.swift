@@ -152,6 +152,7 @@ struct Clip: Codable, Sendable, Equatable, Identifiable {
     var crop: Crop = Crop()
     var edgeRounding: Double = 0
     var edgeSoftness: Double = 0
+    var mask: MaskShape?
     var linkGroupId: String?
     var captionGroupId: String?
     var multicamGroupId: String?
@@ -170,6 +171,7 @@ struct Clip: Codable, Sendable, Equatable, Identifiable {
     var rotationTrack: KeyframeTrack<Double>?
     var cropTrack: KeyframeTrack<Crop>?
     var volumeTrack: KeyframeTrack<Double>?
+    var maskTrack: KeyframeTrack<MaskShape>?
 
     var effects: [Effect]?
 
@@ -180,10 +182,10 @@ struct Clip: Codable, Sendable, Equatable, Identifiable {
         case id, mediaRef, mediaType, sourceClipType, startFrame, durationFrames
         case trimStartFrame, trimEndFrame, speed, volume
         case fadeInFrames, fadeOutFrames, fadeInInterpolation, fadeOutInterpolation
-        case opacity, transform, crop, edgeRounding, edgeSoftness
+        case opacity, transform, crop, edgeRounding, edgeSoftness, mask
         case linkGroupId, captionGroupId, multicamGroupId, textContent, textStyle, textAnimation, wordTimings
         case textFillMode
-        case opacityTrack, positionTrack, scaleTrack, rotationTrack, cropTrack, volumeTrack
+        case opacityTrack, positionTrack, scaleTrack, rotationTrack, cropTrack, volumeTrack, maskTrack
         case effects, blendMode
     }
 
@@ -256,6 +258,17 @@ struct Clip: Codable, Sendable, Equatable, Identifiable {
     func cropAt(frame: Int) -> Crop {
         cropTrack?.sample(at: keyframeOffset(forFrame: frame), fallback: crop) ?? crop
     }
+
+    /// The path mask in effect at `frame`, or nil when the clip is unmasked.
+    /// A track with mismatched vertex counts cannot morph; `MaskShape` holds instead of guessing.
+    func maskAt(frame: Int) -> MaskShape? {
+        guard let track = maskTrack, track.isActive else { return mask?.isRenderable == true ? mask : nil }
+        let fallback = mask ?? track.keyframes[0].value
+        let sampled = track.sample(at: keyframeOffset(forFrame: frame), fallback: fallback)
+        return sampled.isRenderable ? sampled : nil
+    }
+
+    var hasMask: Bool { mask?.isRenderable == true || (maskTrack?.isActive ?? false) }
 
     func liveVolumeKfDb(at frame: Int) -> Double? {
         guard contains(timelineFrame: frame),
@@ -463,6 +476,7 @@ extension Clip {
             crop: (try? c.decode(Crop.self, forKey: .crop)) ?? Crop(),
             edgeRounding: normalizedValue(forKey: .edgeRounding),
             edgeSoftness: normalizedValue(forKey: .edgeSoftness),
+            mask: (try? c.decode(MaskShape.self, forKey: .mask))?.sanitized,
             linkGroupId: try? c.decode(String.self, forKey: .linkGroupId),
             captionGroupId: try? c.decode(String.self, forKey: .captionGroupId),
             multicamGroupId: try? c.decode(String.self, forKey: .multicamGroupId),
@@ -477,6 +491,7 @@ extension Clip {
             rotationTrack: try? c.decode(KeyframeTrack<Double>.self, forKey: .rotationTrack),
             cropTrack: try? c.decode(KeyframeTrack<Crop>.self, forKey: .cropTrack),
             volumeTrack: try? c.decode(KeyframeTrack<Double>.self, forKey: .volumeTrack),
+            maskTrack: (try? c.decode(KeyframeTrack<MaskShape>.self, forKey: .maskTrack))?.sanitizedMask,
             effects: try? c.decode([Effect].self, forKey: .effects),
             blendMode: try? c.decode(BlendMode.self, forKey: .blendMode)
         )
@@ -629,6 +644,61 @@ struct Crop: Codable, Sendable, Equatable {
     var isIdentity: Bool { left == 0 && top == 0 && right == 0 && bottom == 0 }
     var visibleWidthFraction: Double { max(0, 1 - left - right) }
     var visibleHeightFraction: Double { max(0, 1 - top - bottom) }
+}
+
+/// One anchor on a mask path. Control offsets are relative to `point`; nil on both
+/// sides makes it a corner. Coordinates are 0–1 of the source's display box — the
+/// same space as `Crop` — so the mask rides with the content through the transform.
+struct MaskVertex: Codable, Sendable, Equatable {
+    var point: AnimPair
+    var inControl: AnimPair?
+    var outControl: AnimPair?
+
+    init(x: Double, y: Double, inControl: AnimPair? = nil, outControl: AnimPair? = nil) {
+        self.point = AnimPair(a: x, b: y)
+        self.inControl = inControl
+        self.outControl = outControl
+    }
+
+    var x: Double { point.a }
+    var y: Double { point.b }
+}
+
+/// A closed path that limits a clip's visible area.
+///
+/// Vertex count is a property of the whole keyframe TRACK, not of one keyframe:
+/// morphing between paths needs a one-to-one correspondence, and there is no
+/// honest way to invent one. Adding or removing a vertex must therefore touch
+/// every keyframe on the track; `keyframeInterpolate` holds rather than guess
+/// when it meets a mismatch.
+struct MaskShape: Codable, Sendable, Equatable {
+    var vertices: [MaskVertex] = []
+    /// Edge falloff as a fraction of the source's shorter side.
+    var feather: Double = 0
+    /// Keep the outside instead of the inside.
+    var inverted: Bool = false
+
+    /// Fewer than three anchors bounds no area, so there is nothing to cut.
+    var isRenderable: Bool { vertices.count >= 3 }
+
+    /// Drop non-finite anchors and clamp into the source box. Applied on decode so a
+    /// corrupt project cannot reach the rasterizer.
+    var sanitized: MaskShape {
+        var copy = self
+        copy.vertices = vertices.filter { $0.x.isFinite && $0.y.isFinite }
+        copy.feather = feather.isFinite ? min(1, max(0, feather)) : 0
+        return copy
+    }
+}
+
+extension KeyframeTrack where Value == MaskShape {
+    var sanitizedMask: KeyframeTrack<MaskShape> {
+        var copy = self
+        copy.keyframes = keyframes.map {
+            Keyframe(frame: $0.frame, value: $0.value.sanitized, interpolationOut: $0.interpolationOut)
+        }
+        return copy
+    }
 }
 
 /// Aspect-ratio constraint for the Crop overlay.

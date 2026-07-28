@@ -81,7 +81,7 @@ struct InspectorView: View {
             if !selecting { resolvePreferredTab() }
         }
         .onChange(of: preferredTab) { _, newTab in
-            if newTab != .video { editor.cropEditingActive = false }
+            if newTab != .video { editor.cropEditingActive = false; editor.maskEditingActive = false }
         }
     }
 
@@ -120,6 +120,7 @@ struct InspectorView: View {
             preferredTab = .video
         }
         editor.cropEditingActive = false
+        editor.maskEditingActive = false
     }
 
     // MARK: - Project Metadata
@@ -582,6 +583,7 @@ struct InspectorView: View {
                 opacityScrubField(clips: clips)
             }
             cropRow(single: single)
+            maskRow(single: single)
             flipRow(clips: clips)
             blendRow(clips: clips)
         }
@@ -932,6 +934,7 @@ struct InspectorView: View {
                           : editing ? "Stop editing crop on canvas"
                           : "Edit crop on canvas"
                 ) {
+                    if !editor.cropEditingActive { editor.maskEditingActive = false }
                     editor.cropEditingActive.toggle()
                 }
                 .disabled(disabled)
@@ -945,6 +948,95 @@ struct InspectorView: View {
         }
         .frame(height: KeyframesMetrics.rowHeight)
         .opacity(disabled ? 0.4 : 1)
+    }
+
+    // MARK: - Mask
+
+    @ViewBuilder
+    private func maskRow(single: Clip?) -> some View {
+        let editing = editor.maskEditingActive && single != nil
+        let disabled = single == nil
+        let hasMask = single?.hasMask ?? false
+        propertyRow(
+            label: "Mask",
+            onReset: {
+                guard let single else { return }
+                editor.maskEditingActive = false
+                editor.clearMask(clipId: single.id)
+            }
+        ) {
+            HStack(spacing: AppTheme.Spacing.sm) {
+                iconToggleButton(
+                    systemName: "scribble.variable",
+                    isOn: editing,
+                    help: disabled ? "Mask applies to one clip at a time"
+                          : editing ? "Stop editing the mask on canvas"
+                          : hasMask ? "Edit mask points on canvas"
+                          : "Draw a mask on canvas — click to place points, click the first point to close"
+                ) {
+                    // One canvas editor at a time; both own the same click target.
+                    if !editor.maskEditingActive { editor.cropEditingActive = false }
+                    editor.maskEditingActive.toggle()
+                }
+                .disabled(disabled)
+                maskOptionsMenu(single: single, hasMask: hasMask)
+                if let cid = single?.id {
+                    keyframeControls(clipId: cid, property: .mask)
+                } else {
+                    keyframeControlsPlaceholder
+                }
+            }
+        }
+        .frame(height: KeyframesMetrics.rowHeight)
+        .opacity(disabled ? 0.4 : 1)
+    }
+
+    @ViewBuilder
+    private func maskOptionsMenu(single: Clip?, hasMask: Bool) -> some View {
+        let shape = single?.mask
+        Menu {
+            Button(shape?.inverted == true ? "Keep Inside" : "Invert (Keep Outside)") {
+                if let single, let shape { editor.setMaskInverted(clipId: single.id, inverted: !shape.inverted) }
+            }
+            .disabled(!hasMask)
+            Divider()
+            ForEach([0.0, 0.05, 0.15, 0.3], id: \.self) { amount in
+                Button(amount == 0 ? "No Feather" : "Feather \(Int(amount * 100))%") {
+                    if let single { editor.setMaskFeather(clipId: single.id, feather: amount, commit: true) }
+                }
+                .disabled(!hasMask)
+            }
+            Divider()
+            Button("Clear Mask") {
+                if let single { editor.clearMask(clipId: single.id) }
+            }
+            .disabled(!hasMask)
+        } label: {
+            HStack(spacing: AppTheme.Spacing.xs) {
+                Text(maskSummary(shape: shape, hasMask: hasMask))
+                    .font(.system(size: AppTheme.FontSize.sm, weight: .medium).monospacedDigit())
+                    .foregroundStyle(AppTheme.Text.secondaryColor)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: AppTheme.FontSize.xxs, weight: .semibold))
+                    .foregroundStyle(AppTheme.Text.tertiaryColor)
+            }
+            .padding(.horizontal, AppTheme.Spacing.sm)
+            .padding(.vertical, AppTheme.Spacing.xxs)
+            .contentShape(Rectangle())
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .fixedSize()
+        .disabled(single == nil)
+        .help("Mask options")
+    }
+
+    private func maskSummary(shape: MaskShape?, hasMask: Bool) -> String {
+        guard hasMask, let shape, shape.isRenderable else { return "None" }
+        var parts = ["\(shape.vertices.count) pts"]
+        if shape.feather > 0 { parts.append("\(Int(shape.feather * 100))% soft") }
+        if shape.inverted { parts.append("inverted") }
+        return parts.joined(separator: " · ")
     }
 
     @ViewBuilder

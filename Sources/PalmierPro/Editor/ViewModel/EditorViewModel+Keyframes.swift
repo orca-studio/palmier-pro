@@ -47,6 +47,11 @@ extension EditorViewModel {
             case .volume:
                 let currentDb = clip.volumeTrack?.sample(at: f - clip.startFrame, fallback: 0) ?? 0
                 clip.upsertKeyframe(in: \.volumeTrack, frame: f, value: currentDb)
+            case .mask:
+                // Nothing to stamp until a path exists; an empty shape would seed the
+                // track with a vertex count every later keyframe had to match.
+                guard let shape = clip.maskAt(frame: f) else { return }
+                clip.upsertKeyframe(in: \.maskTrack, frame: f, value: shape)
             }
         }
     }

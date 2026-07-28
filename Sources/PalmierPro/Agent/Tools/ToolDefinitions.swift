@@ -32,6 +32,7 @@ enum ToolName: String, CaseIterable, Sendable {
     case rippleDeleteRanges = "ripple_delete_ranges"
     case setClipProperties = "set_clip_properties"
     case setKeyframes = "set_keyframes"
+    case setMask = "set_mask"
     case applyLayout = "apply_layout"
     case syncClips = "sync_clips"
     case undo = "undo"
@@ -522,7 +523,7 @@ enum ToolDefinitions {
         ),
         AgentTool(
             name: .setKeyframes,
-            description: "Set animated keyframes on one property of one clip. Replaces the existing keyframe track for that property (pass an empty array to clear). Frames are CLIP-RELATIVE offsets (0 = first frame of the clip), so keyframes follow the clip when it moves. Rows are sorted by frame internally and the LAST row for any duplicate frame wins. Values must be finite numbers. Each row is `[frame, ...values, interp?]` where interp ∈ {linear, hold, smooth} (default smooth).\n\nProperties and their value layouts:\n  • volumeDb `[frame, decibels]` — −60 through +15 dB; 0 dB keeps source level and −60 dB is mute\n  • opacity `[frame, value]` — value 0.0–1.0\n  • rotation `[frame, degrees]` — clockwise degrees\n  • position `[frame, topLeftX, topLeftY]` — TOP-LEFT corner in 0–1 normalized canvas coords. NOT the center. (Default static transform centers a full-canvas clip, so top-left of the static is (0, 0); a centered half-size clip has top-left (0.25, 0.25).)\n  • scale `[frame, width, height]` — clip's normalized width and height in 0–1 canvas coords (1.0 = fills the canvas axis). NOT a scale factor.\n  • crop `[frame, top, right, bottom, left]` — side insets in 0–1 of the source media.\n\nMotion keyframes (position/scale/rotation) override the static `transform` value when active.",
+            description: "Set animated keyframes on one property of one clip. Replaces the existing keyframe track for that property (pass an empty array to clear). Frames are CLIP-RELATIVE offsets (0 = first frame of the clip), so keyframes follow the clip when it moves. Rows are sorted by frame internally and the LAST row for any duplicate frame wins. Values must be finite numbers. Each row is `[frame, ...values, interp?]` where interp ∈ {linear, hold, smooth} (default smooth).\n\nProperties and their value layouts:\n  • volumeDb `[frame, decibels]` — −60 through +15 dB; 0 dB keeps source level and −60 dB is mute\n  • opacity `[frame, value]` — value 0.0–1.0\n  • rotation `[frame, degrees]` — clockwise degrees\n  • position `[frame, topLeftX, topLeftY]` — TOP-LEFT corner in 0–1 normalized canvas coords. NOT the center. (Default static transform centers a full-canvas clip, so top-left of the static is (0, 0); a centered half-size clip has top-left (0.25, 0.25).)\n  • scale `[frame, width, height]` — clip's normalized width and height in 0–1 canvas coords (1.0 = fills the canvas axis). NOT a scale factor.\n  • crop `[frame, top, right, bottom, left]` — side insets in 0–1 of the source media.\n  • maskPath `[frame, [[x, y], …]]` — the mask's vertices, 0–1 of the source box. NOT flattened: the vertex list is one nested array. EVERY row must carry the same number of vertices, because interpolation pairs them by index; a differing count is rejected. Set the shape, feather and inversion with set_mask first, then animate the path here.\n\nMotion keyframes (position/scale/rotation) override the static `transform` value when active.",
             inputSchema: objectSchema(
                 properties: [
                     "clipId": ["type": "string", "description": "The clip ID."],
@@ -538,6 +539,24 @@ enum ToolDefinitions {
                     ],
                 ],
                 required: ["clipId", "property", "keyframes"]
+            )
+        ),
+        AgentTool(
+            name: .setMask,
+            description: "Limit a clip to the inside of a closed path — the shape-mask primitive behind masked reveals, local grades, and cut-out graphics. Combine with a solid-colour matte (import_media source.matte) to get a shape layer: the matte supplies the fill, this supplies the shape.\n\nVertices are 0–1 of the SOURCE's display box, not the canvas, so the mask rides with the clip through its transform — move or scale the clip and the mask follows. y runs downward from the top edge, matching crop. A vertex is `[x, y]`, or `{x, y, inControl: [dx, dy], outControl: [dx, dy]}` when it needs bezier handles (offsets relative to the vertex). At least 3 vertices; the path always closes.\n\nTo ANIMATE the path use set_keyframes with property 'maskPath'. Vertex count belongs to the whole track: once a mask is animated this tool can change feather, inversion, or vertex positions, but not how many vertices there are — replace the track or clear it with remove:true instead. Undoable.\n\nMasks render in video exports and are preserved in .palmier projects, but xml/fcpxml interchange omits them, the same as edge rounding.",
+            inputSchema: objectSchema(
+                properties: [
+                    "clipIds": ["type": "array", "items": ["type": "string"], "description": "Clip ids from get_timeline. Works on video, image, and text clips."],
+                    "vertices": [
+                        "type": "array",
+                        "description": "Closed path, at least 3 entries. Each is [x, y] in 0–1 of the source box, or {x, y, inControl?, outControl?} for a curved anchor.",
+                        "items": ["type": "array"],
+                    ],
+                    "feather": ["type": "number", "description": "Edge falloff, 0–1 of the source's shorter side. 0 is a hard edge."],
+                    "inverted": ["type": "boolean", "description": "true keeps the OUTSIDE of the path instead of the inside."],
+                    "remove": ["type": "boolean", "description": "true clears the mask and any maskPath keyframes. Cannot be combined with vertices."],
+                ],
+                required: ["clipIds"]
             )
         ),
         AgentTool(
