@@ -1011,6 +1011,11 @@ struct InspectorView: View {
                 if let single { editor.clearMask(clipId: single.id) }
             }
             .disabled(!hasMask)
+            Divider()
+            Button("Track Hands") { if let single { runTracking(clip: single, mode: .hands) } }
+                .disabled(editor.trackingClipId != nil)
+            Button("Track This Mask") { if let single { runTracking(clip: single, mode: .region) } }
+                .disabled(!hasMask || editor.trackingClipId != nil)
         } label: {
             HStack(spacing: AppTheme.Spacing.xs) {
                 Text(maskSummary(shape: shape, hasMask: hasMask))
@@ -1031,7 +1036,13 @@ struct InspectorView: View {
         .help("Mask options")
     }
 
+    private func runTracking(clip: Clip, mode: EditorViewModel.TrackingMode) {
+        Task { await editor.runSubjectTracking(clipId: clip.id, mode: mode) }
+    }
+
     private func maskSummary(shape: MaskShape?, hasMask: Bool) -> String {
+        if editor.trackingClipId != nil { return "Tracking…" }
+        if let notice = editor.trackingNotice { return notice }
         guard hasMask, let shape, shape.isRenderable else { return "None" }
         var parts = ["\(shape.vertices.count) pts"]
         if shape.feather > 0 { parts.append("\(Int(shape.feather * 100))% soft") }

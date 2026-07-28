@@ -33,6 +33,7 @@ enum ToolName: String, CaseIterable, Sendable {
     case setClipProperties = "set_clip_properties"
     case setKeyframes = "set_keyframes"
     case setMask = "set_mask"
+    case trackSubject = "track_subject"
     case applyLayout = "apply_layout"
     case syncClips = "sync_clips"
     case undo = "undo"
@@ -557,6 +558,22 @@ enum ToolDefinitions {
                     "remove": ["type": "boolean", "description": "true clears the mask and any maskPath keyframes. Cannot be combined with vertices."],
                 ],
                 required: ["clipIds"]
+            )
+        ),
+        AgentTool(
+            name: .trackSubject,
+            description: "Follow a subject across a clip and write the result as mask keyframes — the automatic counterpart to hand-authoring a maskPath frame by frame. Runs on-device with Vision; costs nothing and needs no network.\n\nTwo modes, and they fail differently:\n• hands (default) — DETECTS both hands independently on every frame and builds a quad from the two thumb tips and two index tips, the corners the 'framing' gesture makes. No history, so no drift, and every frame carries its own confidence. Needs two hands visible.\n• region — follows the clip's EXISTING mask forward from its first frame, moving the whole path rigidly with the tracked box. Use it for subjects Vision has no detector for. Its error accumulates: on a 61-frame test it stayed under 0.02 of frame width for ten frames and reached 0.22 by the end, so track short spans and re-anchor.\n\nStops at the first frame whose confidence falls below minConfidence and reports it as lostAtFrame; frames past that are left untracked rather than extrapolated, because a mask that slides off the subject is worse than one that stops. Replaces any existing maskPath keyframes on the clip. Undoable.\n\nAfter tracking, refine by hand with set_keyframes maskPath, or reshape the path with set_mask.",
+            inputSchema: objectSchema(
+                properties: [
+                    "clipId": ["type": "string", "description": "Clip that RECEIVES the mask keyframes."],
+                    "sourceClipId": ["type": "string", "description": "Clip whose footage is analysed. Defaults to clipId. Set it when the subject is in a different clip — masking an upper clip to the shape two hands make in the clip below is the common case. Only the frames both clips cover are tracked."],
+                    "mode": ["type": "string", "enum": ["hands", "region"], "description": "hands (default) detects hands per frame; region follows the clip's existing mask."],
+                    "startFrame": ["type": "integer", "description": "Optional timeline frame to start from. Defaults to the clip's start; clamped to the clip."],
+                    "endFrame": ["type": "integer", "description": "Optional timeline frame to stop before. Defaults to the clip's end."],
+                    "minConfidence": ["type": "number", "description": "0–1, default 0.3. Tracking stops the first time confidence drops below this."],
+                    "step": ["type": "integer", "description": "Track every Nth frame (1–30, default 1). Values above 1 trade accuracy for speed and rely on interpolation between keyframes."],
+                ],
+                required: ["clipId"]
             )
         ),
         AgentTool(
