@@ -142,6 +142,11 @@ final class EditorViewModel {
     /// Clip ids currently awaiting an AI-generated replacement.
     var pendingReplacements: Set<String> = []
     var cropEditingActive: Bool = false
+    var maskEditingActive: Bool = false
+    /// Clip currently being tracked, and the outcome of the last track. Shown in the
+    /// Mask row so a track that stops early is visible where it was started.
+    var trackingClipId: String?
+    var trackingNotice: String?
     var chromaKeySamplingClipId: String?
     /// Two-up in/out frames shown in the viewer while a slip drag is active.
     var slipPreview: SlipPreviewState?
