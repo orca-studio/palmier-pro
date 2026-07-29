@@ -11,6 +11,8 @@ extension EditorViewModel {
         /// a mask that quietly slides off the subject is worse than one that stops.
         let lostAtFrame: Int?
         let skippedFrames: [Int]
+        /// Frames where the hands came together, i.e. where the shape may change.
+        let phaseBoundaries: [Int]
     }
 
     enum TrackingMode: String, Sendable {
@@ -33,7 +35,9 @@ extension EditorViewModel {
         sourceClipId: String? = nil,
         range: ClosedRange<Int>? = nil,
         minimumConfidence: Double = 0.3,
-        step: Int = 1
+        step: Int = 1,
+        phaseShapes: [[Int]]? = nil,
+        hideWhenClosed: Bool = true
     ) async throws -> TrackingResult {
         guard let clip = clipFor(id: clipId) else {
             throw TrackingError.clipNotFound(clipId)
@@ -71,10 +75,23 @@ extension EditorViewModel {
             )
         }
 
+        // Boundaries are read off the same samples the mask is built from, so a frame
+        // that was too weak to mask is also too weak to split a phase on.
+        let bySourceFrame = Dictionary(uniqueKeysWithValues: zip(plan.sourceFrames, plan.timelineFrames))
+        let spans: [(frame: Int, span: Double)] = samples.compactMap { sample in
+            guard sample.confidence >= minimumConfidence,
+                  let span = sample.span,
+                  let timelineFrame = bySourceFrame[sample.frame] else { return nil }
+            return (timelineFrame, span)
+        }
+        let boundaries = PhaseDetector.boundaries(spans: spans).map(\.frame)
+        let closedSpan = hideWhenClosed ? PhaseDetector.closedThreshold(spans: spans.map(\.span)) : nil
+
         let base = clip.maskAt(frame: overlap.lowerBound)
         let assembled = Self.assemble(
             samples: samples, plan: plan, mode: mode, base: base,
-            clipStartFrame: clip.startFrame, minimumConfidence: minimumConfidence
+            clipStartFrame: clip.startFrame, minimumConfidence: minimumConfidence,
+            phaseShapes: phaseShapes, boundaries: boundaries, closedSpan: closedSpan
         )
         let lost = assembled.lostAtFrame
         let skipped = assembled.skippedFrames
@@ -90,7 +107,8 @@ extension EditorViewModel {
             keyframesWritten: track.keyframes.count,
             trackedRange: (track.keyframes.first!.frame + clip.startFrame)...(track.keyframes.last!.frame + clip.startFrame),
             lostAtFrame: lost,
-            skippedFrames: skipped.sorted()
+            skippedFrames: skipped.sorted(),
+            phaseBoundaries: boundaries
         )
     }
 
@@ -102,7 +120,10 @@ extension EditorViewModel {
         mode: TrackingMode,
         base: MaskShape?,
         clipStartFrame: Int,
-        minimumConfidence: Double
+        minimumConfidence: Double,
+        phaseShapes: [[Int]]? = nil,
+        boundaries: [Int] = [],
+        closedSpan: Double? = nil
     ) -> (track: KeyframeTrack<MaskShape>, lostAtFrame: Int?, skippedFrames: [Int]) {
         let bySource = Dictionary(uniqueKeysWithValues: zip(plan.sourceFrames, plan.timelineFrames))
         var keyframes: [Keyframe<MaskShape>] = []
@@ -117,9 +138,31 @@ extension EditorViewModel {
                 lost = timelineFrame
                 break
             }
-            guard let shape = shape(for: sample, mode: mode, base: base) else {
+            guard var shape = shape(for: sample, mode: mode, base: base) else {
                 skipped.append(timelineFrame)
                 continue
+            }
+            // A phase's shape is an ORDER over the tracked points, not fixed
+            // coordinates — so the shape keeps following the hands, and the vertex
+            // count cannot change between phases by construction.
+            if let phaseShapes, !phaseShapes.isEmpty {
+                let phase = boundaries.filter { $0 <= timelineFrame }.count
+                let order = phaseShapes[phase % phaseShapes.count]
+                if order.allSatisfy({ $0 >= 0 && $0 < shape.vertices.count }), order.count == shape.vertices.count {
+                    shape.vertices = order.map { shape.vertices[$0] }
+                }
+            }
+            // Fingertips touching: the four corners have collapsed onto each other and
+            // any quad drawn through them is noise — a visible spike, as in the pinch
+            // frames. Collapse the path to its centre instead: zero area draws nothing,
+            // the vertex count is untouched, and the frames either side interpolate into
+            // it, so the shape closes and reopens with the hands for free.
+            if let closedSpan, let span = sample.span, span < closedSpan {
+                let cx = shape.vertices.reduce(0.0) { $0 + $1.x } / Double(shape.vertices.count)
+                let cy = shape.vertices.reduce(0.0) { $0 + $1.y } / Double(shape.vertices.count)
+                shape.vertices = shape.vertices.map {
+                    MaskVertex(x: cx, y: cy, inControl: $0.inControl, outControl: $0.outControl)
+                }
             }
             keyframes.append(Keyframe(
                 frame: timelineFrame - clipStartFrame, value: shape, interpolationOut: .linear
@@ -137,7 +180,7 @@ extension EditorViewModel {
         case .hands:
             guard sample.points.count == 4 else { return nil }
             var shape = base ?? MaskShape()
-            shape.vertices = sample.points.map { MaskVertex(x: Double($0.x), y: Double($0.y)) }
+            shape.vertices = canonical(sample.points).map { MaskVertex(x: Double($0.x), y: Double($0.y)) }
             return shape
         case .region:
             // Rigid move: the drawn path keeps its shape and rides the box.
@@ -161,6 +204,19 @@ extension EditorViewModel {
         guard let id, id != fallback.id else { return fallback }
         guard let clip = clipFor(id: id) else { throw TrackingError.clipNotFound(id) }
         return clip
+    }
+
+    /// The tracked points arrive in a SEMANTIC order — left thumb, right index, right
+    /// thumb, left index — which says nothing about how they sit on screen. As the hands
+    /// turn, that same order flips between a simple quad and a crossed one on its own,
+    /// so a phase's shape was not actually stable. Sorting by angle about the centroid
+    /// makes the base order always trace a simple polygon; a phase permutation on top of
+    /// that then means the same thing on every frame.
+    static func canonical(_ points: [CGPoint]) -> [CGPoint] {
+        guard points.count > 2 else { return points }
+        let cx = points.reduce(0) { $0 + $1.x } / CGFloat(points.count)
+        let cy = points.reduce(0) { $0 + $1.y } / CGFloat(points.count)
+        return points.sorted { atan2($0.y - cy, $0.x - cx) < atan2($1.y - cy, $1.x - cx) }
     }
 
     static func boundingBox(of shape: MaskShape) -> CGRect {
@@ -200,17 +256,22 @@ extension EditorViewModel {
 extension EditorViewModel {
     /// Runs a track for the Inspector and surfaces the outcome, including the
     /// partial-success case where tracking stopped early.
-    func runSubjectTracking(clipId: String, mode: TrackingMode, sourceClipId: String? = nil) async {
+    func runSubjectTracking(
+        clipId: String, mode: TrackingMode, sourceClipId: String? = nil, phaseShapes: [[Int]]? = nil
+    ) async {
         guard trackingClipId == nil else { return }
         trackingClipId = clipId
         trackingNotice = nil
         defer { trackingClipId = nil }
         do {
-            let result = try await trackSubject(clipId: clipId, mode: mode, sourceClipId: sourceClipId)
+            let result = try await trackSubject(
+                clipId: clipId, mode: mode, sourceClipId: sourceClipId, phaseShapes: phaseShapes
+            )
+            let phases = result.phaseBoundaries.isEmpty ? "" : " · \(result.phaseBoundaries.count + 1) phases"
             if let lost = result.lostAtFrame {
-                trackingNotice = "lost at f\(lost) · \(result.keyframesWritten) kf"
+                trackingNotice = "lost at f\(lost) · \(result.keyframesWritten) kf\(phases)"
             } else {
-                trackingNotice = "\(result.keyframesWritten) kf tracked"
+                trackingNotice = "\(result.keyframesWritten) kf tracked\(phases)"
             }
         } catch {
             trackingNotice = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription

@@ -20,6 +20,16 @@ enum SubjectTracker {
         /// Normalized, top-left origin — the mask's coordinate space.
         let points: [CGPoint]
         let confidence: Double
+        /// Distance between the two hands' index tips, in `hands` mode. Near zero when
+        /// the fingertips touch, which is how a deliberate "pinch" reads in the data.
+        let span: Double?
+
+        init(frame: Int, points: [CGPoint], confidence: Double, span: Double? = nil) {
+            self.frame = frame
+            self.points = points
+            self.confidence = confidence
+            self.span = span
+        }
     }
 
     enum Failure: LocalizedError {
@@ -54,7 +64,7 @@ enum SubjectTracker {
             request.maximumHandCount = 2
             try? VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
             guard let quad = quad(from: request.results ?? [], minimumConfidence: minimumConfidence) else { continue }
-            out.append(Sample(frame: source, points: quad.points, confidence: quad.confidence))
+            out.append(Sample(frame: source, points: quad.points, confidence: quad.confidence, span: quad.span))
         }
         return out
     }
@@ -98,10 +108,13 @@ enum SubjectTracker {
 
     // MARK: - Vision plumbing
 
+    /// Confidence is the minimum over the FOUR joints actually used, not over all 21:
+    /// a curled little finger says nothing about whether the corners are trustworthy,
+    /// and folding it in throws away most of a usable clip.
     private static func quad(
         from observations: [VNHumanHandPoseObservation],
         minimumConfidence: Double
-    ) -> (points: [CGPoint], confidence: Double)? {
+    ) -> (points: [CGPoint], confidence: Double, span: Double)? {
         guard observations.count >= 2 else { return nil }
         struct Tips { let thumb: CGPoint; let index: CGPoint; let confidence: Double }
         let tips: [Tips] = observations.compactMap { obs in
@@ -121,7 +134,8 @@ enum SubjectTracker {
         let left = ordered[0], right = ordered[1]
         let confidence = min(left.confidence, right.confidence)
         guard confidence >= minimumConfidence else { return nil }
-        return ([left.thumb, right.index, right.thumb, left.index], confidence)
+        let span = hypot(left.index.x - right.index.x, left.index.y - right.index.y)
+        return ([left.thumb, right.index, right.thumb, left.index], confidence, Double(span))
     }
 
     private static func imageGenerator(url: URL) async throws -> AVAssetImageGenerator {

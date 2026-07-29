@@ -5,7 +5,7 @@ extension ToolExecutor {
     func trackSubject(_ editor: EditorViewModel, _ args: [String: Any]) async throws -> ToolResult {
         try validateUnknownKeys(
             args,
-            allowed: ["clipId", "sourceClipId", "mode", "startFrame", "endFrame", "minConfidence", "step"],
+            allowed: ["clipId", "sourceClipId", "mode", "startFrame", "endFrame", "minConfidence", "step", "phaseShapes", "hideWhenClosed"],
             path: "track_subject"
         )
         let clipId = try args.requireString("clipId")
@@ -39,11 +39,36 @@ extension ToolExecutor {
         if let sourceClipId, await editor.clipFor(id: sourceClipId) == nil {
             throw ToolError("Clip not found: \(sourceClipId)")
         }
+        var phaseShapes: [[Int]]?
+        if let raw = args["phaseShapes"] {
+            guard let list = raw as? [Any], !list.isEmpty else {
+                throw ToolError("phaseShapes: expected a non-empty array of vertex orders.")
+            }
+            var parsed: [[Int]] = []
+            for (i, entry) in list.enumerated() {
+                guard let order = entry as? [Any] else {
+                    throw ToolError("phaseShapes[\(i)]: expected an array of point indices, e.g. [0, 1, 3, 2]")
+                }
+                let ints = order.compactMap { $0 as? Int }
+                guard ints.count == order.count else {
+                    throw ToolError("phaseShapes[\(i)]: every entry must be an integer point index.")
+                }
+                guard ints.count == 4, ints.allSatisfy({ (0..<4).contains($0) }) else {
+                    throw ToolError(
+                        "phaseShapes[\(i)]: expected 4 indices, each 0–3, over the tracked corners "
+                        + "ordered clockwise from the centre. Got \(ints)."
+                    )
+                }
+                parsed.append(ints)
+            }
+            phaseShapes = parsed
+        }
         let result: EditorViewModel.TrackingResult
         do {
             result = try await editor.trackSubject(
                 clipId: clipId, mode: mode, sourceClipId: sourceClipId, range: range,
-                minimumConfidence: minConfidence, step: step
+                minimumConfidence: minConfidence, step: step, phaseShapes: phaseShapes,
+                hideWhenClosed: (args["hideWhenClosed"] as? Bool) ?? true
             )
         } catch let error as LocalizedError {
             throw ToolError(error.errorDescription ?? "Tracking failed.")
@@ -55,8 +80,15 @@ extension ToolExecutor {
             "sourceClipId": sourceClipId ?? clipId,
             "keyframes": result.keyframesWritten,
         ]
-        if let r = result.trackedRange { out["trackedFrames"] = [r.lowerBound, r.upperBound + 1] }
         var notes: [String] = []
+        if let r = result.trackedRange { out["trackedFrames"] = [r.lowerBound, r.upperBound + 1] }
+        if !result.phaseBoundaries.isEmpty {
+            out["phaseBoundaries"] = result.phaseBoundaries
+            notes.append(
+                "The hands came together at \(result.phaseBoundaries.map(String.init).joined(separator: ", ")) — "
+                + "\(result.phaseBoundaries.count + 1) phases. Pass phaseShapes to give each phase its own vertex order."
+            )
+        }
         if let lost = result.lostAtFrame {
             out["lostAtFrame"] = lost
             notes.append(

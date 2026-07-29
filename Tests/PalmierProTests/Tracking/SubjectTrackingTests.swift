@@ -177,3 +177,222 @@ struct TrackingAssemblyTests {
         #expect(moved == nil)
     }
 }
+
+@Suite("Phase detection")
+struct PhaseDetectorTests {
+
+    /// A pinch-open-pinch-open clip: two approaches, so two boundaries.
+    private var pinchTwice: [(frame: Int, span: Double)] {
+        var out: [(Int, Double)] = []
+        for f in 0..<20 { out.append((f, 0.02)) }          // closed
+        for f in 20..<50 { out.append((f, 0.40)) }         // open
+        for f in 50..<70 { out.append((f, 0.01)) }         // closed again
+        for f in 70..<100 { out.append((f, 0.45)) }        // open again
+        return out.map { (frame: $0.0, span: $0.1) }
+    }
+
+    @Test func findsOneBoundaryPerApproach() {
+        let found = PhaseDetector.boundaries(spans: pinchTwice)
+        #expect(found.count == 2)
+        #expect(found[0].frame < 20)
+        #expect(found[1].frame >= 50 && found[1].frame < 70)
+    }
+
+    @Test func reportsTheClosestFrameOfEachApproach() {
+        var spans = pinchTwice
+        spans[12] = (frame: 12, span: 0.004)   // the actual touch
+        let found = PhaseDetector.boundaries(spans: spans)
+        #expect(found.first?.frame == 12, "the minimum of the run, not its first frame")
+    }
+
+    /// Hands that stay apart the whole time have no phases; without this guard a clip
+    /// of steady framing would report its own noise as boundaries.
+    @Test func steadyFramingHasNoBoundaries() {
+        let spans = (0..<100).map { (frame: $0, span: 0.40 + Double($0 % 3) * 0.005) }
+        #expect(PhaseDetector.boundaries(spans: spans).isEmpty)
+    }
+
+    /// One wobbly pinch must not read as several: the hands have to open again first.
+    @Test func aWobbleInsideOneApproachIsStillOneBoundary() {
+        var spans: [(frame: Int, span: Double)] = []
+        for f in 0..<10 { spans.append((f, 0.02)) }
+        spans.append((10, 0.09))    // small jitter, nowhere near open
+        for f in 11..<20 { spans.append((f, 0.02)) }
+        for f in 20..<40 { spans.append((f, 0.40)) }
+        #expect(PhaseDetector.boundaries(spans: spans).count == 1)
+    }
+
+    @Test func tooFewSamplesYieldNothing() {
+        #expect(PhaseDetector.boundaries(spans: [(0, 0.1), (1, 0.4)]).isEmpty)
+    }
+}
+
+@Suite("Phase shapes")
+@MainActor
+struct PhaseShapeTests {
+
+    private func sample(_ frame: Int) -> SubjectTracker.Sample {
+        SubjectTracker.Sample(
+            frame: frame,
+            points: [CGPoint(x: 0.1, y: 0.1), CGPoint(x: 0.9, y: 0.1),
+                     CGPoint(x: 0.9, y: 0.9), CGPoint(x: 0.1, y: 0.9)],
+            confidence: 0.9, span: 0.5
+        )
+    }
+
+    /// A phase is a vertex ORDER, so switching phases cannot change the count — the
+    /// invariant the whole mask track depends on holds by construction.
+    @Test func laterPhasesReorderTheSameFourPoints() {
+        let c = Clip(mediaRef: "m", startFrame: 0, durationFrames: 20)
+        let plan = TrackingPlan(target: c, subject: c, window: 0...19, step: 1)!
+        let result = EditorViewModel.assemble(
+            samples: (0..<20).map { sample($0) }, plan: plan, mode: .hands, base: nil,
+            clipStartFrame: 0, minimumConfidence: 0.3,
+            phaseShapes: [[0, 1, 2, 3], [0, 1, 3, 2]], boundaries: [10]
+        )
+        let before = result.track.keyframes.first { $0.frame == 5 }?.value
+        let after = result.track.keyframes.first { $0.frame == 15 }?.value
+        #expect(before?.vertices.count == 4)
+        #expect(after?.vertices.count == 4, "the count is identical across the boundary")
+        // Phase 2 swaps the last two corners, which is what crosses the path.
+        #expect(after?.vertices[2].y == 0.9 && after?.vertices[2].x == 0.1)
+        #expect(before?.vertices[2].x == 0.9)
+    }
+
+    @Test func withoutPhaseShapesEveryFrameUsesTheTrackedOrder() {
+        let c = Clip(mediaRef: "m", startFrame: 0, durationFrames: 20)
+        let plan = TrackingPlan(target: c, subject: c, window: 0...19, step: 1)!
+        let result = EditorViewModel.assemble(
+            samples: (0..<20).map { sample($0) }, plan: plan, mode: .hands, base: nil,
+            clipStartFrame: 0, minimumConfidence: 0.3
+        )
+        let a = result.track.keyframes.first?.value
+        let b = result.track.keyframes.last?.value
+        #expect(a?.vertices.map(\.x) == b?.vertices.map(\.x))
+    }
+}
+
+@Suite("Closed-hand collapse")
+@MainActor
+struct ClosedHandCollapseTests {
+
+    private func sample(_ frame: Int, span: Double) -> SubjectTracker.Sample {
+        SubjectTracker.Sample(
+            frame: frame,
+            points: [CGPoint(x: 0.2, y: 0.3), CGPoint(x: 0.8, y: 0.3),
+                     CGPoint(x: 0.8, y: 0.7), CGPoint(x: 0.2, y: 0.7)],
+            confidence: 0.9, span: span
+        )
+    }
+
+    private func run(spans: [Double], closedSpan: Double?) -> KeyframeTrack<MaskShape> {
+        let c = Clip(mediaRef: "m", startFrame: 0, durationFrames: spans.count)
+        let plan = TrackingPlan(target: c, subject: c, window: 0...(spans.count - 1), step: 1)!
+        return EditorViewModel.assemble(
+            samples: spans.enumerated().map { sample($0.offset, span: $0.element) },
+            plan: plan, mode: .hands, base: nil, clipStartFrame: 0,
+            minimumConfidence: 0.3, closedSpan: closedSpan
+        ).track
+    }
+
+    private func area(_ shape: MaskShape) -> Double {
+        let v = shape.vertices
+        guard v.count >= 3 else { return 0 }
+        var sum = 0.0
+        for i in v.indices {
+            let a = v[i], b = v[(i + 1) % v.count]
+            sum += a.x * b.y - b.x * a.y
+        }
+        return abs(sum) / 2
+    }
+
+    /// A pinch must draw nothing rather than the spike a near-degenerate quad makes.
+    @Test func touchingFingertipsCollapseToZeroArea() {
+        let track = run(spans: [0.5, 0.5, 0.01, 0.5], closedSpan: 0.1)
+        #expect(area(track.keyframes[0].value) > 0.2)
+        #expect(area(track.keyframes[2].value) == 0, "the closed frame encloses nothing")
+    }
+
+    /// The count is what the whole track depends on; collapsing must not touch it.
+    @Test func collapsingKeepsTheVertexCount() {
+        let track = run(spans: [0.5, 0.01], closedSpan: 0.1)
+        #expect(track.keyframes.allSatisfy { $0.value.vertices.count == 4 })
+    }
+
+    @Test func collapsedVerticesShareTheCentreOfTheQuad() {
+        let track = run(spans: [0.01], closedSpan: 0.1)
+        let v = track.keyframes[0].value.vertices
+        #expect(v.allSatisfy { abs($0.x - 0.5) < 1e-9 && abs($0.y - 0.5) < 1e-9 })
+    }
+
+    @Test func withoutAThresholdNothingCollapses() {
+        let track = run(spans: [0.5, 0.01], closedSpan: nil)
+        #expect(area(track.keyframes[1].value) > 0.2, "the raw quad is kept when the feature is off")
+    }
+
+    /// The same threshold drives both, so a phase can never start on a frame whose
+    /// shape is still being drawn.
+    @Test func theHideThresholdIsTheSameOneThatMarksPhases() {
+        let spans = [0.5, 0.5, 0.01, 0.01, 0.5, 0.5]
+        let threshold = PhaseDetector.closedThreshold(spans: spans)
+        #expect(threshold != nil)
+        let boundaries = PhaseDetector.boundaries(
+            spans: spans.enumerated().map { (frame: $0.offset, span: $0.element) }
+        )
+        #expect(boundaries.count == 1)
+        let track = run(spans: spans, closedSpan: threshold)
+        #expect(area(track.keyframes[boundaries[0].frame].value) == 0)
+    }
+}
+
+@Suite("Canonical corner order")
+@MainActor
+struct CanonicalOrderTests {
+
+    private func crosses(_ v: [MaskVertex]) -> Bool {
+        func intersects(_ p: MaskVertex, _ q: MaskVertex, _ r: MaskVertex, _ s: MaskVertex) -> Bool {
+            func side(_ a: MaskVertex, _ b: MaskVertex, _ c: MaskVertex) -> Double {
+                (c.y - a.y) * (b.x - a.x) - (b.y - a.y) * (c.x - a.x)
+            }
+            return (side(r, s, p) > 0) != (side(r, s, q) > 0)
+                && (side(p, q, r) > 0) != (side(p, q, s) > 0)
+        }
+        return intersects(v[0], v[1], v[2], v[3]) || intersects(v[1], v[2], v[3], v[0])
+    }
+
+    private func shape(_ points: [CGPoint], order: [Int]? = nil) -> MaskShape {
+        let c = Clip(mediaRef: "m", startFrame: 0, durationFrames: 1)
+        let plan = TrackingPlan(target: c, subject: c, window: 0...0, step: 1)!
+        return EditorViewModel.assemble(
+            samples: [SubjectTracker.Sample(frame: 0, points: points, confidence: 0.9, span: 0.5)],
+            plan: plan, mode: .hands, base: nil, clipStartFrame: 0, minimumConfidence: 0.3,
+            phaseShapes: order.map { [$0] }, boundaries: []
+        ).track.keyframes[0].value
+    }
+
+    /// The tracked order is semantic, not geometric — feeding it straight through let a
+    /// phase flip between a quad and a bowtie as the hands turned.
+    @Test func theBaseOrderAlwaysTracesASimpleQuad() {
+        // Points deliberately supplied in an order that would self-intersect.
+        let scrambled = [CGPoint(x: 0.2, y: 0.2), CGPoint(x: 0.8, y: 0.8),
+                         CGPoint(x: 0.8, y: 0.2), CGPoint(x: 0.2, y: 0.8)]
+        #expect(!crosses(shape(scrambled).vertices))
+    }
+
+    @Test func swappingTwoCornersAlwaysCrosses() {
+        let square = [CGPoint(x: 0.2, y: 0.2), CGPoint(x: 0.8, y: 0.2),
+                      CGPoint(x: 0.8, y: 0.8), CGPoint(x: 0.2, y: 0.8)]
+        #expect(crosses(shape(square, order: [0, 1, 3, 2]).vertices))
+        #expect(!crosses(shape(square, order: [0, 1, 2, 3]).vertices))
+    }
+
+    /// Repeating an index collapses a corner, so a phase can look like a triangle while
+    /// the track keeps its four vertices.
+    @Test func aRepeatedIndexCollapsesACornerIntoATriangle() {
+        let square = [CGPoint(x: 0.2, y: 0.2), CGPoint(x: 0.8, y: 0.2),
+                      CGPoint(x: 0.8, y: 0.8), CGPoint(x: 0.2, y: 0.8)]
+        let tri = shape(square, order: [0, 1, 2, 2])
+        #expect(tri.vertices.count == 4, "the count the track depends on is untouched")
+        #expect(tri.vertices[2].x == tri.vertices[3].x && tri.vertices[2].y == tri.vertices[3].y)
+    }
+}

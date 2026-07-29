@@ -4,6 +4,11 @@ A clip can be limited to the inside of a closed path, that path can be keyframed
 Vision can author those keyframes automatically. This document covers the data model,
 the invariant everything rests on, the render pipeline, and the tracking contract.
 
+For conceptual background — where `mask` sits among `crop`, `transform`, `opacity` and
+`blend`, and why those belong to one family — see the glossary note
+[合成属性族](https://orcastudio.feishu.cn/wiki/DWUWwHWn7imDHSkhk4Pc8kWfneh).
+This document stays on the implementation.
+
 ## Why
 
 Every effect in `EffectRegistry` is full-frame. Grades, blurs, keys and stylize passes
@@ -134,6 +139,40 @@ that stops, because the first is only discovered by scrubbing the whole clip. Th
 reports `lostAtFrame` so the caller can correct the mask there and re-run from that
 frame.
 
+### Phases
+
+The gesture this was built for marks its own edits: the hands come together, then open
+on a new shape. That reads in the data as the distance between the two index tips
+collapsing — a deliberate, full-amplitude move, 0.004 to 0.548 on a test clip, two
+orders of magnitude. `PhaseDetector` reports each approach as a boundary.
+
+Two things share one threshold, on purpose: the span below which the hands count as
+touching is both where a phase begins and where the mask stops drawing. They cannot
+disagree about where a phase starts.
+
+- **Below it**, the four corners sit on top of each other and any quad through them is
+  noise — a visible spike. The path collapses to its centre instead: zero area draws
+  nothing, the vertex count is untouched, and neighbouring frames interpolate into it,
+  so the shape closes and reopens with the hands at no extra cost.
+- **Above it**, the shape draws normally.
+
+`phaseShapes` gives each phase its own vertex ORDER, cycled — four indices over the
+tracked corners. Because a phase is an ordering rather than coordinates, the shape keeps
+following the hands and the vertex count cannot change between phases.
+
+The corners are first sorted clockwise about their centre. Without that they arrive in a
+semantic order — left thumb, right index, right thumb, left index — which says nothing
+about screen position, so as the hands turned the *same* order flipped between a simple
+quad and a crossed one on its own, and phases were not actually distinct. Measured on a
+real clip before the fix: frames 20 and 40 crossed, 60 did not, 90 did not, 110 and 130
+did — inside what were meant to be two stable phases.
+
+| Order | Shape |
+| --- | --- |
+| `[0,1,2,3]` | Quad |
+| `[0,1,3,2]`, `[0,2,1,3]` | Bowtie — two triangles |
+| `[0,1,2,2]` | Triangle: an index may repeat, collapsing a corner, so the apparent number of sides can change while the track keeps its four vertices |
+
 ### Cross-clip tracking
 
 `sourceClipId` names the clip that is *analysed*; `clipId` names the clip that *receives*
@@ -180,13 +219,36 @@ This matches how `edgeRounding` and `edgeSoftness` are already handled.
 
 ## Verification
 
-- 31 automated tests: rasterization (inside/outside, inversion, y orientation, degenerate
+- 62 automated tests: rasterization (inside/outside, inversion, y orientation, degenerate
   paths, feathered edges), interpolation (index pairing, the count-mismatch hold, track
   sampling, split/rebase, sanitisation), vertex editing (track-wide insert/delete,
   auto-keyframing, the three-point floor), and tracking (frame mapping through trim and
-  speed, overlap clamping, the confidence stop, rigid region moves).
+  speed, overlap clamping, the confidence stop, rigid region moves, phase detection and
+  its de-bounce, the closed-hand collapse, and the canonical corner order).
 - End-to-end through MCP on handheld footage: `track_subject` wrote 61 keyframes in one
   call and the export matched the hands frame by frame.
 - **UI is not covered by tests** and needs a person at the keyboard: pen drawing, anchor
   dragging, the context menu, auto-keyframing, Escape/Return, multi-selection disabling,
   and mutual exclusion with crop editing.
+
+### What the tests are for, and what they are not
+
+Worth stating plainly: **no defect in this feature was found by a test.** Every one —
+fingertips assigned to the wrong finger, a reflection landing on top of what it
+reflected, the spike at a pinch, phases that were not actually distinct — was found by
+rendering frames and looking at them.
+
+That is not an argument for fewer tests. It is an argument about what they cover here.
+The ones that earn their place assert things invisible in any single frame: interpolation
+holding on a vertex-count mismatch (whose symptom is an occasional flail while
+scrubbing), tracking stopping instead of extrapolating (a mask that slides off over
+seconds), frame mapping through the subject's own trim and speed (an offset that looks
+"about right"). They pin decisions down for the next change; they do not discover
+whether a shape looks good.
+
+The gap is a middle layer that does not exist yet: golden frames, plus the measurements
+that actually caught things during development — sampling colour at a cut frame, mask
+area per frame, self-intersection tests, drift against hand landmarks as ground truth.
+Those were written as throwaway scripts. Nothing currently stops a change to the pipeline
+order, the canonical ordering or the collapse threshold from quietly altering footage
+already signed off.
