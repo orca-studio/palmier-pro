@@ -3,13 +3,14 @@ import SwiftUI
 
 struct EditorView: NSViewControllerRepresentable {
     @Environment(EditorViewModel.self) var editor
+    @Bindable private var workspaceLayout = WorkspaceLayoutStore.shared
 
     func makeNSViewController(context: Context) -> EditorSplitViewController {
         EditorSplitViewController(editor: editor)
     }
 
     func updateNSViewController(_ controller: EditorSplitViewController, context: Context) {
-        controller.applyLayoutIfNeeded(editor.layoutPreset)
+        controller.applyLayoutIfNeeded(workspaceLayout.selection)
         controller.applyAgentVisibility(editor.agentPanelVisible)
         controller.applyMediaVisibility(editor.mediaPanelVisible)
         controller.applyInspectorVisibility(editor.inspectorPanelVisible)
@@ -95,7 +96,7 @@ final class EditorSplitViewController: PaddedDividerSplitViewController {
         super.viewDidLoad()
         splitView.dividerStyle = .thin
         splitView.autosaveName = SplitAutosave.root
-        buildLayout(editor.layoutPreset)
+        buildLayout(WorkspaceLayoutStore.shared.selection)
     }
 
     // MARK: - Layout switching
@@ -367,6 +368,7 @@ final class EditorSplitViewController: PaddedDividerSplitViewController {
         let hc = NSHostingController(
             rootView: content
                 .environment(editor)
+                .appLocalization()
                 .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                 .background(AppTheme.Background.surfaceColor)
                 .clipShape(panelShell)

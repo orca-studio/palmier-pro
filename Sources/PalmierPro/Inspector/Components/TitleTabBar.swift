@@ -28,7 +28,7 @@ struct TitleTabBar: View {
         return Button {
             onSelect(title)
         } label: {
-            Text(title)
+            Text(L10n.string(key: title))
                 .font(.system(size: AppTheme.FontSize.sm, weight: active ? AppTheme.FontWeight.medium : AppTheme.FontWeight.regular))
                 .lineLimit(1)
                 .foregroundStyle(active ? AppTheme.Text.primaryColor : AppTheme.Text.tertiaryColor)
@@ -50,7 +50,7 @@ struct TitleTabBar: View {
 
     private func tabBackground(active: Bool, hovered: Bool) -> Color {
         if active { return AppTheme.Background.surfaceColor }
-        if hovered { return Color.white.opacity(AppTheme.Opacity.faint) }
+        if hovered { return AppTheme.Interaction.fill(AppTheme.Opacity.faint) }
         return Color.clear
     }
 }
