@@ -1,4 +1,4 @@
-/* Simplified Chinese localization. Keep keys aligned with en.lproj. */
+/* Generated from app-owned UI copy. Translate values only in other locales. */
 
 "$%lld/mo" = "$%lld/月";
 "$%lld–$%lld · Credits expire at renewal." = "$%lld–$%lld · 积分将在续订时到期。";
@@ -59,6 +59,8 @@
 "AI Generated" = "AI 生成";
 "AI agent" = "AI Agent";
 "AI is unavailable" = "AI 不可用";
+"AI transcription" = "AI 转录";
+"AI videos" = "AI 视频";
 "About Palmier Pro" = "关于 Palmier Pro";
 "Account" = "账户";
 "Account settings" = "账户设置";
@@ -66,7 +68,7 @@
 "Add Range to Chat" = "将范围添加到对话";
 "Add Text" = "添加文本";
 "Add an email above to enable a reply" = "在上方添加电子邮件以接收回复";
-"Add captions to my timeline" = "为我的时间线添加字幕";
+"Add captions" = "添加字幕";
 "Add credits" = "添加积分";
 "Add credits to use Cloud." = "添加积分以使用云端。";
 "Add emoji" = "添加表情符号";
@@ -86,8 +88,10 @@
 "Added to %@" = "已添加到 %@";
 "Adjust" = "调整";
 "Adjust Range" = "调整范围";
+"Ads and branded content" = "广告与品牌内容";
 "Agent Mode" = "Agent 模式";
 "Agent Panel" = "Agent 面板";
+"Agentic editing" = "Agent 剪辑";
 "Alignment" = "对齐";
 "All" = "全部";
 "All fonts" = "所有字体";
@@ -207,6 +211,7 @@
 "Connect an agent" = "连接 Agent";
 "Connect an external agent to inspect and edit the open Palmier Pro project." = "连接外部 Agent，以检查和编辑已打开的 Palmier Pro 项目。";
 "Content" = "内容";
+"Content creator" = "内容创作者";
 "Continue" = "继续";
 "Contrast" = "对比度";
 "Copied" = "已复制";
@@ -227,9 +232,7 @@
 "Create Nested Timeline" = "创建嵌套时间线";
 "Create Video" = "创建视频";
 "Create Video only works on images" = "创建视频仅适用于图像";
-"Create a letterbox opening" = "创建宽银幕开场效果";
 "Create a skill or browse the Community collection." = "创建技能或浏览社区合集。";
-"Create a voiceover" = "创建旁白";
 "Create matching sound for the video" = "为视频创建匹配的声音";
 "Creating…" = "正在创建…";
 "Credits" = "积分";
@@ -241,6 +244,7 @@
 "Custom Aspect Ratio" = "自定义宽高比";
 "Custom…" = "自定义…";
 "Cut" = "剪切";
+"Cut to the beat" = "按节拍剪辑";
 "Dark" = "深色";
 "Dark appearance" = "深色外观";
 "Darken" = "变暗";
@@ -275,6 +279,7 @@
 "Describe the video" = "描述视频";
 "Description" = "描述";
 "Deselect & Reset Tool" = "取消选择并重置工具";
+"Designer" = "设计师";
 "Destination" = "目标位置";
 "Detail" = "细节";
 "Details" = "详细信息";
@@ -319,6 +324,7 @@
 "Editing" = "正在编辑";
 "Edit…" = "编辑…";
 "Edit… (Paid)" = "编辑…（付费）";
+"Education and tutorials" = "教育与教程";
 "Effects" = "效果";
 "Email (optional)" = "电子邮件（可选）";
 "Empty" = "空";
@@ -352,6 +358,7 @@
 "Fill" = "填充";
 "Fill prompt" = "填写提示词";
 "Film Grain" = "胶片颗粒";
+"Filmmaker" = "影视创作者";
 "First Frame" = "首帧";
 "First-time sign-ups only" = "仅限首次注册";
 "First/Last" = "首帧/尾帧";
@@ -367,6 +374,7 @@
 "Footage" = "素材";
 "For" = "适用于";
 "Forward" = "前进";
+"Founder" = "创始人";
 "Frame Rate" = "帧率";
 "Free" = "免费";
 "Full Frame" = "全画幅";
@@ -384,9 +392,7 @@
 "Generate SFX" = "生成音效";
 "Generate SFX only works on video" = "生成音效仅适用于视频";
 "Generate SFX…" = "生成音效…";
-"Generate an AI video" = "生成 AI 视频";
 "Generate audio" = "生成音频";
-"Generate music and sync to my timeline" = "生成音乐并同步到我的时间线";
 "Generate music for the timeline" = "为时间线生成音乐";
 "Generate music that fits the video" = "生成与视频匹配的音乐";
 "Generate video, image, or audio with different models and settings. Drag assets from the media panel above into the reference frame." = "使用不同模型和设置生成视频、图像或音频。将素材从上方媒体面板拖入参考框。";
@@ -400,7 +406,6 @@
 "Generation panel" = "生成面板";
 "Get Anthropic API key" = "获取 Anthropic API key";
 "Get a notification when a generation finishes." = "在生成完成时接收通知。";
-"Get started" = "开始使用";
 "Getting the search model ready." = "正在准备搜索模型。";
 "Glow" = "辉光";
 "Go to next keyframe" = "前往下一个关键帧";
@@ -416,6 +421,7 @@
 "Highlight" = "高光";
 "Highlight Block" = "高亮色块";
 "Highlights" = "高光";
+"Hobbyist" = "业余爱好者";
 "Hold" = "保持";
 "Hue" = "色相";
 "Hue Curves" = "色相曲线";
@@ -447,6 +453,7 @@
 "Installed" = "已安装";
 "Instructions" = "说明";
 "Instrumental" = "纯音乐";
+"Integration with your own agent" = "与自有 Agent 集成";
 "Integrations" = "集成";
 "Intensity" = "强度";
 "Invert Colors" = "反转颜色";
@@ -454,6 +461,7 @@
 "Keep Current" = "保留当前设置";
 "Keep Editing" = "继续编辑";
 "Keep Skill" = "保留技能";
+"Keep the best takes" = "保留最佳镜头";
 "Keeps this much audio before and after detected speech." = "在检测到的语音前后保留此时长的音频。";
 "Keyboard Shortcuts" = "键盘快捷键";
 "Keyframes" = "关键帧";
@@ -503,6 +511,7 @@
 "MCP Server" = "MCP 服务器";
 "MCP Setup" = "MCP 设置";
 "Main + Sidebar" = "主面板 + 边栏";
+"Make vertical shorts" = "制作竖屏短片";
 "Manage credits" = "管理积分";
 "Manage subscription" = "管理订阅";
 "Manual setup" = "手动设置";
@@ -511,6 +520,7 @@
 "Mark Range Start" = "标记范围起点";
 "Mark Silence" = "标记静音";
 "Mark Speakers" = "标记说话人";
+"Marketer" = "市场营销人员";
 "Master Audio Meter" = "主音频电平表";
 "Master — defines the group's clock and transcript." = "主机位：定义组的时钟和转录。";
 "Match Timeline" = "匹配时间线";
@@ -606,13 +616,14 @@
 "Open Skills Folder" = "打开技能文件夹";
 "Open Skills to browse community playbooks, create your own, or add them to other agents." = "打开“技能”以浏览社区操作手册、创建自己的技能，或将其添加到其他 Agent。";
 "Open Timeline" = "打开时间线";
+"Open the AI Edit tab to upscale, prompt-edit, create video from a frame, or generate music, SFX, cleanup, and dubbing from the clip." = "打开“AI 编辑”标签页即可放大分辨率、用提示词编辑、从帧创建视频，或从片段生成音乐、音效、清理人声和配音。";
 "Opening Google" = "正在打开 Google";
 "Opening Google…" = "正在打开 Google…";
 "Open…" = "打开…";
-"Organize my media into structured folders" = "将我的媒体整理到结构化文件夹中";
 "Organize with Agent" = "使用 Agent 整理";
 "Original" = "原始";
 "Original FPS" = "原始帧率";
+"Other" = "其他";
 "Outline" = "描边";
 "Outline Color" = "描边颜色";
 "Outline Width" = "描边宽度";
@@ -638,6 +649,7 @@
 "Playback" = "播放";
 "Playback Speed" = "播放速度";
 "Playback previews, waveforms, filmstrip thumbnails, and transcripts. Safe to clear; files rebuild as needed." = "播放预览、波形、胶片缩略图和转录。可以安全清除，文件会在需要时重新生成。";
+"Podcast" = "播客";
 "Pointer (V)" = "指针 (V)";
 "Pop In" = "弹入";
 "Position" = "位置";
@@ -647,6 +659,7 @@
 "Preview" = "预览";
 "Privacy & Diagnostics" = "隐私与诊断";
 "Pro plan" = "Pro 方案";
+"Product demos" = "产品演示";
 "Project" = "项目";
 "Project Activity" = "项目活动";
 "Projects Couldn’t Be Deleted" = "无法删除项目";
@@ -701,9 +714,9 @@
 "Report a Problem" = "报告问题";
 "Requires a paid plan" = "需要付费方案";
 "Rerun" = "重新运行";
-"Reset: %@" = "还原：%@";
 "Reset All" = "全部还原";
 "Reset Clipping Indicators" = "还原削波指示器";
+"Reset: %@" = "还原：%@";
 "Resets %@" = "还原 %@";
 "Resolution" = "分辨率";
 "Resolution must be at least 2 × 2 pixels." = "分辨率必须至少为 2 × 2 像素。";
@@ -725,6 +738,7 @@
 "Sample Key Color" = "取样键控颜色";
 "Sample Project" = "示例项目";
 "Sample key color" = "取样键控颜色";
+"Sample project couldn’t be opened. Try again." = "无法打开示例项目。请重试。";
 "Sat" = "饱和度";
 "Saturation" = "饱和度";
 "Save" = "保存";
@@ -736,6 +750,7 @@
 "Save this project to view activity" = "保存此项目以查看活动";
 "Saves a copy of this project with all media bundled inside, so it opens on any machine." = "保存此项目的副本并在其中包含所有媒体，以便在任何设备上打开。";
 "Scale" = "缩放";
+"Score my timeline" = "为时间线配乐";
 "Screen" = "滤色";
 "Screenshot a frame" = "截取一帧";
 "Scroll Horizontally" = "水平滚动";
@@ -774,6 +789,7 @@
 "Shadows" = "阴影";
 "Share usage data" = "共享使用数据";
 "Sharpen" = "锐化";
+"Short-form and social" = "短视频与社交媒体";
 "Shortcuts" = "快捷键";
 "Show in Finder" = "在“访达”中显示";
 "Show keyframe timeline" = "显示关键帧时间线";
@@ -782,12 +798,14 @@
 "Sign In" = "登录";
 "Sign in" = "登录";
 "Sign in to generate" = "登录以生成";
+"Sign in to receive 250 free credits for AI chat and generation." = "登录即可获得 250 个免费积分，用于 AI 聊天和生成。";
 "Sign in to subscribe and use AI generation." = "登录以订阅并使用 AI 生成。";
 "Sign in to use AI" = "登录以使用 AI";
 "Sign in to use Cloud transcription." = "登录以使用云端转录。";
 "Sign in to use Cloud." = "登录以使用云端。";
 "Sign in with Google" = "使用 Google 登录";
 "Sign out" = "退出登录";
+"Sign-in couldn’t be completed. Try again." = "无法完成登录。请重试。";
 "Signed in" = "已登录";
 "Signed out" = "已退出登录";
 "Silence Detection" = "静音检测";
@@ -831,6 +849,7 @@
 "Storage" = "储存空间";
 "Streaming through your Anthropic API key (BYOK)" = "正在通过你的 Anthropic API key 流式传输 (BYOK)";
 "Strikethrough" = "删除线";
+"Student" = "学生";
 "Style" = "样式";
 "Style instructions (optional). e.g., warm and slow, British accent." = "样式说明（可选），例如温暖舒缓、英式口音。";
 "Subscribe" = "订阅";
@@ -840,6 +859,7 @@
 "Switch Angle" = "切换机位";
 "Switch Angle in Range" = "在范围内切换机位";
 "Switch Mic" = "切换麦克风";
+"Sync my multicam" = "同步多机位";
 "Synchronize" = "同步";
 "Synchronized %lld clips" = "已同步 %lld 个片段";
 "Synchronized 1 clip" = "已同步 1 个片段";
@@ -849,6 +869,7 @@
 "System appearance" = "系统外观";
 "Take a screenshot of the preview and use it as a reference for generation. Particularly useful for creating AI transitions." = "截取预览画面并将其用作生成参考。这对创建 AI 转场尤其有用。";
 "Target Language" = "目标语言";
+"Tell us about your work" = "介绍一下你的工作";
 "Temperature" = "色温";
 "Temporary files" = "临时文件";
 "Text" = "文本";
@@ -864,7 +885,6 @@
 "Theme" = "主题";
 "This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "这是时间线标尺。按住 Shift 在标尺上拖移以选择渲染范围。你可以选择任意区段进行 AI 编辑，或生成适合该范围的音乐。";
 "This is where all your footage and assets live." = "你的所有素材和资源都位于此处。";
-"This is your inspector panel. Select a clip from the timeline to edit it." = "这是检查器面板。从时间线中选择片段即可进行编辑。";
 "This is your preview panel to play a selected media or the whole timeline." = "这是预览面板，用于播放所选媒体或整个时间线。";
 "This model cannot cap the output at 60 FPS." = "此模型无法将输出限制为 60 FPS。";
 "This permanently removes %@." = "这将永久移除 %@。";
@@ -939,6 +959,8 @@
 "Vibrance" = "自然饱和度";
 "Video" = "视频";
 "Video Ref" = "视频参考";
+"Video automation" = "视频自动化";
+"Video editor" = "视频剪辑师";
 "Video has no audio track" = "视频没有音频轨道";
 "Video to Music" = "视频生成音乐";
 "View" = "显示";
@@ -952,13 +974,18 @@
 "Voice Cleanup requires audio or video" = "人声清理需要音频或视频";
 "Volume" = "音量";
 "Warmth" = "色温";
-"Watch Tutorial" = "观看教程";
+"Watch the tutorial or start creating." = "观看教程或直接开始创作。";
 "We may email you for follow-up questions" = "我们可能会通过电子邮件向你询问后续问题";
 "We read every message and may reach out at %@." = "我们会阅读每条消息，并可能通过 %@ 与你联系。";
 "We read every message. Add an email next time if you'd like a reply." = "我们会阅读每条消息。如果希望收到回复，请下次添加电子邮件。";
 "We read every message. We won't email you, as requested." = "我们会阅读每条消息，并会按你的要求不发送电子邮件。";
+"Welcome" = "欢迎";
 "Welcome to Palmier Pro" = "欢迎使用 Palmier Pro";
 "Welcome to Palmier Pro, %@" = "欢迎使用 Palmier Pro，%@";
+"Welcome, %@" = "欢迎，%@";
+"What best describes your role?" = "哪一项最符合你的角色？";
+"What do you make?" = "你制作什么内容？";
+"What interests you most about Palmier Pro?" = "你对 Palmier Pro 最感兴趣的是什么？";
 "What's New in v%@" = "v%@ 新功能";
 "White Balance" = "白平衡";
 "Whites" = "白色色阶";
@@ -971,11 +998,14 @@
 "Working on %@" = "正在处理 %@";
 "Workspace layout" = "工作区布局";
 "You're all set" = "一切就绪";
+"YouTube" = "YouTube";
 "Your Lottie animation is ready." = "你的 Lottie 动画已准备就绪。";
 "Your audio clip is ready." = "你的音频片段已准备就绪。";
 "Your image is ready." = "你的图像已准备就绪。";
+"Your inspector for the selected clip — transform, adjust, audio, and more." = "所选片段的检查器 — 变换、调整、音频等。";
 "Your text clip is ready." = "你的文本片段已准备就绪。";
-"Your timeline: the top half is video, the bottom half is audio. This is where you edit. Right-click a clip for some cool AI features such as upscale, edit, or generate music." = "这是你的时间线：上半部分是视频，下半部分是音频。你将在这里进行编辑。右键点按片段可使用放大、编辑或生成音乐等 AI 功能。";
+"Your timeline: the top half is video, the bottom half is audio. Click a clip to inspect it — we've selected one for you." = "这是你的时间线：上半部分是视频，下半部分是音频。点按片段即可检查 — 我们已为你选好一个。";
+"Your timeline: the top half is video, the bottom half is audio. This is where you edit." = "这是你的时间线：上半部分是视频，下半部分是音频。你将在这里进行编辑。";
 "Your video is ready." = "你的视频已准备就绪。";
 "Zoom In" = "放大";
 "Zoom Out" = "缩小";

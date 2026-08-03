@@ -1,4 +1,4 @@
-/* Traditional Chinese localization. Keep keys aligned with en.lproj. */
+/* Generated from app-owned UI copy. Translate values only in other locales. */
 
 "$%lld/mo" = "$%lld/月";
 "$%lld–$%lld · Credits expire at renewal." = "$%lld–$%lld · 積分將在續訂時到期。";
@@ -59,6 +59,8 @@
 "AI Generated" = "AI 產生";
 "AI agent" = "AI Agent";
 "AI is unavailable" = "AI 不可用";
+"AI transcription" = "AI 轉錄";
+"AI videos" = "AI 影片";
 "About Palmier Pro" = "關於 Palmier Pro";
 "Account" = "帳號";
 "Account settings" = "帳號設定";
@@ -66,7 +68,7 @@
 "Add Range to Chat" = "將範圍加入對話";
 "Add Text" = "加入文字";
 "Add an email above to enable a reply" = "在上方加入電子郵件以接收回覆";
-"Add captions to my timeline" = "為我的時間軸加入字幕";
+"Add captions" = "加入字幕";
 "Add credits" = "加入積分";
 "Add credits to use Cloud." = "加入積分以使用雲端。";
 "Add emoji" = "加入表情符號";
@@ -86,8 +88,10 @@
 "Added to %@" = "已加入 %@";
 "Adjust" = "調整";
 "Adjust Range" = "調整範圍";
+"Ads and branded content" = "廣告與品牌內容";
 "Agent Mode" = "Agent 模式";
 "Agent Panel" = "Agent 面板";
+"Agentic editing" = "Agent 剪輯";
 "Alignment" = "對齊";
 "All" = "全部";
 "All fonts" = "所有字體";
@@ -207,6 +211,7 @@
 "Connect an agent" = "連接 Agent";
 "Connect an external agent to inspect and edit the open Palmier Pro project." = "連接外部 Agent，以檢查和編輯已打開的 Palmier Pro 專案。";
 "Content" = "內容";
+"Content creator" = "內容創作者";
 "Continue" = "繼續";
 "Contrast" = "對比";
 "Copied" = "已複製";
@@ -227,9 +232,7 @@
 "Create Nested Timeline" = "建立巢狀時間軸";
 "Create Video" = "建立影片";
 "Create Video only works on images" = "建立影片僅適用於影像";
-"Create a letterbox opening" = "建立寬銀幕開場效果";
 "Create a skill or browse the Community collection." = "建立技能或瀏覽社群合集。";
-"Create a voiceover" = "建立旁白";
 "Create matching sound for the video" = "為影片建立匹配的聲音";
 "Creating…" = "正在建立…";
 "Credits" = "積分";
@@ -241,6 +244,7 @@
 "Custom Aspect Ratio" = "自訂長寬比";
 "Custom…" = "自訂…";
 "Cut" = "剪下";
+"Cut to the beat" = "按節拍剪輯";
 "Dark" = "深色";
 "Dark appearance" = "深色外觀";
 "Darken" = "變暗";
@@ -275,6 +279,7 @@
 "Describe the video" = "描述影片";
 "Description" = "描述";
 "Deselect & Reset Tool" = "取消選擇並重置工具";
+"Designer" = "設計師";
 "Destination" = "目標位置";
 "Detail" = "細節";
 "Details" = "詳細資訊";
@@ -319,6 +324,7 @@
 "Editing" = "正在編輯";
 "Edit…" = "編輯…";
 "Edit… (Paid)" = "編輯…（付費）";
+"Education and tutorials" = "教育與教學";
 "Effects" = "效果";
 "Email (optional)" = "電子郵件（可選）";
 "Empty" = "空";
@@ -352,6 +358,7 @@
 "Fill" = "填充";
 "Fill prompt" = "填寫提示詞";
 "Film Grain" = "膠片顆粒";
+"Filmmaker" = "影視創作者";
 "First Frame" = "首影格";
 "First-time sign-ups only" = "僅限首次註冊";
 "First/Last" = "首影格/尾影格";
@@ -367,6 +374,7 @@
 "Footage" = "素材";
 "For" = "適用於";
 "Forward" = "前進";
+"Founder" = "創辦人";
 "Frame Rate" = "影格率";
 "Free" = "免費";
 "Full Frame" = "全畫幅";
@@ -384,9 +392,7 @@
 "Generate SFX" = "產生音效";
 "Generate SFX only works on video" = "產生音效僅適用於影片";
 "Generate SFX…" = "產生音效…";
-"Generate an AI video" = "產生 AI 影片";
 "Generate audio" = "產生音訊";
-"Generate music and sync to my timeline" = "產生音樂並同步到我的時間軸";
 "Generate music for the timeline" = "為時間軸產生音樂";
 "Generate music that fits the video" = "產生與影片匹配的音樂";
 "Generate video, image, or audio with different models and settings. Drag assets from the media panel above into the reference frame." = "使用不同模型和設定產生影片、圖像或音訊。將素材從上方媒體面板拖入參考框。";
@@ -400,7 +406,6 @@
 "Generation panel" = "產生面板";
 "Get Anthropic API key" = "取得 Anthropic API key";
 "Get a notification when a generation finishes." = "在產生完成時接收通知。";
-"Get started" = "開始使用";
 "Getting the search model ready." = "正在準備搜尋模型。";
 "Glow" = "輝光";
 "Go to next keyframe" = "前往下一個關鍵影格";
@@ -416,6 +421,7 @@
 "Highlight" = "高光";
 "Highlight Block" = "高亮色塊";
 "Highlights" = "亮部";
+"Hobbyist" = "業餘愛好者";
 "Hold" = "保持";
 "Hue" = "色相";
 "Hue Curves" = "色相曲線";
@@ -447,6 +453,7 @@
 "Installed" = "已安裝";
 "Instructions" = "說明";
 "Instrumental" = "純音樂";
+"Integration with your own agent" = "與自有 Agent 整合";
 "Integrations" = "集成";
 "Intensity" = "強度";
 "Invert Colors" = "反轉顏色";
@@ -454,6 +461,7 @@
 "Keep Current" = "保留目前設定";
 "Keep Editing" = "繼續編輯";
 "Keep Skill" = "保留技能";
+"Keep the best takes" = "保留最佳鏡頭";
 "Keeps this much audio before and after detected speech." = "在偵測到的語音前後保留此時長的音訊。";
 "Keyboard Shortcuts" = "鍵盤快速鍵";
 "Keyframes" = "關鍵影格";
@@ -503,6 +511,7 @@
 "MCP Server" = "MCP 服務器";
 "MCP Setup" = "MCP 設定";
 "Main + Sidebar" = "主面板 + 邊欄";
+"Make vertical shorts" = "製作直式短片";
 "Manage credits" = "管理積分";
 "Manage subscription" = "管理訂閱";
 "Manual setup" = "手動設定";
@@ -511,6 +520,7 @@
 "Mark Range Start" = "標記範圍起點";
 "Mark Silence" = "標記靜音";
 "Mark Speakers" = "標記說話者";
+"Marketer" = "行銷人員";
 "Master Audio Meter" = "主音訊電平表";
 "Master — defines the group's clock and transcript." = "主機位：定義組的時鐘和轉錄。";
 "Match Timeline" = "匹配時間軸";
@@ -606,13 +616,14 @@
 "Open Skills Folder" = "打開技能資料夾";
 "Open Skills to browse community playbooks, create your own, or add them to other agents." = "打開“技能”以瀏覽社群操作手冊、建立自己的技能，或將其加入其他 Agent。";
 "Open Timeline" = "打開時間軸";
+"Open the AI Edit tab to upscale, prompt-edit, create video from a frame, or generate music, SFX, cleanup, and dubbing from the clip." = "打開「AI 編輯」標籤頁即可放大解析度、用提示詞編輯、從影格建立影片，或從片段產生音樂、音效、清理人聲和配音。";
 "Opening Google" = "正在打開 Google";
 "Opening Google…" = "正在打開 Google…";
 "Open…" = "打開…";
-"Organize my media into structured folders" = "將我的媒體整理到結構化資料夾中";
 "Organize with Agent" = "使用 Agent 整理";
 "Original" = "原始";
 "Original FPS" = "原始影格率";
+"Other" = "其他";
 "Outline" = "描邊";
 "Outline Color" = "描邊顏色";
 "Outline Width" = "描邊寬度";
@@ -638,6 +649,7 @@
 "Playback" = "播放";
 "Playback Speed" = "播放速度";
 "Playback previews, waveforms, filmstrip thumbnails, and transcripts. Safe to clear; files rebuild as needed." = "播放預覽、波形、膠片縮圖和轉錄。可以安全清除，檔案會在需要時重新產生。";
+"Podcast" = "Podcast";
 "Pointer (V)" = "指針 (V)";
 "Pop In" = "彈入";
 "Position" = "位置";
@@ -647,6 +659,7 @@
 "Preview" = "預覽";
 "Privacy & Diagnostics" = "隱私與診斷";
 "Pro plan" = "Pro 方案";
+"Product demos" = "產品示範";
 "Project" = "專案";
 "Project Activity" = "專案活動";
 "Projects Couldn’t Be Deleted" = "無法刪除專案";
@@ -701,9 +714,9 @@
 "Report a Problem" = "報告問題";
 "Requires a paid plan" = "需要付費方案";
 "Rerun" = "重新運行";
-"Reset: %@" = "還原：%@";
 "Reset All" = "全部還原";
 "Reset Clipping Indicators" = "還原削波指示器";
+"Reset: %@" = "還原：%@";
 "Resets %@" = "還原 %@";
 "Resolution" = "解析度";
 "Resolution must be at least 2 × 2 pixels." = "解析度必須至少為 2 × 2 像素。";
@@ -725,6 +738,7 @@
 "Sample Key Color" = "取樣鍵控顏色";
 "Sample Project" = "範例專案";
 "Sample key color" = "取樣鍵控顏色";
+"Sample project couldn’t be opened. Try again." = "無法打開範例專案。請重試。";
 "Sat" = "飽和度";
 "Saturation" = "飽和度";
 "Save" = "儲存";
@@ -736,6 +750,7 @@
 "Save this project to view activity" = "儲存此專案以檢視活動";
 "Saves a copy of this project with all media bundled inside, so it opens on any machine." = "儲存此專案的副本並在其中包含所有媒體，以便在任何裝置上打開。";
 "Scale" = "縮放";
+"Score my timeline" = "為時間軸配樂";
 "Screen" = "濾色";
 "Screenshot a frame" = "截取一影格";
 "Scroll Horizontally" = "水平捲動";
@@ -774,6 +789,7 @@
 "Shadows" = "陰影";
 "Share usage data" = "共享使用資料";
 "Sharpen" = "銳化";
+"Short-form and social" = "短影片與社群";
 "Shortcuts" = "快速鍵";
 "Show in Finder" = "在“Finder”中顯示";
 "Show keyframe timeline" = "顯示關鍵影格時間軸";
@@ -782,12 +798,14 @@
 "Sign In" = "登入";
 "Sign in" = "登入";
 "Sign in to generate" = "登入以產生";
+"Sign in to receive 250 free credits for AI chat and generation." = "登入即可獲得 250 個免費積分，用於 AI 聊天與產生。";
 "Sign in to subscribe and use AI generation." = "登入以訂閱並使用 AI 產生。";
 "Sign in to use AI" = "登入以使用 AI";
 "Sign in to use Cloud transcription." = "登入以使用雲端轉錄。";
 "Sign in to use Cloud." = "登入以使用雲端。";
 "Sign in with Google" = "使用 Google 登入";
 "Sign out" = "登出";
+"Sign-in couldn’t be completed. Try again." = "無法完成登入。請重試。";
 "Signed in" = "已登入";
 "Signed out" = "已登出";
 "Silence Detection" = "靜音偵測";
@@ -831,6 +849,7 @@
 "Storage" = "儲存空間";
 "Streaming through your Anthropic API key (BYOK)" = "正在透過你的 Anthropic API key 流式傳輸 (BYOK)";
 "Strikethrough" = "刪除線";
+"Student" = "學生";
 "Style" = "樣式";
 "Style instructions (optional). e.g., warm and slow, British accent." = "樣式說明（可選），例如溫暖舒緩、英式口音。";
 "Subscribe" = "訂閱";
@@ -840,6 +859,7 @@
 "Switch Angle" = "切換機位";
 "Switch Angle in Range" = "在範圍內切換機位";
 "Switch Mic" = "切換麥克風";
+"Sync my multicam" = "同步多機位";
 "Synchronize" = "同步";
 "Synchronized %lld clips" = "已同步 %lld 個片段";
 "Synchronized 1 clip" = "已同步 1 個片段";
@@ -849,6 +869,7 @@
 "System appearance" = "系統外觀";
 "Take a screenshot of the preview and use it as a reference for generation. Particularly useful for creating AI transitions." = "截取預覽畫面並將其用作產生參考。這對建立 AI 轉場尤其有用。";
 "Target Language" = "目標語言";
+"Tell us about your work" = "介紹一下你的工作";
 "Temperature" = "色溫";
 "Temporary files" = "臨時檔案";
 "Text" = "文字";
@@ -864,7 +885,6 @@
 "Theme" = "主題";
 "This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "這是時間軸標尺。按住 Shift 在標尺上拖移以選擇算繪範圍。你可以選擇任意區段進行 AI 編輯，或產生適合該範圍的音樂。";
 "This is where all your footage and assets live." = "你的所有素材和資源都位於此處。";
-"This is your inspector panel. Select a clip from the timeline to edit it." = "這是檢查器面板。從時間軸中選擇片段即可進行編輯。";
 "This is your preview panel to play a selected media or the whole timeline." = "這是預覽面板，用於播放所選媒體或整個時間軸。";
 "This model cannot cap the output at 60 FPS." = "此模型無法將輸出限制為 60 FPS。";
 "This permanently removes %@." = "這將永久移除 %@。";
@@ -939,6 +959,8 @@
 "Vibrance" = "自然飽和度";
 "Video" = "影片";
 "Video Ref" = "影片參考";
+"Video automation" = "影片自動化";
+"Video editor" = "影片剪輯師";
 "Video has no audio track" = "影片沒有音訊軌道";
 "Video to Music" = "影片產生音樂";
 "View" = "顯示";
@@ -952,13 +974,18 @@
 "Voice Cleanup requires audio or video" = "人聲清理需要音訊或影片";
 "Volume" = "音量";
 "Warmth" = "色溫";
-"Watch Tutorial" = "觀看教學";
+"Watch the tutorial or start creating." = "觀看教學或直接開始創作。";
 "We may email you for follow-up questions" = "我們可能會透過電子郵件向你詢問後續問題";
 "We read every message and may reach out at %@." = "我們會閱讀每條訊息，並可能透過 %@ 與你聯繫。";
 "We read every message. Add an email next time if you'd like a reply." = "我們會閱讀每條訊息。如果希望收到回覆，請下次加入電子郵件。";
 "We read every message. We won't email you, as requested." = "我們會閱讀每條訊息，並會按你的要求不傳送電子郵件。";
+"Welcome" = "歡迎";
 "Welcome to Palmier Pro" = "歡迎使用 Palmier Pro";
 "Welcome to Palmier Pro, %@" = "歡迎使用 Palmier Pro，%@";
+"Welcome, %@" = "歡迎，%@";
+"What best describes your role?" = "哪一項最符合你的角色？";
+"What do you make?" = "你製作什麼內容？";
+"What interests you most about Palmier Pro?" = "你對 Palmier Pro 最感興趣的是什麼？";
 "What's New in v%@" = "v%@ 新功能";
 "White Balance" = "白平衡";
 "Whites" = "白色";
@@ -971,11 +998,14 @@
 "Working on %@" = "正在處理 %@";
 "Workspace layout" = "工作區配置";
 "You're all set" = "一切就緒";
+"YouTube" = "YouTube";
 "Your Lottie animation is ready." = "你的 Lottie 動畫已準備就緒。";
 "Your audio clip is ready." = "你的音訊片段已準備就緒。";
 "Your image is ready." = "你的影像已準備就緒。";
+"Your inspector for the selected clip — transform, adjust, audio, and more." = "所選片段的檢查器 — 變換、調整、音訊等。";
 "Your text clip is ready." = "你的文字片段已準備就緒。";
-"Your timeline: the top half is video, the bottom half is audio. This is where you edit. Right-click a clip for some cool AI features such as upscale, edit, or generate music." = "這是你的時間軸：上半部分是影片，下半部分是音訊。你將在這裡進行編輯。右鍵按一下片段可使用放大、編輯或產生音樂等 AI 功能。";
+"Your timeline: the top half is video, the bottom half is audio. Click a clip to inspect it — we've selected one for you." = "這是你的時間軸：上半部分是影片，下半部分是音訊。按一下片段即可檢查 — 我們已為你選好一個。";
+"Your timeline: the top half is video, the bottom half is audio. This is where you edit." = "這是你的時間軸：上半部分是影片，下半部分是音訊。你將在這裡進行編輯。";
 "Your video is ready." = "你的影片已準備就緒。";
 "Zoom In" = "放大";
 "Zoom Out" = "縮小";

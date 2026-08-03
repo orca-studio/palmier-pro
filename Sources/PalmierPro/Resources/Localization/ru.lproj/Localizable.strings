@@ -59,6 +59,8 @@
 "AI Generated" = "Создано AI";
 "AI agent" = "AI-агент";
 "AI is unavailable" = "AI недоступен";
+"AI transcription" = "AI-расшифровка";
+"AI videos" = "AI-видео";
 "About Palmier Pro" = "О Palmier Pro";
 "Account" = "Учётная запись";
 "Account settings" = "Настройки учётной записи";
@@ -66,7 +68,7 @@
 "Add Range to Chat" = "Добавить диапазон в чат";
 "Add Text" = "Добавить текст";
 "Add an email above to enable a reply" = "Укажите адрес электронной почты выше, чтобы получить ответ";
-"Add captions to my timeline" = "Добавить субтитры на таймлайн";
+"Add captions" = "Добавить субтитры";
 "Add credits" = "Добавить кредиты";
 "Add credits to use Cloud." = "Добавьте кредиты, чтобы использовать облако.";
 "Add emoji" = "Добавить эмодзи";
@@ -86,8 +88,10 @@
 "Added to %@" = "Добавлено в %@";
 "Adjust" = "Коррекция";
 "Adjust Range" = "Изменить диапазон";
+"Ads and branded content" = "Реклама и брендированный контент";
 "Agent Mode" = "Режим агента";
 "Agent Panel" = "Панель агента";
+"Agentic editing" = "Монтаж с агентом";
 "Alignment" = "Выравнивание";
 "All" = "Все";
 "All fonts" = "Все шрифты";
@@ -207,6 +211,7 @@
 "Connect an agent" = "Подключить агент";
 "Connect an external agent to inspect and edit the open Palmier Pro project." = "Подключите внешний агент для просмотра и редактирования открытого проекта Palmier Pro.";
 "Content" = "Содержимое";
+"Content creator" = "Автор контента";
 "Continue" = "Продолжить";
 "Contrast" = "Контраст";
 "Copied" = "Скопировано";
@@ -227,9 +232,7 @@
 "Create Nested Timeline" = "Создать вложенный таймлайн";
 "Create Video" = "Создать видео";
 "Create Video only works on images" = "Функция «Создать видео» работает только с изображениями";
-"Create a letterbox opening" = "Создать эффект открытия шторками";
 "Create a skill or browse the Community collection." = "Создайте навык или просмотрите коллекцию сообщества.";
-"Create a voiceover" = "Создать закадровый голос";
 "Create matching sound for the video" = "Создать подходящий звук для видео";
 "Creating…" = "Создание…";
 "Credits" = "Кредиты";
@@ -241,6 +244,7 @@
 "Custom Aspect Ratio" = "Пользовательское соотношение сторон";
 "Custom…" = "Другое…";
 "Cut" = "Вырезать";
+"Cut to the beat" = "Резать под бит";
 "Dark" = "Тёмное";
 "Dark appearance" = "Тёмное оформление";
 "Darken" = "Затемнение";
@@ -275,6 +279,7 @@
 "Describe the video" = "Опишите видео";
 "Description" = "Описание";
 "Deselect & Reset Tool" = "Снять выделение и сбросить инструмент";
+"Designer" = "Дизайнер";
 "Destination" = "Назначение";
 "Detail" = "Детализация";
 "Details" = "Сведения";
@@ -319,6 +324,7 @@
 "Editing" = "Редактирование";
 "Edit…" = "Изменить…";
 "Edit… (Paid)" = "Изменить… (платно)";
+"Education and tutorials" = "Обучение и уроки";
 "Effects" = "Эффекты";
 "Email (optional)" = "Электронная почта (необязательно)";
 "Empty" = "Пусто";
@@ -352,6 +358,7 @@
 "Fill" = "Заливка";
 "Fill prompt" = "Заполнить запрос";
 "Film Grain" = "Зернистость плёнки";
+"Filmmaker" = "Кинематографист";
 "First Frame" = "Первый кадр";
 "First-time sign-ups only" = "Только для новых пользователей";
 "First/Last" = "Первый/последний";
@@ -367,6 +374,7 @@
 "Footage" = "Видеоматериал";
 "For" = "Для";
 "Forward" = "Вперёд";
+"Founder" = "Основатель";
 "Frame Rate" = "Частота кадров";
 "Free" = "Бесплатно";
 "Full Frame" = "Полный кадр";
@@ -384,9 +392,7 @@
 "Generate SFX" = "Создать SFX";
 "Generate SFX only works on video" = "Функция «Создать SFX» работает только с видео";
 "Generate SFX…" = "Создать SFX…";
-"Generate an AI video" = "Создать AI-видео";
 "Generate audio" = "Создать аудио";
-"Generate music and sync to my timeline" = "Создать музыку и синхронизировать её с таймлайном";
 "Generate music for the timeline" = "Создать музыку для таймлайна";
 "Generate music that fits the video" = "Создать музыку, подходящую к видео";
 "Generate video, image, or audio with different models and settings. Drag assets from the media panel above into the reference frame." = "Создавайте видео, изображения или аудио с разными моделями и настройками. Перетащите материалы из панели медиафайлов выше в область референса.";
@@ -400,7 +406,6 @@
 "Generation panel" = "Панель генерации";
 "Get Anthropic API key" = "Получить API-ключ Anthropic";
 "Get a notification when a generation finishes." = "Уведомлять о завершении генерации.";
-"Get started" = "Начать";
 "Getting the search model ready." = "Подготавливаем модель поиска.";
 "Glow" = "Свечение";
 "Go to next keyframe" = "К следующему ключевому кадру";
@@ -416,6 +421,7 @@
 "Highlight" = "Выделение";
 "Highlight Block" = "Блок выделения";
 "Highlights" = "Светлые тона";
+"Hobbyist" = "Любитель";
 "Hold" = "Удержание";
 "Hue" = "Оттенок";
 "Hue Curves" = "Кривые оттенка";
@@ -447,6 +453,7 @@
 "Installed" = "Установлено";
 "Instructions" = "Инструкции";
 "Instrumental" = "Инструментальная";
+"Integration with your own agent" = "Интеграция со своим агентом";
 "Integrations" = "Интеграции";
 "Intensity" = "Интенсивность";
 "Invert Colors" = "Инвертировать цвета";
@@ -454,6 +461,7 @@
 "Keep Current" = "Оставить текущие";
 "Keep Editing" = "Продолжить монтаж";
 "Keep Skill" = "Оставить навык";
+"Keep the best takes" = "Оставить лучшие дубли";
 "Keeps this much audio before and after detected speech." = "Сохраняет указанный фрагмент аудио до и после обнаруженной речи.";
 "Keyboard Shortcuts" = "Сочетания клавиш";
 "Keyframes" = "Ключевые кадры";
@@ -503,6 +511,7 @@
 "MCP Server" = "Сервер MCP";
 "MCP Setup" = "Настройка MCP";
 "Main + Sidebar" = "Основная область + боковая панель";
+"Make vertical shorts" = "Сделать вертикальные шорты";
 "Manage credits" = "Управление кредитами";
 "Manage subscription" = "Управление подпиской";
 "Manual setup" = "Настроить вручную";
@@ -511,6 +520,7 @@
 "Mark Range Start" = "Отметить начало диапазона";
 "Mark Silence" = "Отметить тишину";
 "Mark Speakers" = "Отметить говорящих";
+"Marketer" = "Маркетолог";
 "Master Audio Meter" = "Индикатор мастер-аудио";
 "Master — defines the group's clock and transcript." = "Мастер — задаёт синхронизацию и расшифровку группы.";
 "Match Timeline" = "Подогнать под таймлайн";
@@ -606,13 +616,14 @@
 "Open Skills Folder" = "Открыть папку навыков";
 "Open Skills to browse community playbooks, create your own, or add them to other agents." = "Откройте раздел «Навыки», чтобы просмотреть сценарии сообщества, создать собственные или добавить их другим агентам.";
 "Open Timeline" = "Открыть таймлайн";
+"Open the AI Edit tab to upscale, prompt-edit, create video from a frame, or generate music, SFX, cleanup, and dubbing from the clip." = "Откройте вкладку «AI-правка», чтобы увеличить разрешение, изменить клип по запросу, создать видео из кадра или сгенерировать музыку, звуковые эффекты, очистку голоса и дубляж.";
 "Opening Google" = "Открывается Google";
 "Opening Google…" = "Открывается Google…";
 "Open…" = "Открыть…";
-"Organize my media into structured folders" = "Упорядочить мои медиафайлы по папкам";
 "Organize with Agent" = "Упорядочить с помощью агента";
 "Original" = "Оригинал";
 "Original FPS" = "Исходный FPS";
+"Other" = "Другое";
 "Outline" = "Обводка";
 "Outline Color" = "Цвет обводки";
 "Outline Width" = "Ширина обводки";
@@ -638,6 +649,7 @@
 "Playback" = "Воспроизведение";
 "Playback Speed" = "Скорость воспроизведения";
 "Playback previews, waveforms, filmstrip thumbnails, and transcripts. Safe to clear; files rebuild as needed." = "Предпросмотр воспроизведения, волновые формы, миниатюры киноленты и расшифровки. Их можно безопасно удалить: при необходимости файлы будут созданы заново.";
+"Podcast" = "Подкаст";
 "Pointer (V)" = "Указатель (V)";
 "Pop In" = "Появление";
 "Position" = "Позиция";
@@ -647,6 +659,7 @@
 "Preview" = "Предпросмотр";
 "Privacy & Diagnostics" = "Конфиденциальность и диагностика";
 "Pro plan" = "План Pro";
+"Product demos" = "Демо продукта";
 "Project" = "Проект";
 "Project Activity" = "Активность проекта";
 "Projects Couldn’t Be Deleted" = "Не удалось удалить проекты";
@@ -725,6 +738,7 @@
 "Sample Key Color" = "Выбрать ключевой цвет";
 "Sample Project" = "Пример проекта";
 "Sample key color" = "Выбрать ключевой цвет";
+"Sample project couldn’t be opened. Try again." = "Не удалось открыть пример проекта. Повторите попытку.";
 "Sat" = "Нас.";
 "Saturation" = "Насыщенность";
 "Save" = "Сохранить";
@@ -736,6 +750,7 @@
 "Save this project to view activity" = "Сохраните проект, чтобы просмотреть историю действий";
 "Saves a copy of this project with all media bundled inside, so it opens on any machine." = "Сохраняет копию проекта со всеми медиафайлами внутри, чтобы её можно было открыть на любом компьютере.";
 "Scale" = "Масштаб";
+"Score my timeline" = "Положить музыку на таймлайн";
 "Screen" = "Экран";
 "Screenshot a frame" = "Сделать снимок кадра";
 "Scroll Horizontally" = "Прокрутка по горизонтали";
@@ -774,6 +789,7 @@
 "Shadows" = "Тени";
 "Share usage data" = "Делиться данными об использовании";
 "Sharpen" = "Резкость";
+"Short-form and social" = "Короткие видео и соцсети";
 "Shortcuts" = "Сочетания клавиш";
 "Show in Finder" = "Показать в Finder";
 "Show keyframe timeline" = "Показать таймлайн ключевых кадров";
@@ -782,12 +798,14 @@
 "Sign In" = "Войти";
 "Sign in" = "Войти";
 "Sign in to generate" = "Войдите, чтобы создавать";
+"Sign in to receive 250 free credits for AI chat and generation." = "Войдите и получите 250 бесплатных кредитов на AI-чат и генерацию.";
 "Sign in to subscribe and use AI generation." = "Войдите, чтобы оформить подписку и использовать AI-генерацию.";
 "Sign in to use AI" = "Войдите, чтобы использовать AI";
 "Sign in to use Cloud transcription." = "Войдите, чтобы использовать облачную расшифровку.";
 "Sign in to use Cloud." = "Войдите, чтобы использовать облако.";
 "Sign in with Google" = "Войти с Google";
 "Sign out" = "Выйти";
+"Sign-in couldn’t be completed. Try again." = "Не удалось выполнить вход. Повторите попытку.";
 "Signed in" = "Вход выполнен";
 "Signed out" = "Выход выполнен";
 "Silence Detection" = "Определение тишины";
@@ -831,6 +849,7 @@
 "Storage" = "Хранилище";
 "Streaming through your Anthropic API key (BYOK)" = "Потоковая передача через ваш API-ключ Anthropic (BYOK)";
 "Strikethrough" = "Зачёркивание";
+"Student" = "Студент";
 "Style" = "Стиль";
 "Style instructions (optional). e.g., warm and slow, British accent." = "Инструкции по стилю (необязательно). Например: тёплый и медленный голос, британский акцент.";
 "Subscribe" = "Подписаться";
@@ -840,6 +859,7 @@
 "Switch Angle" = "Переключить ракурс";
 "Switch Angle in Range" = "Переключить ракурс в диапазоне";
 "Switch Mic" = "Переключить микрофон";
+"Sync my multicam" = "Синхронизировать мультикамеру";
 "Synchronize" = "Синхронизировать";
 "Synchronized %lld clips" = "Синхронизировано клипов: %lld";
 "Synchronized 1 clip" = "Синхронизирован 1 клип";
@@ -849,6 +869,7 @@
 "System appearance" = "Системное оформление";
 "Take a screenshot of the preview and use it as a reference for generation. Particularly useful for creating AI transitions." = "Сделайте снимок предпросмотра и используйте его как референс для генерации. Особенно полезно при создании AI-переходов.";
 "Target Language" = "Целевой язык";
+"Tell us about your work" = "Расскажите о своей работе";
 "Temperature" = "Температура";
 "Temporary files" = "Временные файлы";
 "Text" = "Текст";
@@ -864,7 +885,6 @@
 "Theme" = "Тема";
 "This is the timeline ruler. Shift+drag on the ruler to select a range to render. You can pick any slot to AI edit or generate music that fits that range." = "Это линейка таймлайна. Перетаскивайте по ней с зажатой клавишей Shift, чтобы выбрать диапазон для рендеринга. Можно выбрать любой слот для AI-монтажа или создания музыки под этот диапазон.";
 "This is where all your footage and assets live." = "Здесь хранятся все ваши материалы и ресурсы.";
-"This is your inspector panel. Select a clip from the timeline to edit it." = "Это панель инспектора. Выберите клип на таймлайне, чтобы изменить его.";
 "This is your preview panel to play a selected media or the whole timeline." = "Это панель предпросмотра для воспроизведения выбранного медиафайла или всего таймлайна.";
 "This model cannot cap the output at 60 FPS." = "Эта модель не может ограничить результат частотой 60 FPS.";
 "This permanently removes %@." = "Это безвозвратно удалит %@.";
@@ -939,6 +959,8 @@
 "Vibrance" = "Красочность";
 "Video" = "Видео";
 "Video Ref" = "Видеореференс";
+"Video automation" = "Автоматизация видео";
+"Video editor" = "Видеомонтажёр";
 "Video has no audio track" = "В видео нет аудиодорожки";
 "Video to Music" = "Видео в музыку";
 "View" = "Вид";
@@ -952,13 +974,18 @@
 "Voice Cleanup requires audio or video" = "Для очистки голоса требуется аудио или видео";
 "Volume" = "Громкость";
 "Warmth" = "Теплота";
-"Watch Tutorial" = "Смотреть руководство";
+"Watch the tutorial or start creating." = "Посмотрите руководство или приступайте к работе.";
 "We may email you for follow-up questions" = "Мы можем написать вам для уточнения";
 "We read every message and may reach out at %@." = "Мы читаем каждое сообщение и можем связаться с вами по адресу %@.";
 "We read every message. Add an email next time if you'd like a reply." = "Мы читаем каждое сообщение. В следующий раз укажите адрес электронной почты, если хотите получить ответ.";
 "We read every message. We won't email you, as requested." = "Мы читаем каждое сообщение. По вашей просьбе мы не будем писать вам.";
+"Welcome" = "Добро пожаловать";
 "Welcome to Palmier Pro" = "Добро пожаловать в Palmier Pro";
 "Welcome to Palmier Pro, %@" = "Добро пожаловать в Palmier Pro, %@";
+"Welcome, %@" = "Добро пожаловать, %@";
+"What best describes your role?" = "Что лучше всего описывает вашу роль?";
+"What do you make?" = "Что вы создаёте?";
+"What interests you most about Palmier Pro?" = "Что вас больше всего интересует в Palmier Pro?";
 "What's New in v%@" = "Что нового в v%@";
 "White Balance" = "Баланс белого";
 "Whites" = "Белые";
@@ -971,11 +998,14 @@
 "Working on %@" = "Выполняется: %@";
 "Workspace layout" = "Расположение рабочей области";
 "You're all set" = "Всё готово";
+"YouTube" = "YouTube";
 "Your Lottie animation is ready." = "Ваша анимация Lottie готова.";
 "Your audio clip is ready." = "Ваш аудиоклип готов.";
 "Your image is ready." = "Ваше изображение готово.";
+"Your inspector for the selected clip — transform, adjust, audio, and more." = "Инспектор выбранного клипа — трансформация, коррекция, аудио и многое другое.";
 "Your text clip is ready." = "Ваш текстовый клип готов.";
-"Your timeline: the top half is video, the bottom half is audio. This is where you edit. Right-click a clip for some cool AI features such as upscale, edit, or generate music." = "Ваш таймлайн: в верхней половине находится видео, в нижней — аудио. Здесь выполняется монтаж. Нажмите клип правой кнопкой мыши, чтобы использовать функции AI: увеличить разрешение, изменить или создать музыку.";
+"Your timeline: the top half is video, the bottom half is audio. Click a clip to inspect it — we've selected one for you." = "Ваш таймлайн: в верхней половине находится видео, в нижней — аудио. Нажмите клип, чтобы открыть его в инспекторе — мы уже выбрали один за вас.";
+"Your timeline: the top half is video, the bottom half is audio. This is where you edit." = "Ваш таймлайн: в верхней половине находится видео, в нижней — аудио. Здесь выполняется монтаж.";
 "Your video is ready." = "Ваше видео готово.";
 "Zoom In" = "Увеличить";
 "Zoom Out" = "Уменьшить";
