@@ -1277,6 +1277,7 @@ struct InspectorView: View {
 
     private func inputMetadataSummary(_ gen: GenerationInput) -> String {
         var values = [ModelRegistry.displayName(for: gen.model)]
+        if gen.draft == true { values.append(L10n.string("Draft")) }
         if !gen.aspectRatio.isEmpty {
             values.append(ImageModelConfig.aspectRatioDisplayLabel(gen.aspectRatio))
         }

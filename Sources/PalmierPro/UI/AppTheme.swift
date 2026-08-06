@@ -125,7 +125,6 @@ enum AppTheme {
         static let panelWidth: CGFloat = 32
         static let barWidth: CGFloat = 8
         static let refreshInterval: Double = 1.0 / 30.0
-        static let accessibilityRefreshInterval: Duration = .milliseconds(250)
         static let rulerStepDb: Float = 6
         static let rulerMajorStepDb: Float = 12
         static let yellowThresholdDb: Float = -20
@@ -417,7 +416,7 @@ enum AppTheme {
         static let skillsSearchWidth: CGFloat = 260
         static let skillRowIconFrame: CGFloat = 42
         static let skillStatusWidth: CGFloat = 124
-        static let skillActionWidth: CGFloat = 72
+        static let skillActionWidth: CGFloat = 112
         static let skillDetailWidth: CGFloat = 720
         static let skillDetailMinHeight: CGFloat = 600
         static let skillToastWidth: CGFloat = 380
