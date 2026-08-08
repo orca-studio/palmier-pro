@@ -830,7 +830,7 @@ enum ToolDefinitions {
         ),
         AgentTool(
             name: .addTexts,
-            description: "Adds text clips as timeline layers. Omit trackIndex on every entry to create one new top video track; otherwise set trackIndex on every entry. Text boxes auto-fit their content; transform optionally sets normalized center and rotation. Use style widthScale and heightScale to stretch glyphs. Use the nested style object for typography, outline, shadow, and background. fillMode 'footage' stencils layers below through the letter shapes. Use add_captions for spoken audio captions. Unknown fields are rejected.",
+            description: "Adds text clips as timeline layers. Omit trackIndex on every entry to create one new top video track; otherwise set trackIndex on every entry. Text boxes auto-fit their content; transform optionally sets their alignment-relative horizontal anchor, vertical center, and rotation. Left-aligned text grows rightward from x, centered text grows around x, and right-aligned text grows leftward from x. Use style widthScale and heightScale to stretch glyphs. Use the nested style object for typography, outline, shadow, and background. fillMode 'footage' stencils layers below through the letter shapes. Use add_captions for spoken audio captions. Unknown fields are rejected.",
             inputSchema: objectSchema(
                 properties: [
                     "entries": [
@@ -845,7 +845,7 @@ enum ToolDefinitions {
                                 "content": ["type": "string", "description": "Text. Supports \\n."],
                                 "transform": [
                                     "type": "object",
-                                    "description": "Optional position and rotation. Set centerX and centerY together. Size always auto-fits the text.",
+                                    "description": "Optional position and rotation. Omitted x or y uses the default centered position. Size always auto-fits the text.",
                                     "properties": textTransformProperties(),
                                 ],
                             ], textStyleProperties(detailed: false), [
@@ -862,7 +862,7 @@ enum ToolDefinitions {
         ),
         AgentTool(
             name: .updateText,
-            description: "Updates text clips or a captionGroupId. The nested style object is a partial patch: omitted values stay unchanged. Use it for typography, color, outline, shadow, and background. Use style widthScale and heightScale to stretch glyphs. fillMode 'footage' stencils layers below through the glyphs. Content and layout-affecting style changes auto-fit the box; transform can reposition or rotate it without changing its size. Static rotation uses clockwise degrees and clears rotation keyframes. Unknown fields are rejected.",
+            description: "Updates text clips or a captionGroupId. The nested style object is a partial patch: omitted values stay unchanged. Use it for typography, color, outline, shadow, and background. Use style widthScale and heightScale to stretch glyphs. fillMode 'footage' stencils layers below through the glyphs. Content and layout-affecting style changes auto-fit the box while preserving its alignment-relative x anchor. transform can reposition or rotate it without changing its size. Static rotation uses clockwise degrees and clears rotation keyframes. Unknown fields are rejected.",
             inputSchema: objectSchema(
                 properties: mergedProperties([
                     "clipIds": [
@@ -894,11 +894,8 @@ enum ToolDefinitions {
                     "trackIndex": ["type": "integer", "description": "Caption one current timeline track from get_timeline. Omit to auto-detect the dominant speech track."],
                     "transform": [
                         "type": "object",
-                        "description": "Caption box position; size is auto-fit per caption.",
-                        "properties": [
-                            "centerX": ["type": "number", "description": "0-1 horizontal center."],
-                            "centerY": ["type": "number", "description": "0-1 vertical center."],
-                        ],
+                        "description": "Caption position and rotation; size is auto-fit per caption. x uses the selected text alignment edge.",
+                        "properties": textTransformProperties(),
                     ],
                     "censorProfanity": ["type": "boolean", "description": "Mask profanity."],
                     "maxWords": ["type": "integer", "minimum": 1, "description": "Max words per caption."],
@@ -911,7 +908,7 @@ enum ToolDefinitions {
                         "type": "number",
                         "minimum": CaptionGapSettings.maximumGapRange.lowerBound,
                         "maximum": CaptionGapSettings.maximumGapRange.upperBound,
-                        "description": "Extend each caption to close a shorter gap before the next generated caption. Default 0.25 seconds; 0 disables.",
+                        "description": "Extend captions to close shorter gaps and hold the final caption for up to this duration. Default 0.5 seconds; 0 disables.",
                     ],
                 ], textStyleProperties(detailed: false), [
                     "animation": ["type": "string", "enum": TextAnimation.Preset.agentValues, "description": "Caption animation preset. Omit for static captions; set only when the user asks for animation."],
@@ -1245,8 +1242,8 @@ enum ToolDefinitions {
 
     private static func textTransformProperties() -> [String: [String: Any]] {
         [
-            "centerX": ["type": "number", "description": "0-1 horizontal center."],
-            "centerY": ["type": "number", "description": "0-1 vertical center."],
+            "x": ["type": "number", "description": "Normalized horizontal anchor of the unrotated text box: the left edge for left alignment, center for center alignment, or right edge for right alignment."],
+            "y": ["type": "number", "description": "Normalized vertical center."],
             "rotation": ["type": "number", "description": "Clockwise degrees."],
         ]
     }
