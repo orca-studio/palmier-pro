@@ -8,8 +8,8 @@ struct PreviewContainerView: View {
     private var isImage: Bool { editor.activePreviewTab.clipType == .image }
     private var isSubtitle: Bool { editor.activePreviewTab.clipType == .subtitle }
 
-    @State private var hoveredTabId: String?
     @State private var failedImagePreviewKey: String?
+    @State private var canvasOverlays = CanvasOverlaySelection()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -61,6 +61,7 @@ struct PreviewContainerView: View {
                 if let overlay = offlineOverlay(timelineState: timelineState) {
                     offlinePreview(assetId: overlay.assetId, path: overlay.path, isUnprocessable: overlay.isUnprocessable)
                 }
+                CanvasViewingOverlay(selection: canvasOverlays)
                 if editor.chromaKeySamplingClipId != nil {
                     ChromaKeySamplerOverlayView()
                 } else if editor.cropEditingActive {
@@ -117,9 +118,8 @@ struct PreviewContainerView: View {
     // MARK: - Transport bar
 
     private var transportBar: some View {
-        let duration = durationFrames
         let fps = editor.timeline.fps
-        let durationTimecode = formatTimecode(frame: duration, fps: fps)
+        let durationTimecode = formatTimecode(frame: durationFrames, fps: fps)
 
         return HStack(spacing: AppTheme.Spacing.sm) {
             PreviewTimecodeText(
@@ -127,28 +127,49 @@ struct PreviewContainerView: View {
                 fps: fps,
                 durationTimecode: durationTimecode
             )
+            .layoutPriority(1)
 
-            Spacer()
-
-            HStack(spacing: AppTheme.Spacing.md) {
-                transportButton("backward.end.fill") { seekTo(0) }
-                transportButton("backward.frame.fill") { seekTo(playheadFrame - 1) }
-                transportButton(editor.isPlaying ? "pause.fill" : "play.fill") {
-                    if isTimeline {
-                        editor.togglePlayback()
-                    } else {
-                        editor.toggleSourcePlayback()
-                    }
-                }
-                transportButton("forward.frame.fill") { seekTo(playheadFrame + 1) }
-                transportButton("forward.end.fill") { seekTo(duration) }
+            ViewThatFits(in: .horizontal) {
+                transportControls(spacing: AppTheme.Spacing.md)
+                transportControls(spacing: AppTheme.Spacing.xs)
             }
+            .frame(minWidth: 0, maxWidth: .infinity)
+        }
+        .padding(.horizontal, AppTheme.Spacing.sm)
+        .frame(height: Layout.toolbarHeight)
+    }
 
-            Spacer()
+    private func transportControls(spacing: CGFloat) -> some View {
+        HStack(spacing: spacing) {
+            Spacer(minLength: 0)
+            transportButtons(spacing: spacing)
+            Spacer(minLength: 0)
+            accessoryButtons(spacing: spacing)
+        }
+    }
 
+    private func transportButtons(spacing: CGFloat) -> some View {
+        HStack(spacing: spacing) {
+            transportButton("backward.end.fill") { seekTo(0) }
+            transportButton("backward.frame.fill") { seekTo(playheadFrame - 1) }
+            transportButton(editor.isPlaying ? "pause.fill" : "play.fill") {
+                if isTimeline {
+                    editor.togglePlayback()
+                } else {
+                    editor.toggleSourcePlayback()
+                }
+            }
+            transportButton("forward.frame.fill") { seekTo(playheadFrame + 1) }
+            transportButton("forward.end.fill") { seekTo(durationFrames) }
+        }
+    }
+
+    private func accessoryButtons(spacing: CGFloat) -> some View {
+        HStack(spacing: spacing) {
             if isTimeline || editor.activePreviewTab.clipType == .video {
                 captureFrameButton
             }
+            guidesMenuButton
             settingsMenuButton(
                 systemImage: "speedometer",
                 label: editor.playbackRate.label,
@@ -164,8 +185,7 @@ struct PreviewContainerView: View {
                 zoomMenuItems
             }
         }
-        .padding(.horizontal, AppTheme.Spacing.lg)
-        .frame(height: 36)
+        .fixedSize()
     }
 
     // MARK: - Image settings bar
@@ -173,6 +193,7 @@ struct PreviewContainerView: View {
     private var imageSettingsBar: some View {
         HStack(spacing: AppTheme.Spacing.sm) {
             Spacer()
+            guidesMenuButton
             settingsMenuButton(
                 systemImage: "magnifyingglass",
                 label: zoomBadgeLabel,
@@ -181,8 +202,8 @@ struct PreviewContainerView: View {
                 zoomMenuItems
             }
         }
-        .padding(.horizontal, AppTheme.Spacing.lg)
-        .frame(height: 36)
+        .padding(.horizontal, AppTheme.Spacing.sm)
+        .frame(height: Layout.toolbarHeight)
     }
 
     // MARK: - Capture frame
@@ -219,6 +240,107 @@ struct PreviewContainerView: View {
         }
     }
 
+    private var guidesMenuButton: some View {
+        settingsMenuButton(
+            systemImage: canvasOverlays.isEmpty ? "viewfinder" : "viewfinder.circle.fill",
+            help: L10n.string("Canvas Guides"),
+            isActive: !canvasOverlays.isEmpty
+        ) {
+            canvasGuideMenuItems
+        }
+    }
+
+    @ViewBuilder
+    private var canvasGuideMenuItems: some View {
+        Menu {
+            Button {
+                canvasOverlays.grid = nil
+            } label: {
+                selectionMenuLabel(
+                    L10n.string("None"),
+                    selected: canvasOverlays.grid == nil
+                )
+            }
+            Divider()
+            ForEach(CanvasGridOverlay.allCases) { grid in
+                Button {
+                    canvasOverlays.grid = grid
+                } label: {
+                    selectionMenuLabel(
+                        grid.label,
+                        selected: canvasOverlays.grid == grid
+                    )
+                }
+            }
+        } label: {
+            Text(L10n.string("Grid"))
+        }
+
+        Menu {
+            ForEach(CanvasGuideOverlay.allCases) { guide in
+                Toggle(
+                    L10n.string(key: guide.localizationKey),
+                    isOn: guideBinding(for: guide)
+                )
+            }
+        } label: {
+            Text(L10n.string("Safe Zones"))
+        }
+
+        Menu {
+            Button {
+                canvasOverlays.format = nil
+            } label: {
+                selectionMenuLabel(
+                    L10n.string("None"),
+                    selected: canvasOverlays.format == nil
+                )
+            }
+            Divider()
+            ForEach(CanvasFormatOverlay.allCases) { format in
+                Button {
+                    canvasOverlays.format = format
+                } label: {
+                    selectionMenuLabel(
+                        L10n.string(key: format.localizationKey),
+                        selected: canvasOverlays.format == format
+                    )
+                }
+            }
+        } label: {
+            Text(L10n.string("Format References"))
+        }
+
+        Divider()
+        Button(L10n.string("Hide Guides")) {
+            canvasOverlays.clear()
+        }
+        .disabled(canvasOverlays.isEmpty)
+    }
+
+    private func guideBinding(for guide: CanvasGuideOverlay) -> Binding<Bool> {
+        Binding(
+            get: { canvasOverlays.guides.contains(guide) },
+            set: { enabled in
+                if enabled {
+                    canvasOverlays.guides.insert(guide)
+                } else {
+                    canvasOverlays.guides.remove(guide)
+                }
+            }
+        )
+    }
+
+    private func selectionMenuLabel(_ label: String, selected: Bool) -> some View {
+        HStack {
+            Text(verbatim: label)
+            Spacer()
+            if selected {
+                Image(systemName: "checkmark")
+            }
+        }
+    }
+
     @ViewBuilder
     private var zoomMenuItems: some View {
         ForEach(ZoomPreset.allCases, id: \.self) { preset in
@@ -251,14 +373,15 @@ struct PreviewContainerView: View {
 
     private func settingsMenuButton<MenuContent: View>(
         systemImage: String,
-        label: String,
+        label: String? = nil,
         help: String,
+        isActive: Bool = false,
         @ViewBuilder menu: @escaping () -> MenuContent
     ) -> some View {
         Menu {
             menu()
         } label: {
-            badgeLabel(systemImage: systemImage, text: label)
+            settingsMenuLabel(systemImage: systemImage, text: label, isActive: isActive)
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
@@ -266,7 +389,19 @@ struct PreviewContainerView: View {
         .hoverHighlight()
         .help(L10n.string(key: help))
         .accessibilityLabel(L10n.string(key: help))
-        .accessibilityValue(L10n.string(key: label))
+        .accessibilityValue(label.map { L10n.string(key: $0) } ?? "")
+    }
+
+    @ViewBuilder
+    private func settingsMenuLabel(systemImage: String, text: String?, isActive: Bool) -> some View {
+        if let text {
+            badgeLabel(systemImage: systemImage, text: text)
+        } else {
+            Image(systemName: systemImage)
+                .font(.system(size: AppTheme.FontSize.sm, weight: AppTheme.FontWeight.semibold))
+                .foregroundStyle(isActive ? AppTheme.Accent.primary : AppTheme.Text.secondaryColor)
+                .frame(width: AppTheme.IconSize.mdLg, height: AppTheme.IconSize.mdLg)
+        }
     }
 
     private func badgeLabel(systemImage: String, text: String) -> some View {
@@ -540,6 +675,13 @@ struct PreviewContainerView: View {
                 }
                 .frame(maxWidth: 520, maxHeight: 240)
                 .fixedSize(horizontal: false, vertical: true)
+                if activeMediaAsset?.wasGenerationRefunded == true {
+                    Text(L10n.string("You were not charged for this generation"))
+                        .font(.system(size: AppTheme.FontSize.sm, weight: .medium))
+                        .foregroundStyle(AppTheme.Status.successColor)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, AppTheme.Spacing.lg)
+                }
                 if let asset = activeMediaAsset, asset.pendingDownloadURL != nil {
                     Button {
                         editor.generationService.retryDownload(asset: asset, editor: editor)
@@ -590,41 +732,30 @@ struct PreviewContainerView: View {
 
     private func tabItem(for tab: PreviewTab) -> some View {
         let isActive = tab.id == editor.activePreviewTabId
-        let isHovered = hoveredTabId == tab.id
-        return HStack(spacing: AppTheme.Spacing.xs) {
+        return Button {
+            editor.selectPreviewTab(id: tab.id)
+        } label: {
             Text(tab == .timeline ? editor.timeline.name : tab.displayName)
-                .font(.system(size: AppTheme.FontSize.xs, weight: isActive ? .semibold : .medium))
-                .foregroundStyle(isActive || isHovered ? AppTheme.Text.primaryColor : AppTheme.Text.secondaryColor)
+                .font(.system(
+                    size: AppTheme.FontSize.xs,
+                    weight: isActive ? AppTheme.FontWeight.semibold : AppTheme.FontWeight.medium
+                ))
+                .foregroundStyle(isActive ? AppTheme.Text.primaryColor : AppTheme.Text.secondaryColor)
                 .lineLimit(1)
-
-            if tab.isCloseable {
-                TabCloseButton {
+        }
+        .buttonStyle(.plain)
+        .documentTabChrome(
+            isActive: isActive,
+            isCloseable: tab.isCloseable,
+            onClose: tab.isCloseable
+                ? {
                     withAnimation(.easeInOut(duration: AppTheme.Anim.transition)) {
                         editor.closePreviewTab(id: tab.id)
                     }
                 }
-            }
-        }
-        .padding(.horizontal, AppTheme.Spacing.xs)
-        .padding(.bottom, AppTheme.Spacing.xs)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(isActive ? tab.underlineColor : Color.clear)
-                .frame(height: AppTheme.BorderWidth.medium)
-        }
-        .fixedSize()
-        .contentShape(Rectangle())
-        .onTapGesture {
-            editor.selectPreviewTab(id: tab.id)
-        }
-        .onHover { hovering in
-            if hovering {
-                hoveredTabId = tab.id
-            } else if hoveredTabId == tab.id {
-                hoveredTabId = nil
-            }
-        }
-        .animation(.easeOut(duration: AppTheme.Anim.hover), value: isActive)
+                : nil
+        )
+        .accessibilityAddTraits(isActive ? .isSelected : [])
     }
 
     private func navButton(_ systemName: String, enabled: Bool, help: String, action: @escaping () -> Void) -> some View {
@@ -782,7 +913,7 @@ struct PreviewContainerView: View {
             Image(systemName: systemName)
                 .font(.system(size: AppTheme.FontSize.sm))
                 .foregroundStyle(AppTheme.Text.secondaryColor)
-                .frame(width: 32, height: 28)
+                .frame(width: AppTheme.IconSize.lgXl, height: AppTheme.IconSize.lgXl)
                 .hoverHighlight()
         }
         .buttonStyle(.plain)
@@ -839,6 +970,7 @@ private struct PreviewTimecodeText: View {
         }
         .monospacedDigit()
         .font(.system(size: AppTheme.FontSize.sm, design: .monospaced))
+        .fixedSize()
     }
 }
 

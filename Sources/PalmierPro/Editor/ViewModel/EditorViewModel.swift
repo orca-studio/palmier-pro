@@ -46,6 +46,26 @@ final class EditorViewModel {
     var openTimelineIds: [String]
     @ObservationIgnored var liveViewStates: [String: TimelineViewState] = [:]
     var timelineTabRenameRequest: String?
+    var timelineTabBarExpandedOverride: Bool?
+
+    var isTimelineTabBarExpanded: Bool {
+        timelineTabBarExpandedOverride ?? (timelines.count > 1)
+    }
+
+    func toggleTimelineTabBarExpanded() {
+        timelineTabBarExpandedOverride = !isTimelineTabBarExpanded
+    }
+
+    func revealTimelineTabBarIfMultiple() {
+        guard timelines.count > 1 else { return }
+        timelineTabBarExpandedOverride = true
+    }
+
+    static func adjacentId(in ids: [String], current: String, delta: Int) -> String? {
+        guard ids.count > 1, let index = ids.firstIndex(of: current) else { return nil }
+        let count = ids.count
+        return ids[((index + delta) % count + count) % count]
+    }
 
     /// Active-timeline proxy; assignment routes by id and activates so undo lands on its timeline.
     var timeline: Timeline {
@@ -118,6 +138,8 @@ final class EditorViewModel {
     var isMarqueeSelecting: Bool = false
     var selectedGap: GapSelection?
     var selectedTimelineRange: TimelineRangeSelection?
+    var selectedTimelineMarkerIds: Set<String> = []
+    var timelineMarkerPreview: TimelineMarker?
     var selectedMediaAssetIds: Set<String> = []
     var selectedFolderIds: Set<String> = []
     var selectedTimelineIds: Set<String> = []
@@ -134,7 +156,13 @@ final class EditorViewModel {
     var rotationSnapGuidesVisible: Bool = false
     var timelineVisibleWidth: Double = 0
     var timelineRenderRevision: Int = 0
+    var timelineCompositionGeneration: Int = 0
     @ObservationIgnored private var clipLocationIndexCache: (revision: Int, timelineId: String, index: [String: ClipLocation])?
+    @ObservationIgnored var keyframeNavigationCache: [
+        KeyframeNavigationCacheKey: [KeyframeLaneNavigationTarget]
+    ] = [:]
+    @ObservationIgnored var keyframeNavigationCacheTimelineId: String?
+    @ObservationIgnored var keyframeNavigationCacheRevision = -1
     /// Live horizontal scroll of the timeline panel, mirrored from AppKit for view-state stash.
     @ObservationIgnored var timelineScrollOffsetX: Double = 0
     var timelineScrollRestoreX: Double?
@@ -229,12 +257,6 @@ final class EditorViewModel {
         didSet { UserDefaults.standard.set(inspectorPanelVisible, forKey: "inspectorPanelVisible") }
     }
 
-    var keyframesPanelVisible: Bool = {
-        UserDefaults.standard.object(forKey: "keyframesPanelVisible") as? Bool ?? false
-    }() {
-        didSet { UserDefaults.standard.set(keyframesPanelVisible, forKey: "keyframesPanelVisible") }
-    }
-
     var markDeadAir: Bool = {
         UserDefaults.standard.object(forKey: "markDeadAir") as? Bool ?? true
     }() {
@@ -242,6 +264,12 @@ final class EditorViewModel {
             UserDefaults.standard.set(markDeadAir, forKey: "markDeadAir")
             mediaVisualCache.timelineView?.needsDisplay = true
         }
+    }
+
+    var rippleTimelineMarkers: Bool = {
+        UserDefaults.standard.object(forKey: "rippleTimelineMarkers") as? Bool ?? true
+    }() {
+        didSet { UserDefaults.standard.set(rippleTimelineMarkers, forKey: "rippleTimelineMarkers") }
     }
 
     var silenceRemovalSettings = SilenceRemovalSettings.default {
@@ -281,6 +309,9 @@ final class EditorViewModel {
     var mediaPanelNewFolderRequestTick: Int = 0
     var mediaPanelPasteRequestTick: Int = 0
     var mediaPanelShowMediaTabTick: Int = 0
+    var mediaPanelSearchFocusTick: Int = 0
+    var mediaPanelSearchFocusPending = false
+    var isMediaPanelSearchExpanded = false
     var mediaPanelToast: MediaPanelToast?
     @ObservationIgnored var mediaImportTail: Task<MediaImportSummary, Error>?
     @ObservationIgnored var mediaImportSequence: Int = 0
@@ -294,6 +325,17 @@ final class EditorViewModel {
         // Refresh offline status when the user opens the media tab, so missing
         // files show as offline even for assets not on the timeline.
         refreshMissingMediaCache()
+    }
+
+    func requestMediaPanelSearch() {
+        isMediaPanelSearchExpanded = true
+        mediaPanelSearchFocusPending = true
+        mediaPanelSearchFocusTick &+= 1
+    }
+
+    func collapseMediaPanelSearch() {
+        isMediaPanelSearchExpanded = false
+        mediaPanelSearchFocusPending = false
     }
 
     init() {
@@ -347,6 +389,7 @@ final class EditorViewModel {
     @ObservationIgnored let projectPackageCoordinator = ProjectPackageCoordinator()
     @ObservationIgnored var onProjectCheckpointRequired: (() -> Void)?
     @ObservationIgnored var onCancelTimelineDrag: (() -> Void)?
+    @ObservationIgnored var onPresentTimelineMarkerEditor: ((String) -> Void)?
     var isDocumentEdited: Bool = false
 
     func telemetrySnapshot() -> [String: Any] {
@@ -484,6 +527,7 @@ final class EditorViewModel {
     var pendingRebuildTask: Task<Void, Never>?
 
     func notifyTimelineChanged(refreshVisuals: Bool = true) {
+        selectedTimelineMarkerIds.formIntersection(timeline.markers.map(\.id))
         guard undo.isRegistrationEnabled else { return }
         enhancePendingDenoises()
         pendingRebuildTask?.cancel()
