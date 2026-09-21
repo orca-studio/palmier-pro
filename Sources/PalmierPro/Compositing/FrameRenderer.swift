@@ -103,7 +103,17 @@ enum FrameRenderer {
                                            renderSize: renderSize, sourceFrame: sourceFrame, bakeOpacity: isNormal)
             }
             guard let image else { continue }
-            if isNormal {
+            if let transition = layer.clip.entranceTransition,
+               let progress = transition.progress(atOffset: frame - layer.clip.startFrame) {
+                switch transition.style {
+                case .slideBlackBand:
+                    let target = isNormal ? image.composited(over: accum)
+                        : blend(image, over: accum, filter: mode.ciFilterName!,
+                                opacity: min(1, max(0, layer.clip.opacityAt(frame: frame))))
+                    accum = SlideTransitionRenderer.render(from: accum, to: target, progress: progress,
+                        extent: CGRect(origin: .zero, size: renderSize))
+                }
+            } else if isNormal {
                 accum = image.composited(over: accum)
             } else {
                 let opacity = min(1.0, max(0.0, layer.clip.opacityAt(frame: frame)))

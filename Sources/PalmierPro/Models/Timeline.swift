@@ -206,6 +206,7 @@ struct Clip: Codable, Sendable, Equatable, Identifiable {
 
     /// How this clip composites over the tracks below it. nil = normal (source-over).
     var blendMode: BlendMode?
+    var entranceTransition: ClipEntranceTransition?
 
     private enum CodingKeys: String, CodingKey {
         case id, mediaRef, mediaType, sourceClipType, startFrame, durationFrames
@@ -215,7 +216,7 @@ struct Clip: Codable, Sendable, Equatable, Identifiable {
         case linkGroupId, captionGroupId, multicamGroupId, textContent, textStyle, textAnimation, wordTimings
         case textFillMode
         case opacityTrack, positionTrack, scaleTrack, rotationTrack, cropTrack, volumeTrack, maskTrack
-        case effects, blendMode
+        case effects, blendMode, entranceTransition
     }
 
     /// Frame where this clip ends on the timeline
@@ -553,7 +554,8 @@ extension Clip {
             volumeTrack: try? c.decode(KeyframeTrack<Double>.self, forKey: .volumeTrack),
             maskTrack: (try? c.decode(KeyframeTrack<MaskShape>.self, forKey: .maskTrack))?.sanitizedMask,
             effects: try? c.decode([Effect].self, forKey: .effects),
-            blendMode: try? c.decode(BlendMode.self, forKey: .blendMode)
+            blendMode: try? c.decode(BlendMode.self, forKey: .blendMode),
+            entranceTransition: try c.decodeIfPresent(ClipEntranceTransition.self, forKey: .entranceTransition)
         )
     }
 }

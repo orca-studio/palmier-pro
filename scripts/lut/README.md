@@ -93,3 +93,27 @@ Manual acceptance remains required: import the local flower package, edit the
 text, undo/redo, save/reopen and export. The automated checks cover outline
 colors and model roundtrip; they do not replace this UI lifecycle check.
 
+## Captured slide transition experiment
+
+The reviewed `6757982416649851399` shader is implemented by
+`SlideTransitionRenderer`: horizontal wrap/slide, quintic ease-out, and a 10%
+black separator. No native Lua is executed. `ClipEntranceTransition` persists
+an opening transition from the lower composite into the incoming clip, and
+`FrameRenderer` uses it during normal preview/export rendering. Arrange the two
+sources on overlapping tracks; this is not yet a same-track transition editor
+or a native effect-package importer. Keep unrelated overlays above both clips.
+
+```sh
+PALMIER_TEST_SLIDE_SOURCE=/absolute/path/motion.mp4 \
+PALMIER_TEST_SLIDE_OUTPUT=/absolute/path/palmier-slide.mp4 \
+swift test --filter 'SlideTransitionTests|LocalSlideIntegrationTests'
+```
+
+The local fixture is eight seconds at 30fps, with a 30-frame transition starting
+at frame 102 around cut frame 117. Unit tests check direction, endpoints, band
+position, and persisted placement. The export test checks 240 nonempty frames.
+A local comparison against the native export found five of six sampled band
+bounds identical and one bound differing by one pixel at 960×540. This is
+specific to this sample; color and subpixel sampling are not claimed identical.
+The timeline UI, Agent placement tools, and alternate export formats have not
+been extended for this transition prototype.
