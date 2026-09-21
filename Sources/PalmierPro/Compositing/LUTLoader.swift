@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 
 enum LUTStoreError: LocalizedError {
@@ -22,14 +23,19 @@ enum LUTLoader {
     /// saves and moves (project packages drop unknown files). Returns the stored path.
     /// Shared by the agent (apply_color) and the inspector's LUT picker.
     static func store(path: String, projectId: String?) throws -> String {
-        let sourceURL = URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
+        let inputURL = URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
+        let sourceURL = inputURL.pathExtension == "palmierfx" ? try EffectPackage.lutURL(in: inputURL) : inputURL
         guard FileManager.default.fileExists(atPath: sourceURL.path) else { throw LUTStoreError.noFile(sourceURL.path) }
         guard let lut = loadFromDisk(path: sourceURL.path) else { throw LUTStoreError.invalid(sourceURL.lastPathComponent) }
         let lutDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("PalmierPro/luts/\(projectId ?? "default")", isDirectory: true)
         try FileManager.default.createDirectory(at: lutDir, withIntermediateDirectories: true)
-        let dest = lutDir.appendingPathComponent(sourceURL.lastPathComponent)
-        if sourceURL.standardizedFileURL != dest.standardizedFileURL {
+        let packageData = inputURL.pathExtension == "palmierfx" ? try Data(contentsOf: sourceURL) : nil
+        let name = packageData.map { SHA256.hash(data: $0).map { String(format: "%02x", $0) }.joined() + ".cube" } ?? sourceURL.lastPathComponent
+        let dest = lutDir.appendingPathComponent(name)
+        if let packageData {
+            try packageData.write(to: dest, options: .atomic)
+        } else if sourceURL.standardizedFileURL != dest.standardizedFileURL {
             if FileManager.default.fileExists(atPath: dest.path) { try FileManager.default.removeItem(at: dest) }
             try FileManager.default.copyItem(at: sourceURL, to: dest)
         }

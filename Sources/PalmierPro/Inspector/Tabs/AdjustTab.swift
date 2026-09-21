@@ -506,7 +506,7 @@ extension InspectorView {
                 )
             }
             .buttonStyle(.plain)
-            .help(path ?? L10n.string("Choose a .cube LUT file"))
+            .help(path ?? L10n.string("Choose…"))
         }
         .frame(height: AppTheme.EditorPanel.fieldMinHeight)
     }
@@ -543,9 +543,9 @@ extension InspectorView {
     private func chooseLUT(clips: [Clip]) {
         let panel = NSOpenPanel()
         panel.canChooseFiles = true
-        panel.canChooseDirectories = false
+        panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
-        panel.message = L10n.string("Choose a .cube LUT file")
+        panel.message = L10n.string("Choose…")
         if let cube = UTType(filenameExtension: "cube") { panel.allowedContentTypes = [cube] }
         panel.begin { response in
             guard response == .OK, let url = panel.url else { return }
@@ -554,15 +554,27 @@ extension InspectorView {
     }
 
     private func setLUTPath(_ path: String, clips: [Clip]) {
-        // Copy into project storage so the LUT survives saves/moves (project packages drop unknown files).
-        guard let stored = try? LUTLoader.store(path: path, projectId: editor.projectId) else { return }
-        commitEffects(clips, actionName: "Apply LUT") { effects in
-            if let i = effects.firstIndex(where: { $0.type == "color.lut" }) {
-                effects[i].params["path"] = EffectParam(string: stored)
-            } else {
-                var effect = Effect(type: "color.lut")
-                effect.params["path"] = EffectParam(string: stored)
-                effects.insert(effect, at: alwaysOnInsertIndex(effects, for: "color.lut"))
+        let projectId = editor.projectId
+        let timeline = editor.timeline
+        Task {
+            do {
+                let stored = try await Task.detached(priority: .userInitiated) {
+                    try LUTLoader.store(path: path, projectId: projectId)
+                }.value
+                guard editor.projectId == projectId, editor.timeline == timeline else {
+                    throw LUTStoreError.invalid("The timeline changed during LUT import; try again")
+                }
+                commitEffects(clips, actionName: "Apply LUT") { effects in
+                    if let i = effects.firstIndex(where: { $0.type == "color.lut" }) {
+                        effects[i].params["path"] = EffectParam(string: stored)
+                    } else {
+                        var effect = Effect(type: "color.lut")
+                        effect.params["path"] = EffectParam(string: stored)
+                        effects.insert(effect, at: alwaysOnInsertIndex(effects, for: "color.lut"))
+                    }
+                }
+            } catch {
+                NSAlert(error: error).runModal()
             }
         }
     }
