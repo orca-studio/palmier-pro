@@ -77,3 +77,19 @@ Rebuild the reviewed star package with:
 python3 scripts/lut/package_star_ii.py /absolute/path/to/250f8b0955f88b6d3df995612739f2b3 /absolute/path/star-ii.palmierfx
 ```
 
+## Editable flower text experiment
+
+`EffectPackage.textStyle` validates a `text.decoration` manifest and hashed
+`style.json`. Its fill and up to eight ordered outlines are applied to editable
+text through Text → Import…, using the existing undo/persistence path. Outlines
+are rendered by Core Text in both normal and per-word animation paths.
+
+The local yellow/orange sample maps native SDF thresholds to glyph-relative
+outline widths experimentally. It uses the selected Palmier font: the package's
+referenced font is absent. This is not a native SDF/Lua runtime or a claim of
+pixel parity. Gradient/texture text fills are not implemented.
+
+Manual acceptance remains required: import the local flower package, edit the
+text, undo/redo, save/reopen and export. The automated checks cover outline
+colors and model roundtrip; they do not replace this UI lifecycle check.
+

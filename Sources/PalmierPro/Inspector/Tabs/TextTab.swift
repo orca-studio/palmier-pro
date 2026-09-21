@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct TextTab: View {
@@ -34,6 +35,7 @@ struct TextTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.zero) {
             contentField
+            Button(L10n.string("Import…"), action: importTextEffect)
             TextStyleControls(
                 selection: TextStyleSelection(
                     styles: clips.map { $0.textStyle ?? styleDefaults },
@@ -52,6 +54,32 @@ struct TextTab: View {
                 },
                 afterColor: { opacitySlider }
             )
+        }
+    }
+
+    private func importTextEffect() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        let projectId = editor.projectId
+        let timeline = editor.timeline
+        let ids = clipIds
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else { return }
+            Task {
+                do {
+                    let definition = try await Task.detached(priority: .userInitiated) {
+                        try EffectPackage.textStyle(in: url)
+                    }.value
+                    guard editor.projectId == projectId, editor.timeline == timeline else {
+                        throw LUTStoreError.invalid("The timeline changed during effect import; try again")
+                    }
+                    editor.commitTextStyles(clipIds: ids) { style in
+                        definition.apply(to: &style)
+                    }
+                } catch { NSAlert(error: error).runModal() }
+            }
         }
     }
 

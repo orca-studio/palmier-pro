@@ -35,7 +35,7 @@ enum TextLayout {
         let shadowY = style.shadow.enabled
             ? max(shadowPadding * visualScale, shadowBlur + abs(CGFloat(style.shadow.offsetY))) * canvasScale * 2
             : 0
-        let borderPad = style.border.enabled ? style.glyphBorderPadding(fontSize: renderSize) * 2 : 0
+        let borderPad = style.glyphOutlinePadding(fontSize: renderSize) * 2
         let backgroundPadX = style.background.enabled ? CGFloat(max(0, style.background.paddingX)) * canvasScale * 2 : 0
         let backgroundPadY = style.background.enabled ? CGFloat(max(0, style.background.paddingY)) * canvasScale * 2 : 0
         return CGSize(

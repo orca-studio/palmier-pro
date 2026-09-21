@@ -95,10 +95,8 @@ enum TextFrameRenderer {
                 .insetBy(dx: -stroke, dy: -stroke)
             rect = rect.union(offset)
         }
-        if style.border.enabled, style.border.width > 0 {
-            let pad = style.glyphBorderPadding(fontSize: fontSize)
-            rect = rect.insetBy(dx: -pad, dy: -pad)
-        }
+        let outlinePad = style.glyphOutlinePadding(fontSize: fontSize)
+        if outlinePad > 0 { rect = rect.insetBy(dx: -outlinePad, dy: -outlinePad) }
         if coversWordMotion {
             rect = rect.insetBy(dx: -fontSize, dy: -fontSize)
         }
@@ -298,9 +296,7 @@ enum TextFrameRenderer {
         return cachedImage(content: content, style: style, boxes: boxes, raster: raster,
                            renderSize: renderSize, state: stateHash(states)) { ctx in
             let fillAttrs = style.attributes(size: fontSize)
-            let undercoatAttrs = style.drawsGlyphOutline
-                ? style.outlineUndercoatAttributes(size: fontSize)
-                : nil
+            let outlines = style.drawsGlyphOutline ? style.glyphOutlines : []
             let font = fillAttrs[.font] as? NSFont
 
             var placements: [WordPlacement] = []
@@ -317,9 +313,9 @@ enum TextFrameRenderer {
                     width: pen.width,
                     fillLine: CTLineCreateWithAttributedString(
                         NSAttributedString(string: layout.tokens[ti].text, attributes: wordFillAttrs) as CFAttributedString),
-                    undercoatLine: undercoatAttrs.map {
+                    undercoatLines: outlines.map { layer in
                         CTLineCreateWithAttributedString(
-                            NSAttributedString(string: layout.tokens[ti].text, attributes: $0) as CFAttributedString)
+                            NSAttributedString(string: layout.tokens[ti].text, attributes: style.outlineAttributes(size: fontSize, layer: layer)) as CFAttributedString)
                     }
                 ))
             }
@@ -334,7 +330,7 @@ enum TextFrameRenderer {
         let penY: CGFloat
         let width: CGFloat
         let fillLine: CTLine
-        let undercoatLine: CTLine?
+        let undercoatLines: [CTLine]
     }
 
     /// Backgrounds, then undercoats, then fills, so no word's outline paints over a neighbor's fill.
@@ -370,13 +366,12 @@ enum TextFrameRenderer {
                                    width: p.width, fontSize: fontSize, font: font)
             }
         }
-        if placements.contains(where: { $0.undercoatLine != nil }) {
-            drawUndercoat(ctx) {
-                for p in placements {
-                    guard let undercoat = p.undercoatLine else { continue }
+        drawUndercoat(ctx) {
+            for (index, layer) in style.glyphOutlines.enumerated() {
+                for p in placements where p.undercoatLines.indices.contains(index) {
                     withWordState(p) {
-                        ctx.textPosition = CGPoint(x: p.penX, y: p.penY)
-                        CTLineDraw(undercoat, ctx)
+                        ctx.textPosition = CGPoint(x: p.penX + layer.xEm * fontSize, y: p.penY - layer.yEm * fontSize)
+                        CTLineDraw(p.undercoatLines[index], ctx)
                     }
                 }
             }
@@ -668,13 +663,16 @@ enum TextFrameRenderer {
             return fillFrame
         }
 
-        let undercoatFrame = TextLayout.frame(
-            for: attributed(style.outlineUndercoatAttributes(size: fontSize), content),
-            in: box,
-            verticallySizedFor: sizing
-        )
         ctx.beginTransparencyLayer(auxiliaryInfo: nil)
-        drawUndercoat(ctx) { CTFrameDraw(undercoatFrame, ctx) }
+        for layer in style.glyphOutlines {
+            let undercoatFrame = TextLayout.frame(
+                for: attributed(style.outlineAttributes(size: fontSize, layer: layer), content),
+                in: box, verticallySizedFor: sizing)
+            drawUndercoat(ctx) {
+                ctx.translateBy(x: layer.xEm * fontSize, y: -layer.yEm * fontSize)
+                CTFrameDraw(undercoatFrame, ctx)
+            }
+        }
         CTFrameDraw(fillFrame, ctx)
         ctx.endTransparencyLayer()
         return fillFrame

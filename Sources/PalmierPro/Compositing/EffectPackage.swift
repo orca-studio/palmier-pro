@@ -25,6 +25,13 @@ struct EffectPackage: Decodable {
         return (url, sequence)
     }
 
+    static func textStyle(in directory: URL) throws -> TextEffectDefinition {
+        let url = try resourceURL(in: directory, renderer: "text.decoration", filename: "style.json")
+        let definition = try JSONDecoder().decode(TextEffectDefinition.self, from: Data(contentsOf: url))
+        try definition.validate()
+        return definition
+    }
+
     private static func resourceURL(in directory: URL, renderer: String, filename: String) throws -> URL {
         let manifest = try JSONDecoder().decode(Self.self, from: Data(contentsOf: directory.appendingPathComponent("manifest.json")))
         guard manifest.schema == "palmier.effect-package/v1", manifest.renderer == renderer,

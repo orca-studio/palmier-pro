@@ -24,6 +24,14 @@ struct TextStyle: Codable, Sendable, Equatable, Hashable {
     var shadow: Shadow = Shadow()
     var background: Background = Background()
     var border: Outline = Outline()
+    var decoration: [GlyphOutline]?
+
+    struct GlyphOutline: Codable, Sendable, Equatable, Hashable {
+        let color: RGBA
+        let widthEm: Double
+        let xEm: Double
+        let yEm: Double
+    }
 
     enum Alignment: String, Codable, Sendable, CaseIterable, Hashable {
         case left
@@ -150,7 +158,7 @@ struct TextStyle: Codable, Sendable, Equatable, Hashable {
     private enum CodingKeys: String, CodingKey {
         case fontName, fontSize, fontScale, widthScale, heightScale, tracking, lineSpacing, fontCase
         case isBold, isItalic, isUnderlined, isStruckThrough, isOverlined
-        case color, alignment, blur, shadow, background, border
+        case color, alignment, blur, shadow, background, border, decoration
     }
 }
 
@@ -185,8 +193,12 @@ extension TextStyle {
             blur: (try? c.decode(Double.self, forKey: .blur)) ?? defaults.blur,
             shadow: (try? c.decode(Shadow.self, forKey: .shadow)) ?? defaults.shadow,
             background: (try? c.decode(Background.self, forKey: .background)) ?? defaults.background,
-            border: (try? c.decode(Outline.self, forKey: .border)) ?? defaults.border
+            border: (try? c.decode(Outline.self, forKey: .border)) ?? defaults.border,
+            decoration: try c.decodeIfPresent([GlyphOutline].self, forKey: .decoration)
         )
+        if let decoration {
+            try TextEffectDefinition(fill: RGBA(), outlines: decoration).validate()
+        }
     }
 }
 
@@ -323,7 +335,7 @@ extension TextStyle {
 
     /// Two-pass outlines need an opaque fill; translucent fills would show the undercoat through them.
     var drawsGlyphOutline: Bool {
-        border.enabled && border.width > 0 && color.a >= 1
+        (border.enabled && border.width > 0 || !(decoration ?? []).isEmpty) && color.a >= 1
     }
 
     /// `includeColor: false` for bounding measurement (color doesn't affect size).
@@ -339,16 +351,26 @@ extension TextStyle {
         return attrs
     }
 
-    /// Stroke-only undercoat at 2× width; the fill drawn on top covers the inner half, leaving `border.width` outward.
-    func outlineUndercoatAttributes(size: CGFloat) -> [NSAttributedString.Key: Any] {
+    var glyphOutlines: [GlyphOutline] {
+        var layers = decoration ?? []
+        if border.enabled, border.width > 0 {
+            layers.append(GlyphOutline(color: border.color, widthEm: border.width / max(1, fontSize * fontScale), xEm: 0, yEm: 0))
+        }
+        return layers
+    }
+
+    /// Stroke-only undercoat at 2× width; the fill drawn on top covers the inner half, leaving `widthEm` outward.
+    func outlineAttributes(size: CGFloat, layer: GlyphOutline) -> [NSAttributedString.Key: Any] {
         var attrs = baseAttributes(size: size)
-        attrs[.strokeWidth] = NSNumber(value: 200 * max(0, border.width) / max(1, fontSize * fontScale))
-        attrs[.strokeColor] = border.color.nsColor
+        attrs[.strokeWidth] = NSNumber(value: 200 * layer.widthEm)
+        attrs[.strokeColor] = layer.color.nsColor
         return attrs
     }
 
-    func glyphBorderPadding(fontSize: CGFloat) -> CGFloat {
-        ceil(fontSize * CGFloat(max(0, border.width)) / CGFloat(max(1, self.fontSize * fontScale)))
+    /// Outward reach of the widest outline layer, including its offset. Measurement and rendering must agree.
+    func glyphOutlinePadding(fontSize: CGFloat) -> CGFloat {
+        let reach = glyphOutlines.map { max(0, $0.widthEm) + max(abs($0.xEm), abs($0.yEm)) }.max() ?? 0
+        return ceil(fontSize * CGFloat(reach))
     }
 
     private func baseAttributes(size: CGFloat) -> [NSAttributedString.Key: Any] {
