@@ -49,3 +49,31 @@ Manual check: select a clip and import the folder; check full/zero intensity,
 undo, save/reopen and short export. Modify look.cube and import again: expect
 an explicit error and no timeline change. If the timeline changes during import,
 expect refusal instead of applying to stale state.
+
+## Captured Star II sequence experiment
+
+`EffectPackage.sequenceURL` validates `overlay.sequence` packages carrying
+`overlay.mov` plus sequence dimensions, frame count, frame rate and blend mode.
+`SequenceEffect.clip` maps native speed control with `0.5 + 1.5 * control`, applies
+screen blending/intensity, and rejects non-finite controls or durations beyond a
+single captured cycle. It reuses Palmier's existing video compositor and export.
+This renderer is a sprite-sequence adapter, not a realtime particle simulator.
+The current LUT picker remains LUT-only; sequence package UI import is not wired.
+
+Local acceptance:
+
+```sh
+PALMIER_TEST_SEQUENCE=/absolute/path/star-ii.palmierfx swift test --filter 'SequenceEffectTests|LocalSequenceIntegrationTests|EffectPackageTests'
+```
+
+Star II's 151 PNGs are encoded as ProRes 4444 at 25fps for AVFoundation. The
+QuickTime Animation codec failed on this machine and is not used. ProRes is not
+a lossless RGB roundtrip. Portrait rotation, repeat-cycle semantics and native
+color/timing parity remain unverified.
+
+Rebuild the reviewed star package with:
+
+```sh
+python3 scripts/lut/package_star_ii.py /absolute/path/to/250f8b0955f88b6d3df995612739f2b3 /absolute/path/star-ii.palmierfx
+```
+
