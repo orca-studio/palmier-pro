@@ -96,6 +96,12 @@ final class Updater: NSObject {
     }
 }
 
+extension Updater: NSMenuItemValidation {
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        controller != nil
+    }
+}
+
 extension Updater: SPUUpdaterDelegate {
     @objc func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
         markUpdateAvailable(item)
