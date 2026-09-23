@@ -182,6 +182,7 @@ struct Clip: Codable, Sendable, Equatable, Identifiable {
     var edgeRounding: Double = 0
     var edgeSoftness: Double = 0
     var mask: MaskShape?
+    var maskEnabled: Bool = true
     var linkGroupId: String?
     var captionGroupId: String?
     var multicamGroupId: String?
@@ -212,7 +213,7 @@ struct Clip: Codable, Sendable, Equatable, Identifiable {
         case id, mediaRef, mediaType, sourceClipType, startFrame, durationFrames
         case trimStartFrame, trimEndFrame, speed, volume
         case fadeInFrames, fadeOutFrames, fadeInInterpolation, fadeOutInterpolation
-        case opacity, transform, crop, edgeRounding, edgeSoftness, mask
+        case opacity, transform, crop, edgeRounding, edgeSoftness, mask, maskEnabled
         case linkGroupId, captionGroupId, multicamGroupId, textContent, textStyle, textAnimation, wordTimings
         case textFillMode
         case opacityTrack, positionTrack, scaleTrack, rotationTrack, cropTrack, volumeTrack, maskTrack
@@ -538,6 +539,7 @@ extension Clip {
             edgeRounding: normalizedValue(forKey: .edgeRounding),
             edgeSoftness: normalizedValue(forKey: .edgeSoftness),
             mask: (try? c.decode(MaskShape.self, forKey: .mask))?.sanitized,
+            maskEnabled: try c.decodeIfPresent(Bool.self, forKey: .maskEnabled) ?? true,
             linkGroupId: try? c.decode(String.self, forKey: .linkGroupId),
             captionGroupId: try? c.decode(String.self, forKey: .captionGroupId),
             multicamGroupId: try? c.decode(String.self, forKey: .multicamGroupId),
@@ -785,6 +787,7 @@ struct MaskVertex: Codable, Sendable, Equatable {
 /// every keyframe on the track; `keyframeInterpolate` holds rather than guess
 /// when it meets a mismatch.
 struct MaskShape: Codable, Sendable, Equatable {
+    var linear: LinearMaskGeometry?
     var vertices: [MaskVertex] = []
     /// Edge falloff as a fraction of the source's shorter side.
     var feather: Double = 0
@@ -792,12 +795,13 @@ struct MaskShape: Codable, Sendable, Equatable {
     var inverted: Bool = false
 
     /// Fewer than three anchors bounds no area, so there is nothing to cut.
-    var isRenderable: Bool { vertices.count >= 3 }
+    var isRenderable: Bool { linear?.isFinite ?? (vertices.count >= 3) }
 
     /// Drop non-finite anchors and clamp into the source box. Applied on decode so a
     /// corrupt project cannot reach the rasterizer.
     var sanitized: MaskShape {
         var copy = self
+        if let linear, !linear.isFinite { copy.linear = nil }
         copy.vertices = vertices.filter { $0.x.isFinite && $0.y.isFinite }
         copy.feather = feather.isFinite ? min(1, max(0, feather)) : 0
         return copy

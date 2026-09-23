@@ -19,6 +19,21 @@ extension EditorViewModel {
         return match
     }
 
+    func setMaskEnabled(clipId: String, enabled: Bool) {
+        commitClipProperty(clipId: clipId, actionName: "Toggle Mask") { $0.maskEnabled = enabled }
+        if !enabled { maskEditingActive = false }
+    }
+
+    func beginMaskEditing(clipId: String, linear: Bool) {
+        commitClipProperty(clipId: clipId, actionName: "Change Mask Shape") { clip in
+            clip.mask = linear ? MaskShape(linear: .init()) : nil
+            clip.maskTrack = nil
+            clip.maskEnabled = true
+        }
+        cropEditingActive = false
+        maskEditingActive = true
+    }
+
     private func writeMask(into clip: inout Clip, shape: MaskShape) {
         if clip.maskTrack?.isActive == true {
             clip.upsertKeyframe(in: \.maskTrack, frame: activeFrame, value: shape)
@@ -101,28 +116,26 @@ extension EditorViewModel {
         }
     }
 
+    func setLinearMaskValue(clipId: String, keyPath: WritableKeyPath<LinearMaskGeometry, Double>, value: Double) {
+        guard value.isFinite, let clip = clipFor(id: clipId),
+              var shape = clip.maskAt(frame: activeFrame), shape.linear != nil else { return }
+        shape.linear?[keyPath: keyPath] = value
+        setMaskShape(clipId: clipId, shape: shape, actionName: "Change Linear Mask")
+    }
+
     func setMaskFeather(clipId: String, feather: Double, commit: Bool) {
+        guard feather.isFinite else { return }
         let value = min(1, max(0, feather))
-        let write: (inout Clip) -> Void = { clip in
-            // Feather is a look, not a shape: it stays on the static value even while
-            // the path animates, so scrubbing cannot change the softness.
-            guard var shape = clip.mask ?? clip.maskTrack?.keyframes.first?.value else { return }
-            shape.feather = value
-            clip.mask = shape
-        }
-        if commit {
-            commitClipProperty(clipId: clipId, actionName: "Change Mask Feather", write)
-        } else {
-            applyClipProperty(clipId: clipId, write)
-        }
+        guard let clip = clipFor(id: clipId), var shape = clip.maskAt(frame: activeFrame) else { return }
+        shape.feather = value
+        if commit { commitMaskShape(clipId: clipId, shape: shape, actionName: "Change Mask Feather") }
+        else { applyMaskShape(clipId: clipId, shape: shape) }
     }
 
     func setMaskInverted(clipId: String, inverted: Bool) {
-        commitClipProperty(clipId: clipId, actionName: inverted ? "Invert Mask" : "Un-invert Mask") { clip in
-            guard var shape = clip.mask ?? clip.maskTrack?.keyframes.first?.value else { return }
-            shape.inverted = inverted
-            clip.mask = shape
-        }
+        guard let clip = clipFor(id: clipId), var shape = clip.maskAt(frame: activeFrame) else { return }
+        shape.inverted = inverted
+        setMaskShape(clipId: clipId, shape: shape, actionName: "Invert Mask")
     }
 
     /// Commit the pen tool's draft as the clip's mask.

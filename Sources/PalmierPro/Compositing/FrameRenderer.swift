@@ -322,7 +322,7 @@ enum FrameRenderer {
 
         // After effects so a grade or blur covers the whole source and the mask then
         // cuts the result; before placement so the path rides with the content.
-        if let mask = clip.maskAt(frame: frame) {
+        if clip.maskEnabled, let mask = clip.maskAt(frame: frame) {
             image = PathMaskRasterizer.apply(image, shape: mask, extent: image.extent)
         }
 
@@ -383,7 +383,7 @@ enum FrameRenderer {
                 "inputBiasVector": CIVector(x: 1, y: 1, z: 1, w: 0),
             ])
         }
-        if let mask = clip.maskAt(frame: frame) {
+        if clip.maskEnabled, let mask = clip.maskAt(frame: frame) {
             image = PathMaskRasterizer.apply(image, shape: mask, extent: image.extent)
         }
         image = transformedTextImage(image, clip: clip, frame: frame, renderSize: renderSize)

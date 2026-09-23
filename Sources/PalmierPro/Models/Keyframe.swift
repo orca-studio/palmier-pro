@@ -107,7 +107,7 @@ extension MaskShape: KeyframeInterpolatable {
     /// keyframe — morphing then pairs unrelated anchors and the path flails. Holding
     /// is visibly wrong in one frame instead of subtly wrong in all of them.
     static func keyframeInterpolate(_ a: MaskShape, _ b: MaskShape, t: Double) -> MaskShape {
-        guard a.vertices.count == b.vertices.count else { return a }
+        guard (a.linear == nil) == (b.linear == nil), a.vertices.count == b.vertices.count else { return a }
         var out = a
         out.vertices = zip(a.vertices, b.vertices).map { lhs, rhs in
             var v = lhs
@@ -115,6 +115,12 @@ extension MaskShape: KeyframeInterpolatable {
             v.inControl = interpolate(lhs.inControl, rhs.inControl, t: t)
             v.outControl = interpolate(lhs.outControl, rhs.outControl, t: t)
             return v
+        }
+        if let lhs = a.linear, let rhs = b.linear {
+            out.linear = LinearMaskGeometry(
+                centerX: Double.keyframeInterpolate(lhs.centerX, rhs.centerX, t: t),
+                centerY: Double.keyframeInterpolate(lhs.centerY, rhs.centerY, t: t),
+                rotation: Double.keyframeInterpolate(lhs.rotation, rhs.rotation, t: t))
         }
         out.feather = Double.keyframeInterpolate(a.feather, b.feather, t: t)
         out.inverted = a.inverted

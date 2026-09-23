@@ -20,7 +20,7 @@ struct MaskOverlayView: View {
     var body: some View {
         GeometryReader { geo in
             let videoRect = videoContentRect(in: geo.size)
-            if let clip = editor.maskEditableClip {
+            if let clip = editor.maskEditableClip, clip.maskEnabled {
                 let frame = editor.activeFrame
                 let transform = clip.transformAt(frame: frame)
                 // Mask coordinates are 0–1 of the CROPPED source, because the mask runs
@@ -29,7 +29,17 @@ struct MaskOverlayView: View {
                 let shape = clip.maskAt(frame: frame)
                 ZStack {
                     Canvas { ctx, _ in
-                        if let shape {
+                        if let linear = shape?.linear {
+                            let center = CGPoint(x: (linear.centerX + 1) / 2, y: (1 - linear.centerY) / 2)
+                            let angle = -linear.rotation * .pi / 180
+                            let dx = cos(angle) * 2 / max(0.001, maskRect.width / maskRect.height)
+                            let dy = -sin(angle) * 2
+                            ctx.stroke(outline([
+                                CGPoint(x: center.x - dx, y: center.y - dy),
+                                CGPoint(x: center.x + dx, y: center.y + dy)
+                            ], in: maskRect, transform: transform, closed: false),
+                                with: .color(lineColor), lineWidth: AppTheme.BorderWidth.medium)
+                        } else if let shape {
                             ctx.stroke(outline(shape.vertices.map { CGPoint(x: $0.x, y: $0.y) }, in: maskRect, transform: transform, closed: true),
                                        with: .color(lineColor), lineWidth: AppTheme.BorderWidth.medium)
                         } else if draft.count >= 2 {
@@ -51,7 +61,26 @@ struct MaskOverlayView: View {
                             .onHover { $0 ? NSCursor.crosshair.push() : NSCursor.pop() }
                     }
 
-                    if let shape {
+                    if let shape, let linear = shape.linear {
+                        let center = CGPoint(x: (linear.centerX + 1) / 2, y: (1 - linear.centerY) / 2)
+                        Circle()
+                            .fill(lineColor)
+                            .frame(width: handleSize * 1.5, height: handleSize * 1.5)
+                            .position(screenPoint(center, in: maskRect, transform: transform))
+                            .gesture(linearDrag(clip: clip, shape: shape, rect: maskRect, transform: transform))
+                            .help(L10n.string("Move Linear Mask"))
+                        let radians = linear.rotation * .pi / 180
+                        let rotationPoint = CGPoint(x: center.x + cos(radians) * 48 / max(1, maskRect.width),
+                                                    y: center.y + sin(radians) * 48 / max(1, maskRect.height))
+                        Image(systemName: "arrow.trianglehead.clockwise.rotate.90")
+                            .foregroundStyle(lineColor)
+                            .frame(width: 24, height: 24)
+                            .background(AppTheme.Background.baseColor, in: Circle())
+                            .contentShape(Circle())
+                            .position(screenPoint(rotationPoint, in: maskRect, transform: transform))
+                            .gesture(linearRotationDrag(clip: clip, shape: shape, transform: transform))
+                            .help(L10n.string("Rotate Linear Mask"))
+                    } else if let shape {
                         ForEach(Array(shape.vertices.enumerated()), id: \.offset) { index, vertex in
                             let pos = screenPoint(CGPoint(x: vertex.x, y: vertex.y), in: maskRect, transform: transform)
                             Circle()
@@ -107,6 +136,59 @@ struct MaskOverlayView: View {
     }
 
     // MARK: - Drag
+
+    private func linearRotationDrag(clip: Clip, shape: MaskShape, transform: Transform) -> some Gesture {
+        DragGesture()
+            .onChanged { value in
+                guard editor.maskEditableClip?.id == clip.id else { return }
+                if dragStart == nil { dragStart = shape }
+                guard let start = dragStart else { return }
+                editor.applyMaskShape(clipId: clip.id, shape: rotatedLinear(start, by: value.translation, transform: transform))
+            }
+            .onEnded { value in
+                guard let start = dragStart else { return }
+                dragStart = nil
+                editor.commitMaskShape(clipId: clip.id,
+                    shape: rotatedLinear(start, by: value.translation, transform: transform), actionName: "Rotate Linear Mask")
+            }
+    }
+
+    private func rotatedLinear(_ shape: MaskShape, by delta: CGSize, transform: Transform) -> MaskShape {
+        var out = shape
+        guard var linear = shape.linear else { return shape }
+        let radians = linear.rotation * .pi / 180
+        let x = cos(radians) * 48 + Double(delta.width) * (transform.flipHorizontal ? -1 : 1)
+        let y = sin(radians) * 48 + Double(delta.height) * (transform.flipVertical ? -1 : 1)
+        guard hypot(x, y) > 1 else { return shape }
+        linear.rotation = atan2(y, x) * 180 / .pi
+        out.linear = linear
+        return out
+    }
+
+    private func linearDrag(clip: Clip, shape: MaskShape, rect: CGRect, transform: Transform) -> some Gesture {
+        DragGesture()
+            .onChanged { value in
+                if dragStart == nil { dragStart = shape }
+                guard let start = dragStart else { return }
+                editor.applyMaskShape(clipId: clip.id, shape: translatedLinear(start, by: value.translation, rect: rect, transform: transform))
+            }
+            .onEnded { value in
+                guard let start = dragStart else { return }
+                dragStart = nil
+                editor.commitMaskShape(clipId: clip.id,
+                    shape: translatedLinear(start, by: value.translation, rect: rect, transform: transform),
+                    actionName: "Move Linear Mask")
+            }
+    }
+
+    private func translatedLinear(_ shape: MaskShape, by delta: CGSize, rect: CGRect, transform: Transform) -> MaskShape {
+        var out = shape
+        guard var linear = shape.linear else { return shape }
+        linear.centerX += Double(delta.width / max(1, rect.width)) * 2 * (transform.flipHorizontal ? -1 : 1)
+        linear.centerY -= Double(delta.height / max(1, rect.height)) * 2 * (transform.flipVertical ? -1 : 1)
+        out.linear = linear
+        return out
+    }
 
     private func vertexDrag(clip: Clip, shape: MaskShape, index: Int, rect: CGRect, transform: Transform) -> some Gesture {
         DragGesture(coordinateSpace: .local)

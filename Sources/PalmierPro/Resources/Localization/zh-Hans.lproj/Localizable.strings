@@ -1129,3 +1129,25 @@
 "using Anthropic API key" = "使用 Anthropic API key";
 "using OpenAI API key" = "使用 OpenAI API key";
 "you@example.com — so we can reply" = "you@example.com，以便我们回复";
+
+"Linear Mask" = "线性蒙版";
+
+"Draw Path Mask" = "绘制路径蒙版";
+
+"Move Linear Mask" = "移动线性蒙版";
+
+"Enable Mask" = "启用蒙版";
+
+"Path Mask" = "路径蒙版";
+
+"Mask Parameters" = "蒙版参数";
+
+"Mask Feather" = "蒙版羽化";
+
+"Edit on Canvas" = "在画布上编辑";
+
+"Rotate Linear Mask" = "旋转线性蒙版";
+
+"Choose a mask shape to begin." = "选择一种蒙版形状开始编辑。";
+
+"Click on the canvas to draw a path. Click the first point to close." = "在画布上点击绘制路径，点击起点闭合。";

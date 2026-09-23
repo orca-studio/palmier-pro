@@ -117,3 +117,38 @@ bounds identical and one bound differing by one pixel at 960×540. This is
 specific to this sample; color and subpixel sampling are not claimed identical.
 The timeline UI, Agent placement tools, and alternate export formats have not
 been extended for this transition prototype.
+
+## Captured linear mask experiment
+
+`MaskShape.linear` selects analytic half-plane geometry instead of a closed path.
+It shares the existing clip mask cache, compositor, persistence and mask keyframe
+track. Center coordinates are native normalized coordinates; rotation is in
+degrees. Feather uses the captured smoothstep interval, including the angular
+edge correction, rather than the path mask's Gaussian blur. This does not run
+native Lua or load the original effect package at render time.
+
+```sh
+PALMIER_TEST_MASK_SOURCE=/absolute/path/to/clips \
+PALMIER_TEST_MASK_OUTPUT=/absolute/path/palmier-linear-mask.mp4 \
+swift test --filter 'LinearMaskTests|LocalMaskIntegrationTests'
+```
+
+The local fixture uses s3-b over s3-a for eight seconds at 1080×608/30fps,
+rotation -90°, feather 0.6 and a centered boundary. The captured native export
+and Palmier output contain 240 frames; whole-video SSIM measured 0.986757.
+This is sample-specific visual similarity, not pixel parity or acceptance of
+all angles/feather values. Direction, inversion, midpoint, persistence and
+geometry interpolation have unit coverage. Other angles and animated native
+comparisons remain unverified. The independent Mask inspector section exposes
+Linear Mask and Path Mask cards, a parameter-preserving enable switch, feather
+slider/numeric input, inversion, reset and mask keyframes. Linear controls expose
+center X/Y and rotation; canvas editing includes center and rotation handles.
+Animated path feather/inversion edits also write the sampled keyframe.
+These controls reuse mask undo and persistence. Manual acceptance: add a linear
+mask to a selected video, set -90 degrees and 60% feather, move the center,
+undo/redo, add keyframes, save/reopen and export. UI lifecycle acceptance is
+separate from automated model/render checks and remains pending. App packaging
+now resolves the generated bundle Contents/Resources layout; the signed app
+launches successfully. Computer Use reached the project browser, but attempts
+to open the test project did not change the window, so inspector interaction
+has not yet been verified.

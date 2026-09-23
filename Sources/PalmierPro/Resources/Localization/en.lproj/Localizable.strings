@@ -1146,3 +1146,25 @@
 "using OpenAI API key" = "using OpenAI API key";
 "you@example.com — so we can reply" = "you@example.com — so we can reply";
 "“%@” is offline." = "“%@” is offline.";
+
+"Linear Mask" = "Linear Mask";
+
+"Draw Path Mask" = "Draw Path Mask";
+
+"Move Linear Mask" = "Move Linear Mask";
+
+"Enable Mask" = "Enable Mask";
+
+"Path Mask" = "Path Mask";
+
+"Mask Parameters" = "Mask Parameters";
+
+"Mask Feather" = "Mask Feather";
+
+"Edit on Canvas" = "Edit on Canvas";
+
+"Rotate Linear Mask" = "Rotate Linear Mask";
+
+"Choose a mask shape to begin." = "Choose a mask shape to begin.";
+
+"Click on the canvas to draw a path. Click the first point to close." = "Click on the canvas to draw a path. Click the first point to close.";

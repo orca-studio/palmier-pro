@@ -117,6 +117,23 @@ private final class MaskCache: @unchecked Sendable {
 
     private static func render(shape: MaskShape, extent: CGRect) -> CIImage? {
         let w = max(1, Int(extent.width.rounded())), h = max(1, Int(extent.height.rounded()))
+        if let linear = shape.linear {
+            var bytes = [UInt8](repeating: 0, count: w * h)
+            for y in 0..<h {
+                for x in 0..<w {
+                    let alpha = linear.alpha(x: (Double(x) + 0.5) / Double(w),
+                        y: 1 - (Double(y) + 0.5) / Double(h), aspect: Double(w) / Double(h),
+                        feather: shape.feather, inverted: shape.inverted)
+                    bytes[y * w + x] = UInt8((alpha * 255).rounded())
+                }
+            }
+            guard let provider = CGDataProvider(data: Data(bytes) as CFData),
+                  let cg = CGImage(width: w, height: h, bitsPerComponent: 8, bitsPerPixel: 8,
+                    bytesPerRow: w, space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGBitmapInfo(rawValue: 0),
+                    provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent) else { return nil }
+            return CIImage(cgImage: cg, options: [.colorSpace: NSNull()])
+                .transformed(by: .init(translationX: extent.minX, y: extent.minY))
+        }
         guard let ctx = CGContext(
             data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
             space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue
