@@ -78,7 +78,12 @@ final class MCPService {
 
     nonisolated static func registerTools(on server: Server, executor: ToolExecutor) async {
         let tools: [Tool] = ToolDefinitions.mcpServer.map { def in
-            Tool(name: def.name.rawValue, description: def.description, inputSchema: def.mcpSchemaValue)
+            Tool(
+                name: def.name.rawValue,
+                description: def.description,
+                inputSchema: def.mcpSchemaValue,
+                annotations: def.name.mcpAnnotations
+            )
         }
 
         await server.withMethodHandler(ListTools.self) { _ in
