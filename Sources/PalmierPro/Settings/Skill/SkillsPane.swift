@@ -66,6 +66,7 @@ struct SkillsPane: View {
                     .font(.system(size: AppTheme.FontSize.sm))
                     .foregroundStyle(AppTheme.Accent.link)
                     .pointerStyle(.link)
+                    .accessibilityIdentifier("settings.skills.browseCommunity")
             }
         }
     }
@@ -79,12 +80,14 @@ struct SkillsPane: View {
                     isSelected: collection == .installed,
                     action: { collection = .installed }
                 )
+                .accessibilityIdentifier("settings.skills.collection.installed")
                 SkillCollectionButton(
                     title: L10n.string(key: SkillCollection.community.title),
                     count: catalog.entries.count,
                     isSelected: collection == .community,
                     action: { collection = .community }
                 )
+                .accessibilityIdentifier("settings.skills.collection.community")
             }
 
             Spacer(minLength: AppTheme.Spacing.md)
@@ -103,13 +106,16 @@ struct SkillsPane: View {
             .buttonStyle(.plain)
             .accessibilityLabel(L10n.string("New skill"))
             .help(L10n.string("New skill"))
+            .accessibilityIdentifier("settings.skills.new")
 
             Menu {
                 Button(L10n.string("Open Skills Folder"), systemImage: "folder") { store.openFolder() }
+                    .accessibilityIdentifier("settings.skills.openFolder")
                 Divider()
                 Button(L10n.string("Refresh Community Skills"), systemImage: "arrow.clockwise") {
                     Task { await store.syncSkills() }
                 }
+                .accessibilityIdentifier("settings.skills.refreshCommunity")
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(size: AppTheme.FontSize.md, weight: AppTheme.FontWeight.medium))
@@ -123,6 +129,7 @@ struct SkillsPane: View {
             .fixedSize()
             .accessibilityLabel(L10n.string("Skill actions"))
             .help(L10n.string("Skill actions"))
+            .accessibilityIdentifier("settings.skills.actions")
         }
     }
 
@@ -138,6 +145,7 @@ struct SkillsPane: View {
                 .font(.system(size: AppTheme.FontSize.sm))
                 .foregroundStyle(AppTheme.Text.primaryColor)
                 .accessibilityLabel(L10n.string("Search skills"))
+                .accessibilityIdentifier("settings.skills.search")
 
             if !query.isEmpty {
                 Button {
@@ -150,6 +158,7 @@ struct SkillsPane: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(L10n.string("Clear search"))
                 .help(L10n.string("Clear search"))
+                .accessibilityIdentifier("settings.skills.clearSearch")
             }
         }
         .padding(.horizontal, AppTheme.Spacing.md)
@@ -177,6 +186,7 @@ struct SkillsPane: View {
                     title: L10n.string("No Installed Skills"),
                     message: L10n.string("Create a skill or browse the Community collection."),
                     actionTitle: L10n.string("New Skill"),
+                    actionAccessibilityID: "settings.skills.emptyState.newSkill",
                     action: createSkill
                 )
             } else if installedSkills.isEmpty {
@@ -194,6 +204,7 @@ struct SkillsPane: View {
                         working: working.contains(skill.id),
                         summaryAction: { present(skill.id) },
                         deleteAction: { skillPendingDeletion = skill },
+                        accessibilityID: "settings.skills.installed.\(skill.id)",
                         action: { state == .update ? update(skill) : present(skill.id) }
                     )
                 }
@@ -221,6 +232,7 @@ struct SkillsPane: View {
                         title: L10n.string("Community Skills Unavailable"),
                         message: error,
                         actionTitle: L10n.string("Try Again"),
+                    actionAccessibilityID: "settings.skills.emptyState.tryAgain",
                         action: { Task { await store.syncSkills() } }
                     )
                 } else if query.isEmpty {
@@ -229,6 +241,7 @@ struct SkillsPane: View {
                         title: L10n.string("No Community Skills"),
                         message: L10n.string("Refresh to check for available skills."),
                         actionTitle: L10n.string("Refresh"),
+                    actionAccessibilityID: "settings.skills.emptyState.refresh",
                         action: { Task { await store.syncSkills() } }
                     )
                 } else {
@@ -248,6 +261,7 @@ struct SkillsPane: View {
             title: L10n.string("No Matching Skills"),
             message: L10n.string("Try another search."),
             actionTitle: L10n.string("Clear Search"),
+            actionAccessibilityID: "settings.skills.emptyState.clearSearch",
             action: { query = "" }
         )
     }
@@ -272,6 +286,7 @@ struct SkillsPane: View {
             deleteAction: skill.map { installedSkill in
                 { skillPendingDeletion = installedSkill }
             },
+            accessibilityID: "settings.skills.community.\(entry.id)",
             action: {
                 if let skill {
                     state == .update ? update(skill) : present(skill.id)

@@ -16,13 +16,14 @@ struct SpeechAnalysisSections: View {
     private var speakersSection: some View {
         EditorPanelGroup(
             L10n.string("Speaker Detection"),
+            accessibilityID: "media.speakers",
             isExpanded: $speakerExpanded
         ) {
             InspectorRow(
                 label: L10n.string("Mark Speakers"),
                 labelHelp: L10n.string("Tints waveforms by speaker. Voices are matched across clips using cloud transcripts."),
                 labelAlignment: .leading,
-                onReset: { editor.markSpeakers = false }
+                accessibilityID: "media.speakers.markSpeakers", onReset: { editor.markSpeakers = false }
             ) {
                 Toggle(String(), isOn: Binding(
                     get: { editor.markSpeakers },
@@ -32,6 +33,7 @@ struct SpeechAnalysisSections: View {
                 .controlSize(.mini)
                 .labelsHidden()
                 .accessibilityLabel(L10n.string("Mark Speakers"))
+                .accessibilityIdentifier("media.speakers.markSpeakers")
             }
             if let error = editor.speakerIdentifyError {
                 Text(error)
@@ -62,6 +64,7 @@ struct SpeechAnalysisSections: View {
             }
             .buttonStyle(.capsule(.secondary))
             .disabled(editor.speakerIdentifyInFlight)
+            .accessibilityIdentifier("media.speakers.identify")
             .help(L10n.string("Matches voices across clips, transcribing untranscribed timeline clips first (uses credits). Transcripts and voice fingerprints are cached, so re-runs are fast."))
         }
     }
@@ -82,6 +85,8 @@ struct SpeechAnalysisSections: View {
             .labelsHidden()
             .controlSize(.mini)
             .frame(width: AppTheme.IconSize.xl, height: AppTheme.IconSize.smMd)
+            .accessibilityLabel(L10n.string("Color"))
+            .accessibilityIdentifier("media.speaker.\(speaker.id).color")
 
             TextField(L10n.string("Name"), text: Binding(
                 get: { editor.projectSpeakers.first(where: { $0.id == speaker.id })?.name ?? speaker.name },
@@ -92,6 +97,8 @@ struct SpeechAnalysisSections: View {
             .font(.system(size: AppTheme.FontSize.sm, weight: AppTheme.FontWeight.regular))
             .foregroundStyle(AppTheme.Text.secondaryColor)
             .frame(width: AppTheme.MediaPanel.speakerNameFieldWidth)
+            .accessibilityLabel(L10n.string("Name"))
+            .accessibilityIdentifier("media.speaker.\(speaker.id).name")
 
             Button {
                 editor.removeSpeaker(id: speaker.id)
@@ -102,19 +109,22 @@ struct SpeechAnalysisSections: View {
             }
             .buttonStyle(.plain)
             .help(L10n.string("Removes this label and tint. Identify recreates it if the voice is still present."))
+            .accessibilityLabel(L10n.string("Remove"))
+            .accessibilityIdentifier("media.speaker.\(speaker.id).remove")
         }
     }
 
     private var silenceSection: some View {
         EditorPanelGroup(
             L10n.string("Silence Detection"),
+            accessibilityID: "media.silence",
             isExpanded: $silenceExpanded
         ) {
             InspectorRow(
                 label: L10n.string("Mark Silence"),
                 labelHelp: L10n.string("Speech is detected on-device in the background. Dims quiet, speech-free spans on timeline waveforms."),
                 labelAlignment: .leading,
-                onReset: { editor.markDeadAir = false }
+                accessibilityID: "media.silence.markSilence", onReset: { editor.markDeadAir = false }
             ) {
                 Toggle(String(), isOn: Binding(
                     get: { editor.markDeadAir },
@@ -124,6 +134,7 @@ struct SpeechAnalysisSections: View {
                 .controlSize(.mini)
                 .labelsHidden()
                 .accessibilityLabel(L10n.string("Mark Silence"))
+                .accessibilityIdentifier("media.silence.markSilence")
             }
             if editor.speechAnalyzingCount > 0 {
                 HStack(spacing: AppTheme.Spacing.xs) {
@@ -147,12 +158,14 @@ struct SpeechAnalysisSections: View {
                 label: L10n.string("Minimum Pause"),
                 labelHelp: L10n.string("Ignores speech-free pauses shorter than this."),
                 labelAlignment: .leading,
+                accessibilityID: "media.silence.minimumPause",
                 onReset: {
                     editor.setMinimumSilenceDuration(SilenceRemovalSettings.default.minimumPauseSeconds)
                 }
             ) {
                 durationField(
                     label: L10n.string("Minimum Pause"),
+                    accessibilityID: "media.silence.minimumPause",
                     value: editor.silenceRemovalSettings.minimumPauseSeconds,
                     range: SilenceRemovalSettings.minimumPauseRange,
                     step: 0.05,
@@ -163,12 +176,14 @@ struct SpeechAnalysisSections: View {
                 label: L10n.string("Speech Padding"),
                 labelHelp: L10n.string("Keeps this much audio before and after detected speech."),
                 labelAlignment: .leading,
+                accessibilityID: "media.silence.speechPadding",
                 onReset: {
                     editor.setSpeechPaddingDuration(SilenceRemovalSettings.default.speechPaddingSeconds)
                 }
             ) {
                 durationField(
                     label: L10n.string("Speech Padding"),
+                    accessibilityID: "media.silence.speechPadding",
                     value: editor.silenceRemovalSettings.speechPaddingSeconds,
                     range: SilenceRemovalSettings.speechPaddingRange,
                     step: 0.025,
@@ -180,6 +195,7 @@ struct SpeechAnalysisSections: View {
 
     private func durationField(
         label: String,
+        accessibilityID: String,
         value: Double,
         range: ClosedRange<Double>,
         step: Double,
@@ -197,6 +213,7 @@ struct SpeechAnalysisSections: View {
             onCommit: set
         )
         .accessibilityLabel(L10n.string(key: label))
+        .accessibilityIdentifier(accessibilityID)
     }
 
     private var silenceActions: some View {
@@ -212,6 +229,7 @@ struct SpeechAnalysisSections: View {
             Button(L10n.string("Remove")) { editor.removeAllDeadAir() }
                 .buttonStyle(.capsule(.secondary))
                 .disabled(count == 0)
+                .accessibilityIdentifier("media.silence.remove")
                 .help(L10n.string("Ripple-deletes every silent section; downstream clips close the gaps."))
         }
     }

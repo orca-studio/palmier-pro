@@ -4,6 +4,7 @@ struct TitleTabBar: View {
     struct Item: Identifiable {
         let titleKey: String
         let systemImage: String
+        var accessibilityID: String? = nil
 
         var id: String { titleKey }
     }
@@ -57,6 +58,7 @@ struct TitleTabBar: View {
         .focusable(false)
         .accessibilityLabel(L10n.string(key: item.titleKey))
         .accessibilityAddTraits(active ? .isSelected : [])
+        .accessibilityIdentifier(item.accessibilityID ?? "")
         if let anchor = tourAnchors[item.id] {
             button.tourAnchor(anchor)
         } else {

@@ -89,7 +89,7 @@ struct AgentPanelView: View {
                 }
                 newTabButton
                 historyButton
-                ViewSkillsButton()
+                ViewSkillsButton(accessibilityID: "agent.viewSkills")
             }
             .padding(.horizontal, AppTheme.Spacing.sm)
             .frame(maxWidth: .infinity)
@@ -109,6 +109,8 @@ struct AgentPanelView: View {
         .buttonStyle(.plain)
         .focusable(false)
         .help(L10n.string("New chat"))
+        .accessibilityLabel(L10n.string("New chat"))
+        .accessibilityIdentifier("agent.newChat")
     }
 
     @State private var showHistory = false
@@ -124,6 +126,8 @@ struct AgentPanelView: View {
         .buttonStyle(.plain)
         .focusable(false)
         .help(L10n.string("Chat history"))
+        .accessibilityLabel(L10n.string("Chat history"))
+        .accessibilityIdentifier("agent.history")
         .popover(isPresented: $showHistory, arrowEdge: .top) {
             ChatHistoryList(
                 sessions: service.sessions.sorted { $0.updatedAt > $1.updatedAt },
@@ -146,6 +150,7 @@ struct AgentPanelView: View {
                     Text(verbatim: model.displayName)
                 }
                 .disabled(!service.canSelectModel(model))
+                .accessibilityIdentifier("agent.model.\(model.rawValue)")
             }
         } label: {
             footerPickerLabel(service.model.displayName) {
@@ -162,6 +167,7 @@ struct AgentPanelView: View {
         .layoutPriority(1)
         .accessibilityLabel(L10n.string("Model"))
         .accessibilityValue(Text(verbatim: service.model.displayName))
+        .accessibilityIdentifier("agent.model")
         .help(L10n.string("Model"))
     }
 
@@ -176,6 +182,7 @@ struct AgentPanelView: View {
                         selected: effort == service.reasoningEffort
                     )
                 }
+                .accessibilityIdentifier("agent.reasoningEffort.\(effort.rawValue)")
             }
         } label: {
             footerPickerLabel(L10n.string(key: service.reasoningEffort.labelKey)) {
@@ -190,6 +197,7 @@ struct AgentPanelView: View {
         .menuIndicator(.hidden)
         .accessibilityLabel(L10n.string("Reasoning effort"))
         .accessibilityValue(L10n.string(key: service.reasoningEffort.labelKey))
+        .accessibilityIdentifier("agent.reasoningEffort")
         .help(L10n.string("Reasoning effort"))
     }
 
@@ -318,6 +326,8 @@ struct AgentPanelView: View {
         .buttonStyle(.plain)
         .focusable(false)
         .help(L10n.string("Scroll to latest"))
+        .accessibilityLabel(L10n.string("Scroll to latest"))
+        .accessibilityIdentifier("agent.scrollToLatest")
     }
 
     @ViewBuilder
@@ -335,6 +345,7 @@ struct AgentPanelView: View {
                     }
                     .buttonStyle(.capsule(.secondary))
                     .controlSize(.small)
+                    .accessibilityIdentifier("agent.errorAction")
                 }
             }
         }
@@ -426,6 +437,7 @@ struct AgentPanelView: View {
                     .font(.system(size: AppTheme.FontSize.mdLg, weight: .semibold))
             }
             .buttonStyle(.capsule(.prominent, size: .regular))
+            .accessibilityIdentifier("agent.setUpAccess")
 
             if !account.isSignedIn {
                 Text(L10n.string("First-time sign-ups only"))
@@ -443,6 +455,7 @@ struct AgentPanelView: View {
             .buttonStyle(.plain)
             .font(.system(size: AppTheme.FontSize.smMd, weight: .medium))
             .hoverHighlight(cornerRadius: AppTheme.Radius.sm)
+            .accessibilityIdentifier("agent.addOwnKey")
         }
     }
 
@@ -583,6 +596,7 @@ private struct AgentStarterPromptButton: View {
         .buttonStyle(.plain)
         .focusable(false)
         .help(L10n.string("Fill prompt"))
+        .accessibilityIdentifier("agent.starterPrompt.\(starterPrompt.id)")
     }
 }
 
@@ -605,6 +619,7 @@ private struct ChatTabView: View {
         .buttonStyle(.plain)
         .documentTabChrome(isActive: isActive, isCloseable: true, onClose: onClose)
         .accessibilityAddTraits(isActive ? .isSelected : [])
+        .accessibilityIdentifier("agent.tab.\(session.id)")
     }
 
     private var displayTitle: String {

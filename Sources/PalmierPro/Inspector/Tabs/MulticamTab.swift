@@ -9,7 +9,10 @@ struct MulticamTab: View {
         let _ = timelineColors.revision
 
         if let group = editor.multicamGroup(id: groupId) {
-            EditorPanelGroup(group.name.isEmpty ? L10n.string("Multicam") : group.name) {
+            EditorPanelGroup(
+                group.name.isEmpty ? L10n.string("Multicam") : group.name,
+                accessibilityID: "inspector.multicam"
+            ) {
                 ForEach(group.members) { member in
                     memberRow(member, group: group)
                 }

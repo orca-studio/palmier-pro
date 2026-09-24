@@ -73,6 +73,7 @@ struct SkillRow: View {
     let working: Bool
     var summaryAction: (() -> Void)? = nil
     var deleteAction: (() -> Void)? = nil
+    let accessibilityID: String
     let action: () -> Void
 
     var body: some View {
@@ -98,6 +99,7 @@ struct SkillRow: View {
                                 primaryAction ? .prominent : .secondary,
                                 fill: primaryAction ? nil : AnyShapeStyle(AppTheme.Background.raisedColor)
                             ))
+                            .accessibilityIdentifier("\(accessibilityID).action")
 
                         if let deleteAction {
                             Button(role: .destructive, action: deleteAction) {
@@ -110,6 +112,7 @@ struct SkillRow: View {
                             .buttonStyle(.plain)
                             .accessibilityLabel(L10n.string("Delete Skill"))
                             .help(L10n.string("Delete Skill"))
+                            .accessibilityIdentifier("\(accessibilityID).delete")
                         }
                     }
                 }
@@ -130,6 +133,7 @@ struct SkillRow: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(L10n.string("Open \(name)"))
+            .accessibilityIdentifier("\(accessibilityID).open")
         } else {
             SkillRowSummary(name: name, description: description)
         }
@@ -163,6 +167,7 @@ struct SkillEmptyState: View {
     let title: String
     let message: String
     let actionTitle: String
+    let actionAccessibilityID: String
     let action: () -> Void
 
     var body: some View {
@@ -181,6 +186,7 @@ struct SkillEmptyState: View {
                 .fixedSize(horizontal: false, vertical: true)
             Button(actionTitle, action: action)
                 .buttonStyle(.capsule(.secondary, fill: AnyShapeStyle(AppTheme.Background.raisedColor)))
+                .accessibilityIdentifier(actionAccessibilityID)
         }
         .frame(maxWidth: .infinity)
         .padding(AppTheme.Spacing.xlXxl)

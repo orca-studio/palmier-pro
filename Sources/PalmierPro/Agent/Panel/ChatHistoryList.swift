@@ -59,6 +59,8 @@ struct ChatHistoryList: View {
                 .buttonStyle(.plain)
                 .focusable(false)
                 .help(L10n.string("Delete from history"))
+                .accessibilityLabel(L10n.string("Delete from history"))
+                .accessibilityIdentifier("agent.history.\(session.id).delete")
             }
         }
         .padding(.horizontal, AppTheme.Spacing.md)
@@ -66,5 +68,9 @@ struct ChatHistoryList: View {
         .background(isCurrent ? AppTheme.Accent.primary.opacity(0.15) : .clear)
         .contentShape(Rectangle())
         .onTapGesture { onSelect(session.id) }
+        .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(isCurrent ? [.isButton, .isSelected] : .isButton)
+        .accessibilityAction { onSelect(session.id) }
+        .accessibilityIdentifier("agent.history.\(session.id)")
     }
 }

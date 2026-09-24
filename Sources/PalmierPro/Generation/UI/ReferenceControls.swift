@@ -60,6 +60,7 @@ struct RefCard: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(L10n.string("Remove \(asset.name)"))
+                .accessibilityIdentifier("generation.reference.\(asset.id).remove")
             }
     }
 }
@@ -105,6 +106,7 @@ struct RefDropZone: View {
 /// reports type mismatches through onError.
 struct FrameSlot: View {
     let label: String
+    let accessibilityID: String
     let asset: MediaAsset?
     @Binding var isTargeted: Bool
     var accepting: Set<ClipType> = [.image]
@@ -136,6 +138,7 @@ struct FrameSlot: View {
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(L10n.string("Remove \(asset.name)"))
+                        .accessibilityIdentifier("\(accessibilityID).remove")
                     }
             } else {
                 RefDropZone(

@@ -16,12 +16,15 @@ struct MatteSheet: View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
             row(icon: "paintpalette", label: L10n.string("Color")) {
                 ColorField(displayColor: color, onUserChange: { color = $0 }, supportsOpacity: false)
+                    .accessibilityIdentifier("media.matte.color")
             }
             row(icon: "aspectratio", label: L10n.string("Aspect")) {
                 Picker(String(), selection: $aspect) {
                     ForEach(MatteAspect.allCases) { Text($0.rawValue).tag($0) }
                 }
                 .labelsHidden()
+                .accessibilityLabel(L10n.string("Aspect"))
+                .accessibilityIdentifier("media.matte.aspect")
             }
             row(icon: "ruler", label: L10n.string("Size")) {
                 Text(verbatim: "\(dims.width) × \(dims.height)")
@@ -44,6 +47,7 @@ struct MatteSheet: View {
             }
             .buttonStyle(.plain)
             .disabled(isCreating)
+            .accessibilityIdentifier("media.matte.create")
             .padding(.top, AppTheme.Spacing.xs)
         }
         .padding(AppTheme.Spacing.lgXl)

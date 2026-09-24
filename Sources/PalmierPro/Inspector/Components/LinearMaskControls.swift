@@ -10,10 +10,10 @@ struct LinearMaskControls: View {
                 HStack {
                     Text(L10n.string("Position"))
                     Spacer()
-                    field(linear.centerX, range: -2...2, label: "X") {
+                    field(linear.centerX, range: -2...2, label: "X", accessibilityID: "inspector.mask.position.x") {
                         editor.setLinearMaskValue(clipId: clip.id, keyPath: \.centerX, value: $0)
                     }
-                    field(linear.centerY, range: -2...2, label: "Y") {
+                    field(linear.centerY, range: -2...2, label: "Y", accessibilityID: "inspector.mask.position.y") {
                         editor.setLinearMaskValue(clipId: clip.id, keyPath: \.centerY, value: $0)
                     }
                 }
@@ -23,15 +23,19 @@ struct LinearMaskControls: View {
                     ScrubbableNumberField(value: linear.rotation, range: -180...180, valueSuffix: "°") {
                         editor.setLinearMaskValue(clipId: clip.id, keyPath: \.rotation, value: $0)
                     }
+                    .accessibilityLabel(L10n.string("Rotation"))
+                    .accessibilityIdentifier("inspector.mask.rotation")
                 }
             }
             .font(.system(size: AppTheme.FontSize.sm))
         }
     }
 
-    private func field(_ value: Double, range: ClosedRange<Double>, label: String,
+    private func field(_ value: Double, range: ClosedRange<Double>, label: String, accessibilityID: String,
                        commit: @escaping (Double) -> Void) -> some View {
         ScrubbableNumberField(value: value, range: range, format: "%.2f",
                               dragSensitivity: 0.01, trailingLabel: label, onCommit: commit)
+            .accessibilityLabel(Text(verbatim: "\(L10n.string("Position")) \(label)"))
+            .accessibilityIdentifier(accessibilityID)
     }
 }

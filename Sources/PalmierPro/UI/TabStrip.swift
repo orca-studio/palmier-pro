@@ -40,6 +40,7 @@ extension TabStrip where Trailing == EmptyView {
 }
 
 struct TabCloseButton: View {
+    var accessibilityID: String? = nil
     let action: () -> Void
 
     var body: some View {
@@ -51,6 +52,8 @@ struct TabCloseButton: View {
                 .hoverHighlight(cornerRadius: AppTheme.Radius.xs)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(L10n.string("Close Tab"))
+        .accessibilityIdentifier(accessibilityID ?? "")
     }
 }
 

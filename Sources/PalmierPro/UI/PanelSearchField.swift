@@ -5,6 +5,7 @@ private struct PanelSearchField: View {
     let focus: FocusState<Bool>.Binding
     let onClear: () -> Void
     let onExit: () -> Void
+    let accessibilityID: String?
 
     var body: some View {
         HStack(spacing: AppTheme.Spacing.xs) {
@@ -17,6 +18,7 @@ private struct PanelSearchField: View {
                 .foregroundStyle(AppTheme.Text.primaryColor)
                 .focused(focus)
                 .onExitCommand(perform: onExit)
+                .accessibilityIdentifier(accessibilityID ?? "")
             if !text.isEmpty {
                 Button(action: onClear) {
                     Image(systemName: "xmark.circle.fill")
@@ -26,6 +28,8 @@ private struct PanelSearchField: View {
                 .buttonStyle(.plain)
                 .focusable(false)
                 .help(L10n.string("Clear search"))
+                .accessibilityLabel(L10n.string("Clear search"))
+                .accessibilityIdentifier(accessibilityID.map { "\($0).clear" } ?? "")
             }
         }
         .padding(.leading, AppTheme.Spacing.smMd)
@@ -50,6 +54,7 @@ struct ExpandablePanelSearch: View {
     @Environment(EditorViewModel.self) private var editor
     @Binding var text: String
     let focus: FocusState<Bool>.Binding
+    var accessibilityID: String? = nil
 
     var body: some View {
         Group {
@@ -58,7 +63,8 @@ struct ExpandablePanelSearch: View {
                     text: $text,
                     focus: focus,
                     onClear: collapse,
-                    onExit: collapse
+                    onExit: collapse,
+                    accessibilityID: accessibilityID
                 )
                 .transition(.opacity.combined(with: .scale(
                     scale: AppTheme.Opacity.prominent,
@@ -78,6 +84,8 @@ struct ExpandablePanelSearch: View {
                     L10n.string("Search (⌘K)"),
                     alignment: .bottomTrailing
                 )
+                .accessibilityLabel(L10n.string("Search"))
+                .accessibilityIdentifier(accessibilityID.map { "\($0).expand" } ?? "")
             }
         }
         .onAppear { consumeFocusRequest() }

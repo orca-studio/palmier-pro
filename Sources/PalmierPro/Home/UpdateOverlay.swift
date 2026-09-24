@@ -39,11 +39,13 @@ struct UpdateOverlay: View {
                         .foregroundStyle(AppTheme.Text.tertiaryColor)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("home.whatsNew.changelog")
                 }
                 Spacer()
                 Button(L10n.string("Continue")) { onDismiss() }
                     .buttonStyle(.capsule(.prominent, size: .regular))
                     .keyboardShortcut(.defaultAction)
+                    .accessibilityIdentifier("home.whatsNew.continue")
             }
             .padding(.top, AppTheme.Spacing.lg)
         }

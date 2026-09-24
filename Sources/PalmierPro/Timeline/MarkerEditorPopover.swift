@@ -25,8 +25,12 @@ struct MarkerEditorPopover: View {
                 GridRow {
                     fieldLabel(L10n.string("Time"))
                     timeField(\.startFrame)
+                        .accessibilityLabel(L10n.string("Time"))
+                        .accessibilityIdentifier("timeline.marker.time")
                     fieldLabel(L10n.string("Duration"))
                     timeField(\.durationFrames)
+                        .accessibilityLabel(L10n.string("Duration"))
+                        .accessibilityIdentifier("timeline.marker.duration")
                 }
                 GridRow {
                     fieldLabel(L10n.string("Name"))
@@ -35,6 +39,8 @@ struct MarkerEditorPopover: View {
                         .padding(.horizontal, AppTheme.Spacing.sm)
                         .editorValueField(fill: AppTheme.Background.raisedColor)
                         .gridCellColumns(3)
+                        .accessibilityLabel(L10n.string("Name"))
+                        .accessibilityIdentifier("timeline.marker.name")
                 }
                 GridRow {
                     fieldLabel(L10n.string("Comments"))
@@ -50,6 +56,8 @@ struct MarkerEditorPopover: View {
                             fill: AppTheme.Background.raisedColor
                         )
                         .gridCellColumns(3)
+                        .accessibilityLabel(L10n.string("Comments"))
+                        .accessibilityIdentifier("timeline.marker.comment")
                 }
                 GridRow {
                     fieldLabel(L10n.string("Color"))
@@ -63,10 +71,12 @@ struct MarkerEditorPopover: View {
                     onDismiss()
                 }
                 .buttonStyle(.capsule(.secondary, size: .small))
+                .accessibilityIdentifier("timeline.marker.remove")
                 Spacer()
                 Button(L10n.string("Done")) { apply() }
                     .buttonStyle(.capsule(.prominent, size: .small))
                     .keyboardShortcut(.return, modifiers: .command)
+                    .accessibilityIdentifier("timeline.marker.done")
             }
         }
         .padding(AppTheme.Spacing.md)

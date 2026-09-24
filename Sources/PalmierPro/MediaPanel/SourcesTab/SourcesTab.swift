@@ -55,6 +55,8 @@ struct SourcesTab: View {
             .overlay(Capsule().strokeBorder(AppTheme.Border.primaryColor, lineWidth: AppTheme.BorderWidth.hairline))
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+        .accessibilityIdentifier("media.sources.provider.\(p.id)")
     }
 
     private var typeSwitcher: some View {
@@ -71,6 +73,8 @@ struct SourcesTab: View {
                         .background(Capsule().fill(selected ? AppTheme.Background.prominentColor : .clear))
                 }
                 .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+                .accessibilityIdentifier("media.sources.type.\(t.rawValue)")
             }
             Spacer(minLength: 0)
         }
@@ -87,6 +91,8 @@ struct SourcesTab: View {
                 .textFieldStyle(.plain)
                 .font(.system(size: AppTheme.FontSize.xs))
                 .onSubmit { Task { await model.reload() } }
+                .accessibilityLabel(L10n.string("Search"))
+                .accessibilityIdentifier("media.sources.search")
             if !model.searchText.isEmpty {
                 Button {
                     model.searchText = ""
@@ -97,6 +103,8 @@ struct SourcesTab: View {
                         .foregroundStyle(AppTheme.Text.tertiaryColor)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(L10n.string("Clear search"))
+                .accessibilityIdentifier("media.sources.search.clear")
             }
         }
         .padding(.horizontal, AppTheme.Spacing.smMd)
@@ -148,6 +156,7 @@ struct SourcesTab: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(model.isLoading)
+                .accessibilityIdentifier("media.sources.loadMore")
                 .padding(.bottom, AppTheme.Spacing.md)
             }
         }
@@ -168,6 +177,7 @@ struct SourcesTab: View {
                 Task { await model.refreshHealth(); await model.reload() }
             }
             .font(.system(size: AppTheme.FontSize.xs))
+            .accessibilityIdentifier("media.sources.retry")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

@@ -66,6 +66,7 @@ struct MCPInstructionsPane: View {
             )
         ) {
             Button(L10n.string("Dismiss")) { claudeInstallError = nil }
+                .accessibilityIdentifier("help.mcp.claudeDesktopError.dismiss")
         } message: {
             Text(verbatim: claudeInstallError ?? L10n.string("Try again."))
         }
@@ -76,7 +77,8 @@ struct MCPInstructionsPane: View {
             content: mcpEndpoint,
             fontSize: AppTheme.FontSize.sm,
             foreground: AppTheme.Text.primaryColor,
-            verticalPadding: AppTheme.Spacing.smMd
+            verticalPadding: AppTheme.Spacing.smMd,
+            copyAccessibilityID: "help.mcp.serverURL.copy"
         )
     }
 
@@ -97,11 +99,13 @@ struct MCPInstructionsPane: View {
             .cursor,
             name: "Cursor",
             description: L10n.string("Install the Palmier Pro MCP server in Cursor."),
-            action: (L10n.string("Install in Cursor"), openCursor)
+            action: (L10n.string("Install in Cursor"), "help.mcp.cursor.install", openCursor)
         ) {
             ManualFallback(
                 intro: L10n.string("Add this configuration to ~/.cursor/mcp.json."),
-                code: cursorJSONConfig
+                code: cursorJSONConfig,
+                toggleAccessibilityID: "help.mcp.cursor.manualSetup",
+                copyAccessibilityID: "help.mcp.cursor.config.copy"
             )
         }
     }
@@ -111,7 +115,7 @@ struct MCPInstructionsPane: View {
             .claude,
             name: "Claude Desktop",
             description: L10n.string("Install the bundled Palmier Pro connector."),
-            action: (L10n.string("Install in Claude Desktop"), openClaudeDesktopBundle)
+            action: (L10n.string("Install in Claude Desktop"), "help.mcp.claudeDesktop.install", openClaudeDesktopBundle)
         ) {
             EmptyView()
         }
@@ -123,7 +127,7 @@ struct MCPInstructionsPane: View {
             name: "Claude Code",
             description: L10n.string("Run this command once in Terminal.")
         ) {
-            CodeBlockView(content: claudeCodeCommand)
+            CodeBlockView(content: claudeCodeCommand, copyAccessibilityID: "help.mcp.claudeCode.command.copy")
         }
     }
 
@@ -133,7 +137,7 @@ struct MCPInstructionsPane: View {
             name: "Codex",
             description: L10n.string("Run this command once in Terminal.")
         ) {
-            CodeBlockView(content: codexCommand)
+            CodeBlockView(content: codexCommand, copyAccessibilityID: "help.mcp.codex.command.copy")
         }
     }
 
@@ -145,7 +149,7 @@ struct MCPInstructionsPane: View {
         _ agent: SkillExternalAgent,
         name: String,
         description: String,
-        action: (label: String, perform: () -> Void)? = nil,
+        action: (label: String, accessibilityID: String, perform: () -> Void)? = nil,
         @ViewBuilder details: () -> Details
     ) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
@@ -154,6 +158,7 @@ struct MCPInstructionsPane: View {
                 if let action {
                     Spacer(minLength: AppTheme.Spacing.md)
                     externalAction(action.label, action: action.perform)
+                        .accessibilityIdentifier(action.accessibilityID)
                 }
             }
             details()
@@ -229,6 +234,7 @@ private struct CodeBlockView: View {
     var fontSize = AppTheme.FontSize.xs
     var foreground = AppTheme.Text.secondaryColor
     var verticalPadding = AppTheme.Spacing.md
+    let copyAccessibilityID: String
 
     var body: some View {
         HStack(alignment: .top, spacing: AppTheme.Spacing.smMd) {
@@ -239,6 +245,7 @@ private struct CodeBlockView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             CopyButton(value: content)
+                .accessibilityIdentifier(copyAccessibilityID)
         }
         .padding(.horizontal, AppTheme.Spacing.mdLg)
         .padding(.vertical, verticalPadding)
@@ -249,6 +256,8 @@ private struct CodeBlockView: View {
 private struct ManualFallback: View {
     let intro: String
     let code: String
+    let toggleAccessibilityID: String
+    let copyAccessibilityID: String
     @State private var expanded = false
 
     var body: some View {
@@ -265,6 +274,7 @@ private struct ManualFallback: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier(toggleAccessibilityID)
 
             if expanded {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
@@ -272,7 +282,7 @@ private struct ManualFallback: View {
                         .font(.system(size: AppTheme.FontSize.sm, weight: AppTheme.FontWeight.regular))
                         .foregroundStyle(AppTheme.Text.tertiaryColor)
                         .fixedSize(horizontal: false, vertical: true)
-                    CodeBlockView(content: code)
+                    CodeBlockView(content: code, copyAccessibilityID: copyAccessibilityID)
                 }
             }
         }
@@ -301,6 +311,7 @@ private struct CopyButton: View {
         }
         .buttonStyle(.plain)
         .help(copied ? L10n.string("Copied") : L10n.string("Copy"))
+        .accessibilityLabel(copied ? L10n.string("Copied") : L10n.string("Copy"))
     }
 
     private func copy() {

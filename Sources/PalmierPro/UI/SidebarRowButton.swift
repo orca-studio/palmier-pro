@@ -4,6 +4,7 @@ struct SidebarRowButton: View {
     let label: String
     let systemImage: String
     var isSelected: Bool = false
+    var accessibilityID: String? = nil
     let action: () -> Void
 
     var body: some View {
@@ -23,5 +24,6 @@ struct SidebarRowButton: View {
             .contentShape(Capsule(style: .continuous))
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier(accessibilityID ?? "")
     }
 }

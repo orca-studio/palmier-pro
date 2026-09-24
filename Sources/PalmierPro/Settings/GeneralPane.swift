@@ -33,6 +33,7 @@ struct GeneralPane: View {
                     .fixedSize()
                     .accessibilityLabel(L10n.string("Language"))
                     .accessibilityHint(L10n.string("Language for the editor UI"))
+                    .accessibilityIdentifier("settings.general.language")
                 }
 
                 if localization.requiresRestart {
@@ -49,6 +50,7 @@ struct GeneralPane: View {
                         }
                         .buttonStyle(.capsule(.secondary))
                         .fixedSize()
+                        .accessibilityIdentifier("settings.general.restart")
                     }
                 }
             }

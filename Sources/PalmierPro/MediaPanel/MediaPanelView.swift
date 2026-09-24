@@ -39,7 +39,7 @@ struct MediaPanelView: View {
         VStack(spacing: AppTheme.Spacing.zero) {
             TitleTabBar(
                 items: MediaPanelSection.allCases.map {
-                    TitleTabBar.Item(titleKey: $0.title, systemImage: $0.icon)
+                    TitleTabBar.Item(titleKey: $0.title, systemImage: $0.icon, accessibilityID: "media.tab.\($0)")
                 },
                 selected: section.title
             ) { key in

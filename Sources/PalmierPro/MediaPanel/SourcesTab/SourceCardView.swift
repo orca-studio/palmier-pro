@@ -38,6 +38,10 @@ struct SourceCardView: View {
                 return NSItemProvider(object: SourceDragPayload(card: card).encoded() as NSString)
             }
             .help(helpText)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(verbatim: card.name))
+            .accessibilityAddTraits(.isButton)
+            .accessibilityIdentifier("media.sources.card.\(card.id)")
 
             Text(card.name)
                 .font(.system(size: AppTheme.FontSize.xs))

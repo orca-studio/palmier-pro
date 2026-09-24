@@ -35,6 +35,7 @@ struct CurveEditorView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
+            .accessibilityIdentifier("inspector.adjust.curves.channel")
 
             GeometryReader { geo in
                 let size = CGSize(width: geo.size.width, height: AppTheme.Curve.editorHeight)

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TopOffField<Trailing: View>: View {
     @Binding var dollars: Int
+    let accessibilityID: String
     var controlSize: ControlSize = .regular
     var fillWidth: Bool = true
     var fieldFill: Color = AppTheme.Background.surfaceColor
@@ -25,6 +26,8 @@ struct TopOffField<Trailing: View>: View {
                     .frame(width: AppTheme.Settings.creditInputWidth)
                     .themedSurface(fieldFill, cornerRadius: AppTheme.Radius.sm)
                     .disabled(account.isBuyingCredits)
+                    .accessibilityIdentifier("\(accessibilityID).amount")
+                    .accessibilityLabel(L10n.string("Amount"))
                 Text(credits == 1
                     ? L10n.string("= 1 credit")
                     : L10n.string("= \(credits) credits"))
@@ -56,6 +59,7 @@ struct TopOffField<Trailing: View>: View {
                 }
                 .buttonStyle(.capsule(.secondary, size: capsuleSize, fill: buttonFill))
                 .disabled(account.isBuyingCredits || !isValid)
+                .accessibilityIdentifier("\(accessibilityID).buy")
 
                 trailing()
             }
@@ -80,6 +84,7 @@ struct TopOffField<Trailing: View>: View {
 extension TopOffField where Trailing == EmptyView {
     init(
         dollars: Binding<Int>,
+        accessibilityID: String,
         controlSize: ControlSize = .regular,
         fillWidth: Bool = true,
         fieldFill: Color = AppTheme.Background.surfaceColor,
@@ -89,6 +94,7 @@ extension TopOffField where Trailing == EmptyView {
     ) {
         self.init(
             dollars: dollars,
+            accessibilityID: accessibilityID,
             controlSize: controlSize,
             fillWidth: fillWidth,
             fieldFill: fieldFill,

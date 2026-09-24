@@ -17,6 +17,7 @@ extension GenerationView {
                     .controlSize(.small)
                     .font(.system(size: AppTheme.FontSize.xs, weight: .medium))
                     .foregroundStyle(AppTheme.Text.tertiaryColor)
+                    .accessibilityIdentifier("generation.upscale.\(setting.id)")
             }
         }
     }
@@ -27,8 +28,10 @@ extension GenerationView {
             if options.count <= 4 {
                 settingsPicker(
                     setting.label,
+                    accessibilityID: "generation.upscale.\(setting.id)",
                     selection: upscaleSelectionBinding(setting, options: options),
-                    options: options
+                    options: options,
+                    optionID: \.value
                 ) { $0.label }
             } else {
                 let selection = upscaleSelectionBinding(setting, options: options)
@@ -41,20 +44,23 @@ extension GenerationView {
                         ForEach(upscaleOptionGroups(options)) { group in
                             if let title = group.title {
                                 Section {
-                                    upscaleOptionButtons(group.options, selection: selection, selected: selected)
+                                    upscaleOptionButtons(group.options, settingID: setting.id, selection: selection, selected: selected)
                                 } header: {
                                     Text(verbatim: group.description.map { "\(title): \($0)" } ?? title)
                                 }
                             } else {
-                                upscaleOptionButtons(group.options, selection: selection, selected: selected)
+                                upscaleOptionButtons(group.options, settingID: setting.id, selection: selection, selected: selected)
                             }
                         }
                     } label: {
                         EditorMenuValue(text: selected.label, expanded: true)
                     }
                     .menuStyle(.button)
+                    .accessibilityElement(children: .combine)
                     .buttonStyle(.plain)
                     .menuIndicator(.hidden)
+                    .accessibilityIdentifier("generation.upscale.\(setting.id)")
+                    .accessibilityLabel(setting.label)
                     if let description = selected.description {
                         Text(verbatim: description)
                             .font(.system(size: AppTheme.FontSize.xxs))
@@ -83,6 +89,7 @@ extension GenerationView {
     @ViewBuilder
     private func upscaleOptionButtons(
         _ options: [UpscaleSelectOption],
+        settingID: String,
         selection: Binding<UpscaleSelectOption>,
         selected: UpscaleSelectOption
     ) -> some View {
@@ -96,6 +103,7 @@ extension GenerationView {
                     Text(upscaleOptionMenuTitle(option))
                 }
             }
+            .accessibilityIdentifier("generation.upscale.\(settingID).\(option.value)")
         }
     }
 
@@ -147,7 +155,9 @@ extension GenerationView {
                 dragValueAdjustment: { snappedUpscaleValue($0, setting: setting) },
                 onChanged: setValue
             ) { setValue($0) }
-            EditorResetButton(title: setting.label) {
+            .accessibilityIdentifier("generation.upscale.\(setting.id)")
+            .accessibilityLabel(setting.label)
+            EditorResetButton(title: setting.label, accessibilityID: "generation.upscale.\(setting.id).reset") {
                 upscaleSettings.numbers.removeValue(forKey: setting.id)
             }
         }

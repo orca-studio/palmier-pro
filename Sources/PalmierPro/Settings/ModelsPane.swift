@@ -73,6 +73,8 @@ struct ModelsPane: View {
                 .font(.system(size: AppTheme.FontSize.sm))
                 .foregroundStyle(AppTheme.Text.mutedColor)
             TextField(L10n.string("Search models"), text: $query)
+                .accessibilityLabel(L10n.string("Search models"))
+                .accessibilityIdentifier("settings.models.search")
                 .textFieldStyle(.plain)
                 .font(.system(size: AppTheme.FontSize.sm))
                 .foregroundStyle(AppTheme.Text.primaryColor)
@@ -120,6 +122,7 @@ struct ModelsPane: View {
                     SettingsWindowController.shared.show(tab: .account)
                 }
                 .buttonStyle(.capsule(.secondary))
+                .accessibilityIdentifier("settings.models.\(row.id).subscribe")
             } else {
                 Toggle(String(), isOn: Binding(
                     get: { prefs.isEnabled(row.id) },
@@ -129,6 +132,7 @@ struct ModelsPane: View {
                 .toggleStyle(.switch)
                 .controlSize(.mini)
                 .accessibilityLabel(row.displayName)
+                .accessibilityIdentifier("settings.models.\(row.id).enabled")
             }
         }
         .padding(.vertical, AppTheme.Spacing.smMd)

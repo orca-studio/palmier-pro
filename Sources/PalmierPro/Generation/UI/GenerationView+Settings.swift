@@ -48,6 +48,7 @@ extension GenerationView {
                 .buttonStyle(.plain)
                 .help(L10n.string(key: type.title))
                 .accessibilityLabel(L10n.string(key: type.title))
+                .accessibilityIdentifier("generation.type.\(type.rawValue)")
             }
         }
         .padding(AppTheme.Spacing.xxs)
@@ -75,6 +76,7 @@ extension GenerationView {
                             } label: {
                                 modelMenuLabel(item.model.entry)
                             }
+                            .accessibilityIdentifier("generation.model.\(item.model.entry.id)")
                         }
                     } header: {
                         modelFamilyHeader(group)
@@ -87,6 +89,7 @@ extension GenerationView {
                     } label: {
                         modelMenuLabel(item.model.entry)
                     }
+                    .accessibilityIdentifier("generation.model.\(item.model.entry.id)")
                 }
             case .audio:
                 ForEach(AudioModelConfig.Category.allCases, id: \.self) { category in
@@ -98,6 +101,7 @@ extension GenerationView {
                                 } label: {
                                     modelMenuLabel(item.model.entry)
                                 }
+                                .accessibilityIdentifier("generation.model.\(item.model.entry.id)")
                             }
                         }
                     }
@@ -112,6 +116,7 @@ extension GenerationView {
                                 } label: {
                                     modelMenuLabel(item.model.entry)
                                 }
+                                .accessibilityIdentifier("generation.model.\(item.model.entry.id)")
                             }
                         }
                     }
@@ -123,6 +128,7 @@ extension GenerationView {
             } label: {
                 Label(L10n.string("Add models…"), systemImage: "plus")
             }
+            .accessibilityIdentifier("generation.addModels")
         } label: {
             HStack(spacing: AppTheme.Spacing.xs) {
                 if let iconKey = currentProviderIconKey {
@@ -143,6 +149,7 @@ extension GenerationView {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .hoverHighlight()
+        .accessibilityIdentifier("generation.model")
     }
 
     private var currentProviderIconKey: String? {
@@ -184,6 +191,7 @@ extension GenerationView {
             if let voices = audioModel.voices {
                 ForEach(voices, id: \.self) { voice in
                     Button(voice) { selectedVoice = voice }
+                        .accessibilityIdentifier("generation.voice.\(voice)")
                 }
             }
         } label: {
@@ -206,6 +214,7 @@ extension GenerationView {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .hoverHighlight()
+        .accessibilityIdentifier("generation.voice")
     }
 
     var languagePicker: some View {
@@ -215,6 +224,7 @@ extension GenerationView {
                     Button(AudioModelConfig.languageName(code, locale: AppLocalization.shared.activeLocale)) {
                         selectedTargetLanguage = code
                     }
+                    .accessibilityIdentifier("generation.language.\(code)")
                 }
             }
         } label: {
@@ -241,6 +251,7 @@ extension GenerationView {
         .menuIndicator(.hidden)
         .hoverHighlight()
         .help(L10n.string("Target Language"))
+        .accessibilityIdentifier("generation.language")
     }
 
     // MARK: - Settings
@@ -311,6 +322,7 @@ extension GenerationView {
             .hoverHighlight()
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("generation.settings")
         .popover(isPresented: $showSettingsPopover, arrowEdge: .bottom) {
             settingsPopoverContent
         }
@@ -324,6 +336,7 @@ extension GenerationView {
         }
         .toggleStyle(.checkbox)
         .controlSize(.mini)
+        .accessibilityIdentifier("generation.draft")
         .help(L10n.string(
             "Generate a lower-cost 720p preview that can be enhanced later."
         ))
@@ -341,11 +354,11 @@ extension GenerationView {
         } else {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
                 if selectedType == .video {
-                    settingsPicker(L10n.string("Duration"), selection: $selectedDuration, options: videoModel.durations) { "\($0)s" }
+                    settingsPicker(L10n.string("Duration"), accessibilityID: "generation.duration", selection: $selectedDuration, options: videoModel.durations) { "\($0)s" }
                 }
                 if selectedType == .audio, !audioUsesSource {
                     if let durations = audioModel.durations {
-                        settingsPicker(L10n.string("Duration"), selection: $selectedAudioDuration, options: durations) { "\($0)s" }
+                        settingsPicker(L10n.string("Duration"), accessibilityID: "generation.audioDuration", selection: $selectedAudioDuration, options: durations) { "\($0)s" }
                     } else if let range = audioModel.durationRange {
                         VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
                             Text(L10n.string("Duration"))
@@ -360,12 +373,15 @@ extension GenerationView {
                                 onChanged: { selectedAudioDuration = Int($0.rounded()) }
                             ) { selectedAudioDuration = Int($0.rounded()) }
                             .help(L10n.string("Duration (\(range.minimum)-\(range.maximum) seconds)"))
+                            .accessibilityIdentifier("generation.audioDuration")
+                            .accessibilityLabel(L10n.string("Duration"))
                         }
                     }
                 }
                 if !currentAspectRatios.isEmpty {
                     settingsPicker(
                         L10n.string("Aspect Ratio"),
+                        accessibilityID: "generation.aspectRatio",
                         selection: $selectedAspectRatio,
                         options: currentAspectRatios,
                         gridMinWidth: selectedType == .image ? GenerationSettingsLayout.imageAspectGridMinWidth : nil
@@ -374,14 +390,15 @@ extension GenerationView {
                     }
                 }
                 if let resolutions = currentResolutions, !isDraftGeneration {
-                    settingsPicker(L10n.string("Resolution"), selection: $selectedResolution, options: resolutions) { resolutionLabel($0) }
+                    settingsPicker(L10n.string("Resolution"), accessibilityID: "generation.resolution", selection: $selectedResolution, options: resolutions) { resolutionLabel($0) }
                 }
                 if let qualities = currentQualities {
-                    settingsPicker(L10n.string("Quality"), selection: $selectedQuality, options: qualities) { $0.capitalized }
+                    settingsPicker(L10n.string("Quality"), accessibilityID: "generation.quality", selection: $selectedQuality, options: qualities) { $0.capitalized }
                 }
                 if selectedType == .image, imageModel.maxImages > 1 {
                     settingsPicker(
                         L10n.string("Count"),
+                        accessibilityID: "generation.imageCount",
                         selection: $selectedNumImages,
                         options: Array(1...imageModel.maxImages)
                     ) { "\($0)" }
@@ -389,12 +406,14 @@ extension GenerationView {
                 if selectedType == .audio && audioModel.supportsInstrumental {
                     Toggle(L10n.string("Instrumental"), isOn: $instrumental)
                         .controlSize(.small)
+                        .accessibilityIdentifier("generation.instrumental")
                         .font(.system(size: AppTheme.FontSize.xs, weight: .medium))
                         .foregroundStyle(AppTheme.Text.tertiaryColor)
                 }
                 if selectedType == .audio && audioModel.supportsMultilingual {
                     Toggle(L10n.string("Multilingual"), isOn: $multilingual)
                         .controlSize(.small)
+                        .accessibilityIdentifier("generation.multilingual")
                         .font(.system(size: AppTheme.FontSize.xs, weight: .medium))
                         .foregroundStyle(AppTheme.Text.tertiaryColor)
                         .help(L10n.string("Use for non-English or mixed-language audio."))
@@ -404,6 +423,7 @@ extension GenerationView {
                     let savings = discount.map { Int(((1 - $0) * 100).rounded()) }
                     Toggle(L10n.string("Generate audio"), isOn: $generateAudio)
                         .controlSize(.small)
+                        .accessibilityIdentifier("generation.generateAudio")
                         .font(.system(size: AppTheme.FontSize.xs, weight: .medium))
                         .foregroundStyle(AppTheme.Text.tertiaryColor)
                         .help(savings.map { L10n.string("Turn off to save \($0)% on generation cost.") }
@@ -419,9 +439,11 @@ extension GenerationView {
 
     func settingsPicker<T: Hashable>(
         _ label: String,
+        accessibilityID: String,
         selection: Binding<T>,
         options: [T],
         gridMinWidth: CGFloat? = nil,
+        optionID: @escaping (T) -> String = { "\($0)" },
         format: @escaping (T) -> String
     ) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
@@ -434,6 +456,8 @@ extension GenerationView {
                 }
                 .pickerStyle(.segmented)
                 .controlSize(.small)
+                .accessibilityIdentifier(accessibilityID)
+                .accessibilityLabel(label)
             } else {
                 let columns = gridMinWidth.map { [GridItem(.adaptive(minimum: $0), spacing: AppTheme.Spacing.xs)] }
                     ?? Array(repeating: GridItem(.flexible(), spacing: AppTheme.Spacing.xs), count: options.count == 6 ? 3 : 5)
@@ -458,6 +482,7 @@ extension GenerationView {
                                 )
                         }
                         .buttonStyle(.plain)
+                        .accessibilityIdentifier("\(accessibilityID).\(optionID(option))")
                     }
                 }
             }

@@ -80,6 +80,9 @@ struct ProjectCard: View {
                 onOpen(entry.url)
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityIdentifier("home.project.\(entry.id)")
         .opacity(entry.isAccessible ? 1.0 : 0.6)
         .overlay(alignment: .topTrailing) {
             if isSelecting {
@@ -99,6 +102,8 @@ struct ProjectCard: View {
                         .glassEffect(.regular, in: .circle)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(L10n.string("Delete Project"))
+                .accessibilityIdentifier("home.project.\(entry.id).delete")
                 .padding(AppTheme.Spacing.smMd)
                 .transition(.opacity.combined(with: .scale))
             }
@@ -121,13 +126,17 @@ struct ProjectCard: View {
         .contextMenu {
             if entry.isAccessible {
                 Button(L10n.string("Open")) { onOpen(entry.url) }
+                    .accessibilityIdentifier("home.project.\(entry.id).open")
                 Button(L10n.string("Reveal in Finder")) {
                     NSWorkspace.shared.selectFile(entry.url.path, inFileViewerRootedAtPath: entry.url.deletingLastPathComponent().path)
                 }
+                .accessibilityIdentifier("home.project.\(entry.id).revealInFinder")
                 Divider()
             }
             Button(L10n.string("Remove from Recents")) { onRemove(entry.url) }
+                .accessibilityIdentifier("home.project.\(entry.id).removeFromRecents")
             Button(L10n.string("Delete Project"), role: .destructive, action: onDelete)
+                .accessibilityIdentifier("home.project.\(entry.id).deleteMenuItem")
         }
         .task(id: entry.lastOpenedDate) { await loadThumbnail(for: entry.url) }
     }

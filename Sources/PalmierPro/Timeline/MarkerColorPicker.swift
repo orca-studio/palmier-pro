@@ -25,6 +25,7 @@ struct MarkerColorPicker: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text(verbatim: preset.hexString))
                 .accessibilityAddTraits(selection == preset ? .isSelected : [])
+                .accessibilityIdentifier("timeline.marker.color.\(preset.hexString.dropFirst())")
             }
         }
     }

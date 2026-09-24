@@ -110,12 +110,14 @@ final class EditorViewModel {
     enum FocusedPanel: String {
         case media, preview, inspector, timeline, agent
 
-        var accessibilityID: String { rawValue + "Panel" }
+        var accessibilityID: String { Self.accessibilityIDPrefix + rawValue }
 
         init?(accessibilityID: String) {
-            guard accessibilityID.hasSuffix("Panel") else { return nil }
-            self.init(rawValue: String(accessibilityID.dropLast(5)))
+            guard accessibilityID.hasPrefix(Self.accessibilityIDPrefix) else { return nil }
+            self.init(rawValue: String(accessibilityID.dropFirst(Self.accessibilityIDPrefix.count)))
         }
+
+        private static let accessibilityIDPrefix = "panel."
     }
 
     var focusedPanel: FocusedPanel?

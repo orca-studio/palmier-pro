@@ -3,25 +3,50 @@ import SwiftUI
 struct InspectorKeyframePropertyControl: View {
     let clips: [Clip]
     let property: AnimatableProperty
+    let label: String
+    let accessibilityID: String
 
     var body: some View {
         HStack(spacing: AppTheme.Spacing.sm) {
-            KeyframePropertyValueFields(
+            InspectorKeyframeValueFields(
                 clips: clips,
                 property: property,
-                style: .inspector
+                label: label,
+                accessibilityID: accessibilityID
             )
             InspectorKeyframeControls(
                 clipId: clips.count == 1 ? clips[0].id : nil,
-                property: property
+                property: property,
+                accessibilityID: accessibilityID
             )
         }
+    }
+}
+
+struct InspectorKeyframeValueFields: View {
+    let clips: [Clip]
+    let property: AnimatableProperty
+    let label: String
+    let accessibilityID: String
+
+    var body: some View {
+        let fields = KeyframePropertyValueFields(clips: clips, property: property, style: .inspector)
+        Group {
+            if property == .position {
+                fields.accessibilityElement(children: .contain)
+            } else {
+                fields
+            }
+        }
+        .accessibilityLabel(label)
+        .accessibilityIdentifier(accessibilityID)
     }
 }
 
 struct InspectorKeyframeControls: View {
     let clipId: String?
     let property: AnimatableProperty
+    let accessibilityID: String
 
     @Environment(EditorViewModel.self) private var editor
 
@@ -58,7 +83,8 @@ struct InspectorKeyframeControls: View {
             },
             isOnKeyframe: frames.contains(frame),
             hasKeyframes: clip?.hasActiveKeyframes(for: property) == true,
-            unavailableKeyframeHelp: L10n.string("Move playhead inside the clip")
+            unavailableKeyframeHelp: L10n.string("Move playhead inside the clip"),
+            accessibilityID: accessibilityID
         )
     }
 }

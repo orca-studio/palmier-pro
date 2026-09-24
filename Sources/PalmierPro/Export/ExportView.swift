@@ -138,6 +138,8 @@ struct ExportView: View {
                             }
                             .labelsHidden()
                             .fixedSize()
+                            .accessibilityLabel(L10n.string("Timeline"))
+                            .accessibilityIdentifier("export.timeline")
                         }
 
                         Divider().opacity(AppTheme.Opacity.moderate)
@@ -192,6 +194,8 @@ struct ExportView: View {
                     }
                 }
                 .labelsHidden()
+                .accessibilityLabel(L10n.string("Codec"))
+                .accessibilityIdentifier("export.codec")
             }
 
             Divider().opacity(AppTheme.Opacity.moderate)
@@ -210,6 +214,8 @@ struct ExportView: View {
                     }
                 }
                 .labelsHidden()
+                .accessibilityLabel(L10n.string("Resolution"))
+                .accessibilityIdentifier("export.resolution")
             }
 
             Divider().opacity(AppTheme.Opacity.moderate)
@@ -250,6 +256,8 @@ struct ExportView: View {
                 }
             }
             .labelsHidden()
+            .accessibilityLabel(L10n.string("For"))
+            .accessibilityIdentifier("export.fcpxmlTarget")
             .controlSize(.small)
             .font(.system(size: AppTheme.FontSize.xs))
             .fixedSize()
@@ -262,6 +270,8 @@ struct ExportView: View {
                 }
             }
             .labelsHidden()
+            .accessibilityLabel(L10n.string("Version"))
+            .accessibilityIdentifier("export.fcpxmlVersion")
             .controlSize(.small)
             .font(.system(size: AppTheme.FontSize.xs))
             .fixedSize()
@@ -317,7 +327,7 @@ struct ExportView: View {
 
             Spacer()
 
-            exportIconButton("trash", help: L10n.string("Clear Finished")) {
+            exportIconButton("trash", help: L10n.string("Clear Finished"), id: "export.clearFinished") {
                 exportQueue.clearFinished(for: projectQueueID)
             }
             .disabled(!projectJobs.contains { $0.status.isFinished })
@@ -441,15 +451,15 @@ struct ExportView: View {
     private func exportAction(_ job: ExportJob) -> some View {
         switch job.status {
         case .waiting:
-            exportIconButton("xmark", help: L10n.string("Remove from Queue")) { exportQueue.cancel(job.id) }
+            exportIconButton("xmark", help: L10n.string("Remove from Queue"), id: "export.job.\(job.id).remove") { exportQueue.cancel(job.id) }
         case .preparing, .exporting:
-            exportIconButton("stop.fill", help: L10n.string("Cancel Export")) { exportQueue.cancel(job.id) }
+            exportIconButton("stop.fill", help: L10n.string("Cancel Export"), id: "export.job.\(job.id).cancel") { exportQueue.cancel(job.id) }
         case .completed:
-            exportIconButton("folder", help: L10n.string("Reveal in Finder")) {
+            exportIconButton("folder", help: L10n.string("Reveal in Finder"), id: "export.job.\(job.id).reveal") {
                 NSWorkspace.shared.activateFileViewerSelecting([job.outputURL])
             }
         case .failed, .canceled:
-            exportIconButton("xmark", help: L10n.string("Dismiss")) { exportQueue.remove(job.id) }
+            exportIconButton("xmark", help: L10n.string("Dismiss"), id: "export.job.\(job.id).dismiss") { exportQueue.remove(job.id) }
         case .canceling:
             EmptyView()
         }
@@ -458,6 +468,7 @@ struct ExportView: View {
     private func exportIconButton(
         _ systemName: String,
         help: String,
+        id: String,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
@@ -468,6 +479,7 @@ struct ExportView: View {
         .buttonStyle(.plain)
         .help(help)
         .accessibilityLabel(help)
+        .accessibilityIdentifier(id)
     }
 
     // MARK: - Bottom bar
@@ -478,10 +490,12 @@ struct ExportView: View {
             Spacer()
             Button(L10n.string("Close")) { editor.showExportDialog = false }
                 .keyboardShortcut(.cancelAction)
+                .accessibilityIdentifier("export.close")
             Button(exportQueue.hasActivity ? L10n.string("Add to Queue") : L10n.string("Export")) { startExport() }
                 .buttonStyle(.glassProminent)
                 .buttonBorderShape(.capsule)
                 .keyboardShortcut(.defaultAction)
+                .accessibilityIdentifier("export.start")
         }
         .padding(.horizontal, AppTheme.Spacing.xl)
         .padding(.vertical, AppTheme.Spacing.lg)
@@ -551,6 +565,8 @@ struct ExportView: View {
         }
         .buttonStyle(.plain)
         .focusable(false)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+        .accessibilityIdentifier("export.destination.\(option)")
     }
 
     private func timelineFormatButton(_ format: TimelineExportFormat) -> some View {
@@ -591,6 +607,10 @@ struct ExportView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .onTapGesture { timelineFormat = format }
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
+            .accessibilityAction { timelineFormat = format }
+            .accessibilityIdentifier("export.format.\(format)")
 
             if selected && format == .fcpxml {
                 fcpxmlVersionRow

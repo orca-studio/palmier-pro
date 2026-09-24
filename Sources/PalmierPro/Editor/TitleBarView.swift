@@ -9,6 +9,7 @@ struct TitleBarLeadingView: View {
                 systemName: "bubble.left",
                 filledSystemName: "bubble.left.fill",
                 label: L10n.string("Agent Panel"),
+                accessibilityID: "toolbar.panel.agent",
                 isVisible: editor.agentPanelVisible
             ) {
                 editor.agentPanelVisible.toggle()
@@ -16,6 +17,7 @@ struct TitleBarLeadingView: View {
             PanelVisibilityButton(
                 systemName: "sidebar.left",
                 label: L10n.string("Media Panel"),
+                accessibilityID: "toolbar.panel.media",
                 isVisible: editor.mediaPanelVisible
             ) {
                 editor.mediaPanelVisible.toggle()
@@ -23,6 +25,7 @@ struct TitleBarLeadingView: View {
             PanelVisibilityButton(
                 systemName: "sidebar.right",
                 label: L10n.string("Inspector Panel"),
+                accessibilityID: "toolbar.panel.inspector",
                 isVisible: editor.inspectorPanelVisible
             ) {
                 editor.inspectorPanelVisible.toggle()
@@ -67,6 +70,7 @@ struct TitleBarTrailingView: View {
                     ? L10n.string("Export")
                     : L10n.string("Export, \(activeCount) active, \(waitingCount) waiting")
             )
+            .accessibilityIdentifier("toolbar.export")
 
             UserAvatarButton()
         }
@@ -89,6 +93,7 @@ private struct PanelVisibilityButton: View {
     let systemName: String
     var filledSystemName: String?
     let label: String
+    let accessibilityID: String
     let isVisible: Bool
     let action: () -> Void
 
@@ -103,6 +108,7 @@ private struct PanelVisibilityButton: View {
         .buttonStyle(.plain)
         .accessibilityLabel(Text(verbatim: label))
         .accessibilityAddTraits(isVisible ? .isSelected : [])
+        .accessibilityIdentifier(accessibilityID)
         .help(label)
     }
 }

@@ -84,12 +84,15 @@ struct TourOverlay: View {
 
             HStack(spacing: AppTheme.Spacing.sm) {
                 Button(L10n.string("Skip")) { tour.end() }
+                    .accessibilityIdentifier("tour.skip")
                     .buttonStyle(.capsule)
                     .keyboardShortcut(.cancelAction)
                 Spacer()
                 Button(L10n.string("Back")) { tour.back() }
+                    .accessibilityIdentifier("tour.back")
                     .buttonStyle(.capsule)
                 Button(L10n.string("Next")) { tour.advance() }
+                    .accessibilityIdentifier("tour.next")
                     .buttonStyle(.capsule(.prominent))
                     .keyboardShortcut(.defaultAction)
             }
@@ -116,10 +119,12 @@ struct TourOverlay: View {
             heroImage
             HStack {
                 Button(L10n.string("Skip")) { tour.end() }
+                    .accessibilityIdentifier("tour.skip")
                     .buttonStyle(.capsule(.secondary, size: .regular))
                     .keyboardShortcut(.cancelAction)
                 Spacer()
                 Button(L10n.string("Next")) { tour.advance() }
+                    .accessibilityIdentifier("tour.next")
                     .buttonStyle(.capsule(.prominent, size: .regular))
                     .keyboardShortcut(.defaultAction)
             }
@@ -155,15 +160,16 @@ struct TourOverlay: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             VStack(spacing: 0) {
-                linkRow(L10n.string("Skills"), "book.closed.fill") { SettingsWindowController.shared.show(tab: .skills) }
-                linkRow(L10n.string("MCP Setup"), "puzzlepiece.extension.fill") { HelpWindowController.shared.show(tab: .mcp) }
-                linkRow(L10n.string("Keyboard Shortcuts"), "keyboard") { HelpWindowController.shared.show(tab: .shortcuts) }
-                linkRow(L10n.string("Documentation"), "book.fill") { NSWorkspace.shared.open(Self.docsURL, configuration: .init(), completionHandler: nil) }
-                linkRow(L10n.string("Settings"), "gearshape.fill") { SettingsWindowController.shared.show() }
+                linkRow(L10n.string("Skills"), id: "tour.link.skills", "book.closed.fill") { SettingsWindowController.shared.show(tab: .skills) }
+                linkRow(L10n.string("MCP Setup"), id: "tour.link.mcpSetup", "puzzlepiece.extension.fill") { HelpWindowController.shared.show(tab: .mcp) }
+                linkRow(L10n.string("Keyboard Shortcuts"), id: "tour.link.keyboardShortcuts", "keyboard") { HelpWindowController.shared.show(tab: .shortcuts) }
+                linkRow(L10n.string("Documentation"), id: "tour.link.documentation", "book.fill") { NSWorkspace.shared.open(Self.docsURL, configuration: .init(), completionHandler: nil) }
+                linkRow(L10n.string("Settings"), id: "tour.link.settings", "gearshape.fill") { SettingsWindowController.shared.show() }
             }
             HStack {
                 Spacer()
                 Button(L10n.string("Start creating")) { tour.end() }
+                    .accessibilityIdentifier("tour.startCreating")
                     .buttonStyle(.capsule(.prominent, size: .regular))
                     .keyboardShortcut(.defaultAction)
             }
@@ -172,7 +178,7 @@ struct TourOverlay: View {
         .tourGlassBackground()
     }
 
-    private func linkRow(_ title: String, _ icon: String, action: @escaping () -> Void) -> some View {
+    private func linkRow(_ title: String, id: String, _ icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: AppTheme.Spacing.md) {
                 Image(systemName: icon)
@@ -191,6 +197,7 @@ struct TourOverlay: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier(id)
     }
 
     /// Place the spotlight card adjacent to the highlighted region

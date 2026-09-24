@@ -18,6 +18,7 @@ struct AppearancePane: View {
                         ) {
                             AppearancePreview(option: option)
                         }
+                        .accessibilityIdentifier("settings.appearance.theme.\(option.rawValue)")
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -36,6 +37,7 @@ struct AppearancePane: View {
                             WorkspaceLayoutPreview(preset: preset)
                         }
                         .keyboardShortcut(KeyEquivalent(preset.shortcutKey), modifiers: .command)
+                        .accessibilityIdentifier("settings.appearance.workspaceLayout.\(preset.rawValue)")
                     }
                 }
                 .frame(maxWidth: .infinity)

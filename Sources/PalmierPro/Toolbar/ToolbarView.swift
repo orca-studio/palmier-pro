@@ -11,30 +11,30 @@ struct ToolbarView: View {
             toolbarDivider
 
             HStack(spacing: AppTheme.Spacing.md) {
-                toolbarButton("arrow.uturn.backward", help: L10n.string("Undo (⌘Z)"), action: undo)
-                toolbarButton("arrow.uturn.forward", help: L10n.string("Redo (⇧⌘Z)"), action: redo)
+                toolbarButton("arrow.uturn.backward", help: L10n.string("Undo (⌘Z)"), label: L10n.string("Undo"), id: "toolbar.undo", action: undo)
+                toolbarButton("arrow.uturn.forward", help: L10n.string("Redo (⇧⌘Z)"), label: L10n.string("Redo"), id: "toolbar.redo", action: redo)
             }
 
             toolbarDivider
 
             HStack(spacing: AppTheme.Spacing.md) {
-                toolModeButton("cursorarrow", mode: .pointer, help: L10n.string("Pointer (V)"))
-                toolModeButton("scissors", mode: .razor, help: L10n.string("Razor (C)"))
-                toolModeButton("arrow.left.and.right", mode: .trim, help: L10n.string("Trim (T)"))
+                toolModeButton("cursorarrow", mode: .pointer, help: L10n.string("Pointer (V)"), label: L10n.string("Pointer"), id: "toolbar.pointer")
+                toolModeButton("scissors", mode: .razor, help: L10n.string("Razor (C)"), label: L10n.string("Razor"), id: "toolbar.razor")
+                toolModeButton("arrow.left.and.right", mode: .trim, help: L10n.string("Trim (T)"), label: L10n.string("Trim"), id: "toolbar.trim")
             }
 
             toolbarDivider
 
             HStack(spacing: AppTheme.Spacing.md) {
-                toolbarButton("square.split.2x1", help: L10n.string("Split at Playhead (⌘K)"), action: editor.splitAtPlayhead)
-                bracketButton("[", help: L10n.string("Trim Start to Playhead (Q)"), action: editor.trimStartToPlayhead)
-                bracketButton("]", help: L10n.string("Trim End to Playhead (W)"), action: editor.trimEndToPlayhead)
+                toolbarButton("square.split.2x1", help: L10n.string("Split at Playhead (⌘K)"), label: L10n.string("Split at Playhead"), id: "toolbar.split", action: editor.splitAtPlayhead)
+                bracketButton("[", help: L10n.string("Trim Start to Playhead (Q)"), label: L10n.string("Trim Start to Playhead"), id: "toolbar.trimStart", action: editor.trimStartToPlayhead)
+                bracketButton("]", help: L10n.string("Trim End to Playhead (W)"), label: L10n.string("Trim End to Playhead"), id: "toolbar.trimEnd", action: editor.trimEndToPlayhead)
             }
 
             toolbarDivider
 
             HStack(spacing: AppTheme.Spacing.md) {
-                textGlyphButton("T", help: L10n.string("Add Text"), action: { _ = editor.addTextClip() })
+                textGlyphButton("T", help: L10n.string("Add Text"), id: "toolbar.addText", action: { _ = editor.addTextClip() })
                 markerButton
             }
 
@@ -45,6 +45,7 @@ struct ToolbarView: View {
                 zoomButton(
                     "minus.magnifyingglass",
                     help: L10n.string("Zoom Out"),
+                    id: "toolbar.zoomOut",
                     isDisabled: editor.zoomScale <= editor.minZoomScale,
                     action: zoomOut
                 )
@@ -57,9 +58,12 @@ struct ToolbarView: View {
                     .controlSize(.mini)
                     .tint(AppTheme.Accent.primary)
                     .frame(width: 100)
+                    .accessibilityLabel(L10n.string("Timeline Zoom"))
+                    .accessibilityIdentifier("toolbar.zoom")
                 zoomButton(
                     "plus.magnifyingglass",
                     help: L10n.string("Zoom In"),
+                    id: "toolbar.zoomIn",
                     isDisabled: editor.zoomScale >= Zoom.max,
                     tooltipAlignment: .bottomTrailing,
                     action: zoomIn
@@ -87,6 +91,7 @@ struct ToolbarView: View {
             L10n.string(expanded ? "Hide Timeline Tabs" : "Show Timeline Tabs"),
             alignment: .bottomLeading
         )
+        .accessibilityIdentifier("toolbar.timelineTabs")
     }
 
     private var toolbarDivider: some View {
@@ -108,13 +113,15 @@ struct ToolbarView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(L10n.string("Add Marker (M)"))
+            .accessibilityLabel(L10n.string("Add Marker"))
+            .accessibilityIdentifier("toolbar.addMarker")
 
             Menu {
                 Toggle(
                     L10n.string("Ripple Timeline Markers"),
                     isOn: Bindable(editor).rippleTimelineMarkers
                 )
+                .accessibilityIdentifier("toolbar.rippleTimelineMarkers")
             } label: {
                 Image(systemName: "chevron.down")
                     .font(.system(size: AppTheme.FontSize.micro, weight: AppTheme.FontWeight.semibold))
@@ -123,16 +130,18 @@ struct ToolbarView: View {
                     .contentShape(Rectangle())
             }
             .menuStyle(.button)
+            .accessibilityElement(children: .combine)
             .buttonStyle(.plain)
             .menuIndicator(.hidden)
             .accessibilityLabel(L10n.string("Ripple Timeline Markers"))
+            .accessibilityIdentifier("toolbar.markerOptions")
         }
         .padding(.trailing, AppTheme.Spacing.xxs)
         .hoverHighlight()
-        .hoverTooltip(L10n.string("Add Marker (M)"))
+        .hoverTooltip(L10n.string("Add Marker (M)"), accessibilityLabel: L10n.string("Add Marker"))
     }
 
-    private func toolbarButton(_ systemName: String, help: String, action: @escaping () -> Void) -> some View {
+    private func toolbarButton(_ systemName: String, help: String, label: String, id: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.system(size: AppTheme.FontSize.md))
@@ -141,12 +150,14 @@ struct ToolbarView: View {
                 .hoverHighlight()
         }
         .buttonStyle(.plain)
-        .hoverTooltip(help)
+        .hoverTooltip(help, accessibilityLabel: label)
+        .accessibilityIdentifier(id)
     }
 
     private func zoomButton(
         _ systemName: String,
         help: String,
+        id: String,
         isDisabled: Bool,
         tooltipAlignment: Alignment = .bottom,
         action: @escaping () -> Void
@@ -161,6 +172,7 @@ struct ToolbarView: View {
         .buttonStyle(.plain)
         .disabled(isDisabled)
         .hoverTooltip(help, alignment: tooltipAlignment)
+        .accessibilityIdentifier(id)
     }
 
     private func zoomOut() {
@@ -183,7 +195,7 @@ struct ToolbarView: View {
         NSApp.sendAction(Selector(("redo:")), to: nil, from: nil)
     }
 
-    private func toolModeButton(_ systemName: String, mode: ToolMode, help: String) -> some View {
+    private func toolModeButton(_ systemName: String, mode: ToolMode, help: String, label: String, id: String) -> some View {
         let isActive = editor.toolMode == mode
         return Button { editor.toolMode = mode } label: {
             Image(systemName: systemName)
@@ -193,10 +205,12 @@ struct ToolbarView: View {
                 .hoverHighlight(isActive: isActive)
         }
         .buttonStyle(.plain)
-        .hoverTooltip(help)
+        .hoverTooltip(help, accessibilityLabel: label)
+        .accessibilityIdentifier(id)
+        .accessibilityAddTraits(isActive ? .isSelected : [])
     }
 
-    private func textGlyphButton(_ glyph: String, help: String, action: @escaping () -> Void) -> some View {
+    private func textGlyphButton(_ glyph: String, help: String, id: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(glyph)
                 .font(.system(size: 17, weight: .bold, design: .serif))
@@ -206,9 +220,10 @@ struct ToolbarView: View {
         }
         .buttonStyle(.plain)
         .hoverTooltip(help)
+        .accessibilityIdentifier(id)
     }
 
-    private func bracketButton(_ bracket: String, help: String, action: @escaping () -> Void) -> some View {
+    private func bracketButton(_ bracket: String, help: String, label: String, id: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(bracket)
                 .font(.system(size: 16, weight: .semibold, design: .monospaced))
@@ -217,6 +232,7 @@ struct ToolbarView: View {
                 .hoverHighlight()
         }
         .buttonStyle(.plain)
-        .hoverTooltip(help)
+        .hoverTooltip(help, accessibilityLabel: label)
+        .accessibilityIdentifier(id)
     }
 }

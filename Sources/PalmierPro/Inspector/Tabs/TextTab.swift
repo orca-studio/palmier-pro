@@ -36,6 +36,7 @@ struct TextTab: View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.zero) {
             contentField
             Button(L10n.string("Import…"), action: importTextEffect)
+                .accessibilityIdentifier("inspector.text.import")
             TextStyleControls(
                 selection: TextStyleSelection(
                     styles: clips.map { $0.textStyle ?? styleDefaults },
@@ -45,6 +46,7 @@ struct TextTab: View {
                 showsColorControl: showsColorControl,
                 showsSolidFillControls: showsSolidFillControls,
                 keyframeClips: clips,
+                accessibilityID: "inspector.textStyle",
                 actions: styleActions,
                 afterAlignment: {
                     positionSection
@@ -87,6 +89,7 @@ struct TextTab: View {
         let current = sharedClipValue(clips) { $0.textFillMode ?? .color }
         return InspectorRow(
             label: L10n.string("Fill"),
+            accessibilityID: "inspector.text.fill",
             onReset: {
                 editor.commitClipProperties(clipIds: clipIds) { $0.setTextFillMode(.color) }
             }
@@ -98,16 +101,20 @@ struct TextTab: View {
                             $0.setTextFillMode(mode)
                         }
                     }
+                    .accessibilityIdentifier("inspector.text.fill.\(mode.rawValue)")
                 }
             } label: {
                 EditorMenuValue(text: current.map { L10n.string(key: $0.displayName) } ?? "—")
             }
             .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize().focusable(false)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(L10n.string("Fill"))
+            .accessibilityIdentifier("inspector.text.fill")
         }
     }
 
     private var contentField: some View {
-        EditorPanelGroup(L10n.string("Text")) {
+        EditorPanelGroup(L10n.string("Text"), accessibilityID: "inspector.text") {
             TextContentField(
                 text: Binding(
                     get: { clip.textContent ?? "" },
@@ -132,6 +139,7 @@ struct TextTab: View {
     private var opacitySlider: some View {
         InspectorRow(
             label: L10n.string("Opacity"),
+            accessibilityID: "inspector.text.opacity",
             onReset: {
                 editor.commitClipProperties(clipIds: clipIds) {
                     $0.opacity = 1
@@ -139,10 +147,11 @@ struct TextTab: View {
                 }
             }
         ) {
-            KeyframePropertyValueFields(
+            InspectorKeyframeValueFields(
                 clips: clips,
                 property: .opacity,
-                style: .inspector
+                label: L10n.string("Opacity"),
+                accessibilityID: "inspector.text.opacity"
             )
         }
     }
@@ -151,6 +160,7 @@ struct TextTab: View {
     private var positionSection: some View {
         InspectorRow(
             label: L10n.string("Position"),
+            accessibilityID: "inspector.text.position",
             onReset: {
                 editor.commitClipProperties(clipIds: clipIds) {
                     $0.transform.centerX = Transform().centerX
@@ -159,10 +169,11 @@ struct TextTab: View {
                 }
             }
         ) {
-            KeyframePropertyValueFields(
+            InspectorKeyframeValueFields(
                 clips: clips,
                 property: .position,
-                style: .inspector
+                label: L10n.string("Position"),
+                accessibilityID: "inspector.text.position"
             )
         }
     }
@@ -170,6 +181,7 @@ struct TextTab: View {
     private var tiltSection: some View {
         InspectorRow(
             label: L10n.string("Tilt"),
+            accessibilityID: "inspector.text.tilt",
             onReset: {
                 editor.commitClipProperties(clipIds: clipIds, actionName: "Reset Text Tilt") {
                     $0.transform.rotationX = 0
@@ -178,14 +190,18 @@ struct TextTab: View {
             }
         ) {
             HStack(spacing: AppTheme.Spacing.sm) {
-                tiltField("X", keyPath: \.rotationX)
-                tiltField("Y", keyPath: \.rotationY)
+                tiltField("X", keyPath: \.rotationX, accessibilityID: "inspector.text.tilt.x")
+                tiltField("Y", keyPath: \.rotationY, accessibilityID: "inspector.text.tilt.y")
             }
             .fixedSize()
         }
     }
 
-    private func tiltField(_ axis: String, keyPath: WritableKeyPath<Transform, Double>) -> some View {
+    private func tiltField(
+        _ axis: String,
+        keyPath: WritableKeyPath<Transform, Double>,
+        accessibilityID: String
+    ) -> some View {
         ScrubbableNumberField(
             value: sharedClipValue(clips) { $0.transform[keyPath: keyPath] },
             range: Transform.tiltRotationRange,
@@ -203,11 +219,14 @@ struct TextTab: View {
                 $0.transform[keyPath: keyPath] = value
             }
         }
+        .accessibilityLabel(Text(verbatim: "\(L10n.string("Tilt")) \(axis)"))
+        .accessibilityIdentifier(accessibilityID)
     }
 
     private var rotationSection: some View {
         InspectorRow(
             label: L10n.string("Rotation"),
+            accessibilityID: "inspector.text.rotation",
             onReset: {
                 editor.commitClipProperties(clipIds: clipIds, actionName: "Reset Rotation") {
                     $0.transform.rotation = Transform().rotation
@@ -215,10 +234,11 @@ struct TextTab: View {
                 }
             }
         ) {
-            KeyframePropertyValueFields(
+            InspectorKeyframeValueFields(
                 clips: clips,
                 property: .rotation,
-                style: .inspector
+                label: L10n.string("Rotation"),
+                accessibilityID: "inspector.text.rotation"
             )
         }
     }
@@ -261,7 +281,7 @@ struct TextAnimateTab: View {
 
     var body: some View {
         let anim = clip.textAnimation ?? TextAnimation()
-        EditorPanelGroup(L10n.string("Animation")) {
+        EditorPanelGroup(L10n.string("Animation"), accessibilityID: "inspector.textAnimation") {
             CaptionPresetGallery(
                 selection: Binding(
                     get: { anim.preset },
@@ -284,6 +304,7 @@ struct TextAnimateTab: View {
     private func highlightRow(_ anim: TextAnimation) -> some View {
         InspectorRow(
             label: L10n.string("Highlight"),
+            accessibilityID: "inspector.textAnimation.highlight",
             onReset: {
                 editor.cancelDebouncedCommit(key: "textHighlight")
                 editor.commitClipProperties(clipIds: targetIds) {
@@ -303,6 +324,8 @@ struct TextAnimateTab: View {
                     }
                 }
             )
+            .accessibilityLabel(L10n.string("Highlight"))
+            .accessibilityIdentifier("inspector.textAnimation.highlight")
         }
     }
 }

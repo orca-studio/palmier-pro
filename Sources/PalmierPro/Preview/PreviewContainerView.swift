@@ -150,17 +150,29 @@ struct PreviewContainerView: View {
 
     private func transportButtons(spacing: CGFloat) -> some View {
         HStack(spacing: spacing) {
-            transportButton("backward.end.fill") { seekTo(0) }
-            transportButton("backward.frame.fill") { seekTo(playheadFrame - 1) }
-            transportButton(editor.isPlaying ? "pause.fill" : "play.fill") {
+            transportButton("backward.end.fill", label: L10n.string("Go to Start"), identifier: "preview.goToStart") {
+                seekTo(0)
+            }
+            transportButton("backward.frame.fill", label: L10n.string("Step Backward"), identifier: "preview.stepBackward") {
+                seekTo(playheadFrame - 1)
+            }
+            transportButton(
+                editor.isPlaying ? "pause.fill" : "play.fill",
+                label: L10n.string("Play / Pause"),
+                identifier: "preview.play"
+            ) {
                 if isTimeline {
                     editor.togglePlayback()
                 } else {
                     editor.toggleSourcePlayback()
                 }
             }
-            transportButton("forward.frame.fill") { seekTo(playheadFrame + 1) }
-            transportButton("forward.end.fill") { seekTo(durationFrames) }
+            transportButton("forward.frame.fill", label: L10n.string("Step Forward"), identifier: "preview.stepForward") {
+                seekTo(playheadFrame + 1)
+            }
+            transportButton("forward.end.fill", label: L10n.string("Go to End"), identifier: "preview.goToEnd") {
+                seekTo(durationFrames)
+            }
         }
     }
 
@@ -173,14 +185,16 @@ struct PreviewContainerView: View {
             settingsMenuButton(
                 systemImage: "speedometer",
                 label: editor.playbackRate.label,
-                help: L10n.string("Playback Speed")
+                help: L10n.string("Playback Speed"),
+                identifier: "preview.speed"
             ) {
                 playbackRateMenuItems
             }
             settingsMenuButton(
                 systemImage: "magnifyingglass",
                 label: zoomBadgeLabel,
-                help: L10n.string("Canvas Zoom")
+                help: L10n.string("Canvas Zoom"),
+                identifier: "preview.zoom"
             ) {
                 zoomMenuItems
             }
@@ -197,7 +211,8 @@ struct PreviewContainerView: View {
             settingsMenuButton(
                 systemImage: "magnifyingglass",
                 label: zoomBadgeLabel,
-                help: L10n.string("Canvas Zoom")
+                help: L10n.string("Canvas Zoom"),
+                identifier: "preview.zoom"
             ) {
                 zoomMenuItems
             }
@@ -218,6 +233,8 @@ struct PreviewContainerView: View {
                 .help(L10n.string("Capture Frame to Media"))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(L10n.string("Capture Frame to Media"))
+        .accessibilityIdentifier("preview.snapshot")
         .tourAnchor(.screenshotButton)
     }
 
@@ -237,6 +254,7 @@ struct PreviewContainerView: View {
                     }
                 }
             }
+            .accessibilityIdentifier("preview.speed.\(rate)")
         }
     }
 
@@ -244,6 +262,7 @@ struct PreviewContainerView: View {
         settingsMenuButton(
             systemImage: canvasOverlays.isEmpty ? "viewfinder" : "viewfinder.circle.fill",
             help: L10n.string("Canvas Guides"),
+            identifier: "preview.guides",
             isActive: !canvasOverlays.isEmpty
         ) {
             canvasGuideMenuItems
@@ -261,6 +280,7 @@ struct PreviewContainerView: View {
                     selected: canvasOverlays.grid == nil
                 )
             }
+            .accessibilityIdentifier("preview.guides.grid.none")
             Divider()
             ForEach(CanvasGridOverlay.allCases) { grid in
                 Button {
@@ -271,10 +291,12 @@ struct PreviewContainerView: View {
                         selected: canvasOverlays.grid == grid
                     )
                 }
+                .accessibilityIdentifier("preview.guides.grid.\(grid.rawValue)")
             }
         } label: {
             Text(L10n.string("Grid"))
         }
+        .accessibilityIdentifier("preview.guides.grid")
 
         Menu {
             ForEach(CanvasGuideOverlay.allCases) { guide in
@@ -282,10 +304,12 @@ struct PreviewContainerView: View {
                     L10n.string(key: guide.localizationKey),
                     isOn: guideBinding(for: guide)
                 )
+                .accessibilityIdentifier("preview.guides.safeZone.\(guide.rawValue)")
             }
         } label: {
             Text(L10n.string("Safe Zones"))
         }
+        .accessibilityIdentifier("preview.guides.safeZones")
 
         Menu {
             Button {
@@ -296,6 +320,7 @@ struct PreviewContainerView: View {
                     selected: canvasOverlays.format == nil
                 )
             }
+            .accessibilityIdentifier("preview.guides.format.none")
             Divider()
             ForEach(CanvasFormatOverlay.allCases) { format in
                 Button {
@@ -306,16 +331,19 @@ struct PreviewContainerView: View {
                         selected: canvasOverlays.format == format
                     )
                 }
+                .accessibilityIdentifier("preview.guides.format.\(format.rawValue)")
             }
         } label: {
             Text(L10n.string("Format References"))
         }
+        .accessibilityIdentifier("preview.guides.format")
 
         Divider()
         Button(L10n.string("Hide Guides")) {
             canvasOverlays.clear()
         }
         .disabled(canvasOverlays.isEmpty)
+        .accessibilityIdentifier("preview.guides.hide")
     }
 
     private func guideBinding(for guide: CanvasGuideOverlay) -> Binding<Bool> {
@@ -356,6 +384,7 @@ struct PreviewContainerView: View {
                     }
                 }
             }
+            .accessibilityIdentifier("preview.zoom.\(preset)")
         }
     }
 
@@ -375,6 +404,7 @@ struct PreviewContainerView: View {
         systemImage: String,
         label: String? = nil,
         help: String,
+        identifier: String,
         isActive: Bool = false,
         @ViewBuilder menu: @escaping () -> MenuContent
     ) -> some View {
@@ -382,6 +412,7 @@ struct PreviewContainerView: View {
             menu()
         } label: {
             settingsMenuLabel(systemImage: systemImage, text: label, isActive: isActive)
+                .accessibilityLabel(L10n.string(key: help))
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
@@ -390,6 +421,7 @@ struct PreviewContainerView: View {
         .help(L10n.string(key: help))
         .accessibilityLabel(L10n.string(key: help))
         .accessibilityValue(label.map { L10n.string(key: $0) } ?? "")
+        .accessibilityIdentifier(identifier)
     }
 
     @ViewBuilder
@@ -635,15 +667,18 @@ struct PreviewContainerView: View {
                         FeedbackWindowController.shared.show(prefill: Self.unprocessablePrefill(path: path))
                     }
                     .buttonStyle(.capsule(.prominent, size: .regular))
+                    .accessibilityIdentifier("preview.reportProblem")
                     .padding(.top, AppTheme.Spacing.xs)
                 } else {
                     HStack(spacing: AppTheme.Spacing.sm) {
                         if let assetId {
                             Button(L10n.string("Relink…")) { relinkFile(assetId: assetId) }
                                 .buttonStyle(.capsule(.prominent, size: .regular))
+                                .accessibilityIdentifier("preview.relink")
                         }
                         Button(L10n.string("Relink Folder…")) { relinkFolder() }
                             .buttonStyle(.capsule(.secondary, size: .regular))
+                            .accessibilityIdentifier("preview.relinkFolder")
                     }
                     .padding(.top, AppTheme.Spacing.xs)
                 }
@@ -696,6 +731,7 @@ struct PreviewContainerView: View {
                         .padding(.vertical, AppTheme.Spacing.sm)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("preview.retryDownload")
                     .background(AppTheme.MediaOverlay.primaryColor.opacity(AppTheme.Opacity.soft), in: .capsule)
                     .overlay(Capsule().strokeBorder(
                         AppTheme.MediaOverlay.primaryColor.opacity(AppTheme.Opacity.muted),
@@ -714,10 +750,20 @@ struct PreviewContainerView: View {
     private var tabBar: some View {
         HStack(spacing: AppTheme.Spacing.xs) {
             HStack(spacing: 0) {
-                navButton("chevron.left", enabled: editor.canGoBackPreviewTab, help: L10n.string("Back")) {
+                navButton(
+                    "chevron.left",
+                    enabled: editor.canGoBackPreviewTab,
+                    help: L10n.string("Back"),
+                    identifier: "preview.tab.back"
+                ) {
                     editor.goBackPreviewTab()
                 }
-                navButton("chevron.right", enabled: editor.canGoForwardPreviewTab, help: L10n.string("Forward")) {
+                navButton(
+                    "chevron.right",
+                    enabled: editor.canGoForwardPreviewTab,
+                    help: L10n.string("Forward"),
+                    identifier: "preview.tab.forward"
+                ) {
                     editor.goForwardPreviewTab()
                 }
             }
@@ -732,6 +778,10 @@ struct PreviewContainerView: View {
 
     private func tabItem(for tab: PreviewTab) -> some View {
         let isActive = tab.id == editor.activePreviewTabId
+        let identifier = switch tab {
+        case .timeline: "preview.tab.timeline"
+        case .mediaAsset(let id, _, _): "preview.tab.\(id)"
+        }
         return Button {
             editor.selectPreviewTab(id: tab.id)
         } label: {
@@ -756,9 +806,16 @@ struct PreviewContainerView: View {
                 : nil
         )
         .accessibilityAddTraits(isActive ? .isSelected : [])
+        .accessibilityIdentifier(identifier)
     }
 
-    private func navButton(_ systemName: String, enabled: Bool, help: String, action: @escaping () -> Void) -> some View {
+    private func navButton(
+        _ systemName: String,
+        enabled: Bool,
+        help: String,
+        identifier: String,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.system(size: AppTheme.FontSize.sm, weight: .medium))
@@ -769,6 +826,8 @@ struct PreviewContainerView: View {
         .buttonStyle(.plain)
         .disabled(!enabled)
         .help(L10n.string(key: help))
+        .accessibilityLabel(L10n.string(key: help))
+        .accessibilityIdentifier(identifier)
     }
 
     private var overflowMenu: some View {
@@ -779,6 +838,7 @@ struct PreviewContainerView: View {
                 }
             }
             .disabled(editor.previewTabs.count <= 1)
+            .accessibilityIdentifier("preview.tab.closeAll")
         } label: {
             Image(systemName: "ellipsis")
                 .font(.system(size: AppTheme.FontSize.sm, weight: .medium))
@@ -790,6 +850,8 @@ struct PreviewContainerView: View {
         .fixedSize()
         .hoverHighlight(cornerRadius: AppTheme.Radius.sm)
         .help(L10n.string("More"))
+        .accessibilityLabel(L10n.string("More"))
+        .accessibilityIdentifier("preview.tab.more")
     }
 
     // MARK: - Scrub bar
@@ -908,7 +970,12 @@ struct PreviewContainerView: View {
         }
     }
 
-    private func transportButton(_ systemName: String, action: @escaping () -> Void) -> some View {
+    private func transportButton(
+        _ systemName: String,
+        label: String,
+        identifier: String,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.system(size: AppTheme.FontSize.sm))
@@ -917,6 +984,8 @@ struct PreviewContainerView: View {
                 .hoverHighlight()
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(label)
+        .accessibilityIdentifier(identifier)
     }
 }
 

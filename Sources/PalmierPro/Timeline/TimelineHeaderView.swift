@@ -463,6 +463,7 @@ final class TimelineHeaderView: NSView {
         let host = NSHostingView(rootView: field)
         host.frame = frame
         host.setAccessibilityLabel(L10n.string("Track Name"))
+        host.setAccessibilityIdentifier("timeline.track.\(trackId).name")
         nameEditor = host
         editingTrackId = trackId
         addSubview(host, positioned: .below, relativeTo: rulerCoverView)

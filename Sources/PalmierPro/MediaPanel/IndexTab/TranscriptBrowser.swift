@@ -70,7 +70,7 @@ struct TranscriptBrowser: View {
     ) -> some View {
         HStack(spacing: AppTheme.Spacing.xs) {
             if editor.isMediaPanelSearchExpanded {
-                ExpandablePanelSearch(text: $searchQuery, focus: $isSearchFocused)
+                ExpandablePanelSearch(text: $searchQuery, focus: $isSearchFocused, accessibilityID: "media.transcript.search")
                     .layoutPriority(1)
             } else {
                 IndexModeTabs(selection: $indexSection)
@@ -82,7 +82,7 @@ struct TranscriptBrowser: View {
                         source: $source
                     )
                 }
-                ExpandablePanelSearch(text: $searchQuery, focus: $isSearchFocused)
+                ExpandablePanelSearch(text: $searchQuery, focus: $isSearchFocused, accessibilityID: "media.transcript.search")
                 TranscriptJumpToPlayheadButton(
                     timelineIndex: timelineIndex,
                     playheadState: editor.playheadState,
@@ -137,10 +137,12 @@ struct TranscriptSourceMenu: View {
             EditorMenuValue(text: document.map(trackLabel) ?? L10n.string("Transcript"), expanded: true)
         }
         .menuStyle(.button)
+        .accessibilityElement(children: .combine)
         .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .frame(maxWidth: AppTheme.MediaPanel.transcriptSourceMenuWidth)
         .focusable(false)
+        .accessibilityIdentifier("media.index.transcriptSource")
     }
 
     private func trackLabel(
@@ -184,6 +186,8 @@ private struct TranscriptJumpToPlayheadButton: View {
             L10n.string("Jump to Playhead"),
             alignment: .bottomTrailing
         )
+        .accessibilityLabel(L10n.string("Jump to Playhead"))
+        .accessibilityIdentifier("media.index.jumpToPlayhead")
     }
 }
 
@@ -251,6 +255,7 @@ private struct TranscriptBrowserRow: View {
             startTimecode: startTimecode,
             durationLabel: durationLabel
         )))
+        .accessibilityIdentifier("media.index.transcriptRow.\(row.id)")
     }
 
     private func accessibilityValue(startTimecode: String, durationLabel: String?) -> String {

@@ -22,11 +22,13 @@ struct CropAspectFields: View {
 
     var body: some View {
         HStack(spacing: AppTheme.Spacing.xxs) {
-            ratioField("Width", value: $horizontal, field: .horizontal, alignment: .trailing)
+            ratioField("Width", value: $horizontal, field: .horizontal, alignment: .trailing,
+                       accessibilityID: "inspector.transform.crop.aspectWidth")
             Text(verbatim: ":")
                 .font(.system(size: AppTheme.FontSize.sm, weight: AppTheme.FontWeight.medium))
                 .foregroundStyle(AppTheme.Text.tertiaryColor)
-            ratioField("Height", value: $vertical, field: .vertical, alignment: .leading)
+            ratioField("Height", value: $vertical, field: .vertical, alignment: .leading,
+                       accessibilityID: "inspector.transform.crop.aspectHeight")
         }
         .padding(.horizontal, AppTheme.Spacing.xs)
         .editorValueField(active: focusedField != nil)
@@ -50,7 +52,8 @@ struct CropAspectFields: View {
         _ label: String,
         value: Binding<Double>,
         field: Field,
-        alignment: TextAlignment
+        alignment: TextAlignment,
+        accessibilityID: String
     ) -> some View {
         TextField(
             String(),
@@ -70,6 +73,7 @@ struct CropAspectFields: View {
                 focusedField = nil
             }
             .accessibilityLabel(L10n.string("Aspect ratio: \(label)"))
+            .accessibilityIdentifier(accessibilityID)
     }
 
     private func commitInput() {

@@ -24,6 +24,7 @@ struct TimelineColorsPane: View {
                 }
                 .buttonStyle(.capsule(.secondary, fill: AnyShapeStyle(AppTheme.Background.raisedColor)))
                 .disabled(!colors.hasOverrides)
+                .accessibilityIdentifier("settings.appearance.timelineColor.resetAll")
             }
         }
     }
@@ -47,6 +48,7 @@ struct TimelineColorsPane: View {
                 accessibilityLabel: colorAccessibilityLabel(kind),
                 swatchSize: CGSize(width: 64, height: AppTheme.IconSize.mdLg)
             )
+            .accessibilityIdentifier("settings.appearance.timelineColor.\(kind.rawValue)")
         }
         .frame(minHeight: 36)
     }

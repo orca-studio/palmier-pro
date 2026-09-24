@@ -45,6 +45,7 @@ struct IndexModeTabs: View {
                 .buttonStyle(.plain)
                 .focusable(false)
                 .accessibilityAddTraits(selected ? .isSelected : [])
+                .accessibilityIdentifier("media.index.tab.\(section.rawValue.lowercased())")
             }
         }
         .fixedSize(horizontal: true, vertical: false)
@@ -103,7 +104,7 @@ struct IndexTab: View {
         VStack(spacing: AppTheme.Spacing.zero) {
             HStack {
                 if editor.isMediaPanelSearchExpanded {
-                    ExpandablePanelSearch(text: $emptySearchQuery, focus: $isSearchFocused)
+                    ExpandablePanelSearch(text: $emptySearchQuery, focus: $isSearchFocused, accessibilityID: "media.index.search")
                         .layoutPriority(1)
                 } else {
                     IndexModeTabs(selection: $section)
@@ -115,7 +116,7 @@ struct IndexTab: View {
                             source: $source
                         )
                     }
-                    ExpandablePanelSearch(text: $emptySearchQuery, focus: $isSearchFocused)
+                    ExpandablePanelSearch(text: $emptySearchQuery, focus: $isSearchFocused, accessibilityID: "media.index.search")
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.sm)

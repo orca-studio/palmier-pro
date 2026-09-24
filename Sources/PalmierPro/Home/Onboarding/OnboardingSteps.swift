@@ -64,6 +64,8 @@ struct OnboardingQuestionnaireStep: View {
                         size: .small,
                         fill: isSelected ? nil : AnyShapeStyle(AppTheme.Onboarding.secondaryButtonFill)
                     ))
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+                    .accessibilityIdentifier("home.onboarding.\(question.id).\(option.id)")
                     .frame(maxWidth: .infinity)
                 }
             }

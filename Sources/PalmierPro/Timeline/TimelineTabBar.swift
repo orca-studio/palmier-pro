@@ -76,12 +76,14 @@ private struct TimelineTabBarContent: View, Equatable {
                 }
             }
             .disabled(tabs.count >= allTabs.count)
+            .accessibilityIdentifier("timeline.tab.showAll")
             Button(L10n.string("Close All Tabs")) {
                 withAnimation(.easeInOut(duration: AppTheme.Anim.transition)) {
                     editor.closeAllTimelineTabs()
                 }
             }
             .disabled(tabs.count <= 1)
+            .accessibilityIdentifier("timeline.tab.closeAll")
         } label: {
             Image(systemName: "ellipsis")
                 .font(.system(size: AppTheme.FontSize.md))
@@ -93,6 +95,8 @@ private struct TimelineTabBarContent: View, Equatable {
         .menuIndicator(.hidden)
         .fixedSize()
         .help(L10n.string("More"))
+        .accessibilityLabel(L10n.string("More"))
+        .accessibilityIdentifier("timeline.tab.more")
     }
 
     private func tabItem(_ tab: TimelineTabInfo) -> some View {
@@ -120,6 +124,8 @@ private struct TimelineTabBarContent: View, Equatable {
                 : nil
         )
         .accessibilityAddTraits(isActive ? .isSelected : [])
+        .accessibilityAction { editor.activateTimeline(tab.id) }
+        .accessibilityIdentifier("timeline.tab.\(tab.id)")
         .gesture(TapGesture(count: 2).onEnded { renamingTabId = tab.id })
         .simultaneousGesture(TapGesture().onEnded { editor.activateTimeline(tab.id) })
         .contextMenu {
@@ -158,6 +164,8 @@ private struct TimelineTabBarContent: View, Equatable {
         }
         .buttonStyle(.plain)
         .help(L10n.string("New timeline"))
+        .accessibilityLabel(L10n.string("New timeline"))
+        .accessibilityIdentifier("timeline.newTimeline")
     }
 
     private func tabBarIcon(_ systemName: String) -> some View {

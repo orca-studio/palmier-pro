@@ -6,7 +6,7 @@ extension InspectorView {
     func audioTabContent(audioClips: [Clip], hasNonTextVisualClips: Bool) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.zero) {
             levelsSection(audios: audioClips)
-            EditorPanelGroup(L10n.string("Enhance"), contentSpacing: AppTheme.Spacing.smMd) {
+            EditorPanelGroup(L10n.string("Enhance"), accessibilityID: "inspector.enhance", contentSpacing: AppTheme.Spacing.smMd) {
                 denoiseRow(audios: audioClips)
             }
             if !hasNonTextVisualClips {
@@ -18,12 +18,13 @@ extension InspectorView {
     private func levelsSection(audios: [Clip]) -> some View {
         return EditorPanelGroup(
             L10n.string("Levels"),
+            accessibilityID: "inspector.levels",
             isExpanded: $audioLevelsExpanded
         ) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.smMd) {
                 volumeRow(audios: audios)
-                fadeRow(label: L10n.string("Fade In"), clips: audios, edge: .left)
-                fadeRow(label: L10n.string("Fade Out"), clips: audios, edge: .right)
+                fadeRow(label: L10n.string("Fade In"), clips: audios, edge: .left, accessibilityID: "inspector.levels.fadeIn")
+                fadeRow(label: L10n.string("Fade Out"), clips: audios, edge: .right, accessibilityID: "inspector.levels.fadeOut")
             }
         }
     }
@@ -34,6 +35,7 @@ extension InspectorView {
             label: L10n.string("Volume"),
             clips: audios,
             property: .volume,
+            accessibilityID: "inspector.levels.volume",
             onReset: {
                 commitPropertiesToClips(audios, actionName: "Reset Volume") { clip in
                     clip.volume = 1
@@ -54,6 +56,7 @@ extension InspectorView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.smMd) {
                 propertyRow(
                     label: L10n.string("Denoise"),
+                    accessibilityID: "inspector.enhance.denoise",
                     onReset: {
                         editor.setDenoise(
                             clipIds: Set(audios.map(\.id)),
@@ -80,6 +83,8 @@ extension InspectorView {
                                 )
                             }
                             .help(L10n.string("Blends denoised and original audio — lower this if voices sound thin or over-compressed."))
+                            .accessibilityLabel(L10n.string("Denoise Strength"))
+                            .accessibilityIdentifier("inspector.enhance.denoise.strength")
                         }
                         Toggle(String(), isOn: Binding(
                             get: { allOn },
@@ -95,6 +100,7 @@ extension InspectorView {
                         .controlSize(.mini)
                         .labelsHidden()
                         .accessibilityLabel(L10n.string("Denoise"))
+                        .accessibilityIdentifier("inspector.enhance.denoise")
                     }
                 }
                 .help(L10n.string("Removes background noise from this audio using an on-device model."))
@@ -117,13 +123,14 @@ extension InspectorView {
 
 
     @ViewBuilder
-    private func fadeRow(label: String, clips: [Clip], edge: FadeEdge) -> some View {
+    private func fadeRow(label: String, clips: [Clip], edge: FadeEdge, accessibilityID: String) -> some View {
         let fps = Double(max(1, editor.timeline.fps))
         let single = clips.count == 1 ? clips.first : nil
         let maxSeconds = single.map { Double($0.durationFrames) / fps } ?? 60.0
         let actionName = edge == .left ? "Change Fade In" : "Change Fade Out"
         propertyRow(
             label: label,
+            accessibilityID: accessibilityID,
             onReset: {
                 commitToClips(clips, actionName: "Reset \(label)") { clip in
                     editor.commitFade(clipId: clip.id, edge: edge, frames: 0)
@@ -150,6 +157,8 @@ extension InspectorView {
                     editor.commitFade(clipId: c.id, edge: edge, frames: frames)
                 }
             }
+            .accessibilityLabel(label)
+            .accessibilityIdentifier(accessibilityID)
         }
         .frame(height: AppTheme.EditorPanel.fieldMinHeight)
     }

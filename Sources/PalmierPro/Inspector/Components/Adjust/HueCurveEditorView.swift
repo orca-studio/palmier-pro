@@ -26,6 +26,7 @@ struct HueCurveEditorView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
+            .accessibilityIdentifier("inspector.adjust.hueCurves.channel")
             .controlSize(.small)
             .fixedSize()
 

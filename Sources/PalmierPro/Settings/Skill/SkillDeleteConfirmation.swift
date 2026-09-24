@@ -24,7 +24,9 @@ private struct SkillDeleteConfirmation: ViewModifier {
             Button(L10n.string("Delete \u{201C}\(skill.name)\u{201D}"), role: .destructive) {
                 onDelete(skill)
             }
+            .accessibilityIdentifier("settings.skills.deleteConfirmation.delete")
             Button(L10n.string("Keep Skill"), role: .cancel) {}
+                .accessibilityIdentifier("settings.skills.deleteConfirmation.keep")
         } message: { skill in
             Text(L10n.string("This permanently removes \(skill.displayPath)."))
         }

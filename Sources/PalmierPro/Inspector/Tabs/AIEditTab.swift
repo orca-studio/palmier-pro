@@ -48,6 +48,7 @@ struct AIEditTab: View {
             if isVisualClipContext {
                 EditorPanelGroup(
                     L10n.string("AI Enhance"),
+                    accessibilityID: "inspector.aiEnhance",
                     isExpanded: $aiEnhanceExpanded,
                     contentSpacing: AppTheme.Spacing.smMd,
                     contentInsets: actionGroupInsets
@@ -61,6 +62,7 @@ struct AIEditTab: View {
             if asset.type == .video || asset.type == .audio {
                 EditorPanelGroup(
                     L10n.string("AI Audio"),
+                    accessibilityID: "inspector.aiAudio",
                     isExpanded: $aiAudioExpanded,
                     contentSpacing: AppTheme.Spacing.smMd,
                     contentInsets: actionGroupInsets
@@ -96,18 +98,21 @@ struct AIEditTab: View {
         LazyVGrid(columns: actionGridColumns, spacing: AppTheme.Spacing.sm) {
             actionTile(
                 action: .upscale,
+                accessibilityID: "inspector.aiEnhance.upscale",
                 icon: "sparkles.rectangle.stack",
                 title: L10n.string("Upscale"),
                 description: L10n.string("Enhance resolution or frame rate with AI")
             )
             actionTile(
                 action: .edit,
+                accessibilityID: "inspector.aiEnhance.edit",
                 icon: "wand.and.stars",
                 title: L10n.string("Edit"),
                 description: L10n.string("Transform with a prompt or motion reference")
             )
             actionTile(
                 action: .rerun,
+                accessibilityID: "inspector.aiEnhance.rerun",
                 icon: "arrow.clockwise",
                 title: L10n.string("Rerun"),
                 description: L10n.string("Regenerate with the same parameters")
@@ -115,6 +120,7 @@ struct AIEditTab: View {
             if asset.type == .video, VideoModelConfig.lipSync != nil {
                 actionTile(
                     action: .lipSync,
+                    accessibilityID: "inspector.aiEnhance.lipSync",
                     icon: "mouth",
                     title: L10n.string("Lip Sync"),
                     description: L10n.string("Match mouth movement to replacement audio")
@@ -123,6 +129,7 @@ struct AIEditTab: View {
             if asset.type == .video {
                 actionTile(
                     action: .reframe,
+                    accessibilityID: "inspector.aiEnhance.reframe",
                     icon: "aspectratio",
                     title: L10n.string("Reframe"),
                     description: L10n.string("Change aspect ratio and extend the frame with AI")
@@ -131,6 +138,7 @@ struct AIEditTab: View {
             if asset.type == .image {
                 actionTile(
                     action: .createVideo,
+                    accessibilityID: "inspector.aiEnhance.createVideo",
                     icon: "video.badge.plus",
                     title: L10n.string("Create Video"),
                     description: L10n.string("Use as first frame or reference")
@@ -139,6 +147,7 @@ struct AIEditTab: View {
             if asset.canEnhanceDraft {
                 actionTile(
                     action: .enhanceDraft,
+                    accessibilityID: "inspector.aiEnhance.enhanceDraft",
                     icon: "arrow.up.right.video",
                     title: L10n.string("FLUX Enhance"),
                     description: L10n.string("Re-render the same motion at full quality in 1080p"),
@@ -153,16 +162,17 @@ struct AIEditTab: View {
             if asset.type == .audio {
                 actionTile(
                     action: .rerun,
+                    accessibilityID: "inspector.aiAudio.rerun",
                     icon: "arrow.clockwise",
                     title: L10n.string("Rerun"),
                     description: L10n.string("Regenerate with the same parameters")
                 )
             }
-            audioTransformActionTile(kind: .cleanup)
-            audioTransformActionTile(kind: .dubbing)
+            audioTransformActionTile(kind: .cleanup, accessibilityID: "inspector.aiAudio.cleanup")
+            audioTransformActionTile(kind: .dubbing, accessibilityID: "inspector.aiAudio.dubbing")
             if isVisualClipContext, asset.type == .video {
-                videoAudioActionTile(kind: .music)
-                videoAudioActionTile(kind: .sfx)
+                videoAudioActionTile(kind: .music, accessibilityID: "inspector.aiAudio.music")
+                videoAudioActionTile(kind: .sfx, accessibilityID: "inspector.aiAudio.sfx")
             }
         }
     }
@@ -178,6 +188,7 @@ struct AIEditTab: View {
             icon: "arrow.triangle.2.circlepath",
             label: L10n.string("Replace clip source"),
             help: L10n.string("Swap the clip's media when generation completes. Speed, volume, trim, and transform are preserved."),
+            accessibilityID: "inspector.aiEnhance.replaceSource",
             isOn: $replaceClipSource
         )
     }
@@ -189,6 +200,7 @@ struct AIEditTab: View {
             icon: "scissors",
             label: L10n.string("Use trimmed portion only"),
             help: L10n.string("Send only the visible clip range to the model, not the full source."),
+            accessibilityID: "inspector.aiEdit.useTrimmedClip",
             isOn: $useTrimmedClip
         )
     }
@@ -198,6 +210,7 @@ struct AIEditTab: View {
             icon: "plus.rectangle.on.rectangle",
             label: L10n.string("Place on timeline"),
             help: L10n.string("Add generated audio to an audio track at this clip's start."),
+            accessibilityID: "inspector.aiAudio.placeOnTimeline",
             isOn: $placeAudioOnTimeline
         )
     }
@@ -206,6 +219,7 @@ struct AIEditTab: View {
         icon: String,
         label: String,
         help: String,
+        accessibilityID: String,
         isOn: Binding<Bool>
     ) -> some View {
         HStack(spacing: AppTheme.Spacing.sm) {
@@ -223,6 +237,7 @@ struct AIEditTab: View {
                 .labelsHidden()
                 .accessibilityLabel(L10n.string(key: label))
                 .accessibilityHint(L10n.string(key: help))
+                .accessibilityIdentifier(accessibilityID)
         }
         .help(L10n.string(key: help))
     }
@@ -251,6 +266,7 @@ struct AIEditTab: View {
     @ViewBuilder
     private func actionTile(
         action: EditAction,
+        accessibilityID: String,
         icon: String,
         title: String,
         description: String,
@@ -281,6 +297,7 @@ struct AIEditTab: View {
                 ) {
                     createVideoOptionsPresented = true
                 }
+                .accessibilityIdentifier(accessibilityID)
                 .popover(isPresented: $createVideoOptionsPresented, arrowEdge: .bottom) {
                     createVideoOptions
                 }
@@ -300,20 +317,22 @@ struct AIEditTab: View {
                 ) {
                     present(action)
                 }
+                .accessibilityIdentifier(accessibilityID)
             }
         }
     }
 
-    private func videoAudioActionTile(kind: VideoToAudioEditKind) -> some View {
+    private func videoAudioActionTile(kind: VideoToAudioEditKind, accessibilityID: String) -> some View {
         actionTile(
             action: kind.action,
+            accessibilityID: accessibilityID,
             icon: kind.iconName,
             title: L10n.string(key: kind.title),
             description: L10n.string(key: kind.description)
         )
     }
 
-    private func audioTransformActionTile(kind: AudioTransformEditKind) -> some View {
+    private func audioTransformActionTile(kind: AudioTransformEditKind, accessibilityID: String) -> some View {
         let availability = kind.availability(
             for: asset,
             effectiveDurationOverride: effectiveDurationForAvailability
@@ -335,6 +354,7 @@ struct AIEditTab: View {
             ) {
                 presentAudioTransform(kind)
             }
+            .accessibilityIdentifier(accessibilityID)
         }
     }
 
@@ -417,7 +437,9 @@ struct AIEditTab: View {
     private var createVideoOptions: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.zero) {
             createVideoOption(L10n.string("Set as first frame"), asReference: false)
+                .accessibilityIdentifier("inspector.aiEnhance.createVideo.firstFrame")
             createVideoOption(L10n.string("Set as reference"), asReference: true)
+                .accessibilityIdentifier("inspector.aiEnhance.createVideo.reference")
         }
         .padding(.vertical, AppTheme.Spacing.xs)
     }

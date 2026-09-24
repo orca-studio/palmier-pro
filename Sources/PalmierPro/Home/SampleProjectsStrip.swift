@@ -32,6 +32,7 @@ struct SampleProjectsStrip: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("home.samplesDisclosure")
 
             if isExpanded {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -119,6 +120,9 @@ private struct SampleCard: View {
         .onTapGesture {
             if download == nil || download?.failed == true { action() }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("home.sample.\(sample.slug)")
         .clipShape(RoundedRectangle(cornerRadius: cardRadius, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: cardRadius, style: .continuous)

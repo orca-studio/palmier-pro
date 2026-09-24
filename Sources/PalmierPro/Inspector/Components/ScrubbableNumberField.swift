@@ -90,6 +90,19 @@ struct ScrubbableNumberField: View {
             .overlay(scrubOverlay)
         }
         .fixedSize(horizontal: true, vertical: false)
+        // One adjustable element so call-site labels and identifiers land on the field itself.
+        .accessibilityElement(children: isEditing ? .contain : .ignore)
+        .accessibilityValue(isEditing ? "" : displayText)
+        .accessibilityAdjustableAction { direction in
+            guard !isMixed else { return }
+            let mult = displayMultiplier == 0 ? 1 : displayMultiplier
+            let step = dragSensitivity * Self.accessibilityStepPixels / mult
+            let delta = direction == .increment ? step : direction == .decrement ? -step : 0
+            guard delta != 0 else { return }
+            liveValue = dragValueAdjustment((sourceValue + delta).clamped(to: range)).clamped(to: range)
+            onCommit(liveValue)
+        }
+        .accessibilityAction { startEditing() }
         .onAppear { liveValue = value ?? range.lowerBound }
         .onChange(of: value) { _, new in
             if !isDragging { liveValue = new ?? liveValue }
@@ -142,13 +155,19 @@ struct ScrubbableNumberField: View {
                         endInteraction()
                     }
                 },
-                onClick: {
-                    beginInteraction()
-                    editText = editingText
-                    isEditing = true
-                }
+                onClick: startEditing
             )
         }
+    }
+
+    /// Adjustment per accessibility increment, matching a short drag.
+    private static let accessibilityStepPixels = 10.0
+
+    private func startEditing() {
+        guard !isEditing else { return }
+        beginInteraction()
+        editText = editingText
+        isEditing = true
     }
 
     private func commitEdit() {

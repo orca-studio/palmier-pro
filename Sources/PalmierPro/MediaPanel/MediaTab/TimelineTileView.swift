@@ -17,6 +17,7 @@ struct TimelineTileView: View {
     var body: some View {
         MediaTileScaffold(
             name: timeline.name,
+            accessibilityID: "media.timeline.\(timeline.id)",
             isSelected: isSelected,
             showsActiveDot: isActive,
             isRenaming: $isRenaming,

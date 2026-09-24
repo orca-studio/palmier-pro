@@ -11,6 +11,7 @@ struct ClipAnimationInspectorSection: View {
         if !clips.isEmpty {
             EditorPanelGroup(
                 L10n.string("Animation"),
+                accessibilityID: "inspector.animation",
                 isExpanded: $isExpanded,
                 onReset: {
                     commit("Reset Animation") {
@@ -47,14 +48,17 @@ struct ClipAnimationInspectorSection: View {
         let current = sharedClipValue(clips) { animation(of: $0, edge)?.preset }
         let label = edge == .left ? L10n.string("In") : L10n.string("Out")
         let noRoom = clips.allSatisfy { $0.maxAnimationFrames(edge) < 1 }
+        let base = animationAccessibilityID(edge)
         return InspectorRow(
             label: label,
+            accessibilityID: base,
             onReset: { commit("Remove Animation") { setAnimation(nil, on: &$0, edge) } }
         ) {
             Menu {
                 Button(L10n.string("None")) {
                     commit("Remove Animation") { setAnimation(nil, on: &$0, edge) }
                 }
+                .accessibilityIdentifier("\(base).preset.none")
                 ForEach(ClipAnimation.Preset.allCases, id: \.self) { preset in
                     Button(L10n.string(key: preset.displayName)) {
                         let defaultFrames = Int((Self.defaultDurationSeconds * fps).rounded())
@@ -67,12 +71,16 @@ struct ClipAnimationInspectorSection: View {
                             setAnimation(ClipAnimation(preset: preset, durationFrames: frames), on: &clip, edge)
                         }
                     }
+                    .accessibilityIdentifier("\(base).preset.\(preset.rawValue)")
                 }
             } label: {
                 EditorMenuValue(text: menuText(current))
             }
             .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize().focusable(false)
+            .accessibilityElement(children: .combine)
             .disabled(noRoom)
+            .accessibilityLabel(label)
+            .accessibilityIdentifier("\(base).preset")
         }
         .frame(height: AppTheme.EditorPanel.fieldMinHeight)
     }
@@ -103,9 +111,15 @@ struct ClipAnimationInspectorSection: View {
                         resize(&$0, edge, seconds)
                     }
                 }
+                .accessibilityLabel(L10n.string("Duration"))
+                .accessibilityIdentifier("\(animationAccessibilityID(edge)).duration")
             }
             .frame(height: AppTheme.EditorPanel.fieldMinHeight)
         }
+    }
+
+    private func animationAccessibilityID(_ edge: FadeEdge) -> String {
+        edge == .left ? "inspector.animation.in" : "inspector.animation.out"
     }
 
     private func resize(_ clip: inout Clip, _ edge: FadeEdge, _ seconds: Double) {

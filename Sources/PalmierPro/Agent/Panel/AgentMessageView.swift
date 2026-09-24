@@ -7,11 +7,15 @@ struct AgentMessageView: View {
     @State private var isHovering = false
 
     var body: some View {
-        switch message.role {
-        case .user:   userBody
-        case .assistant: assistantBody
-        case .system: systemBody
+        Group {
+            switch message.role {
+            case .user:   userBody
+            case .assistant: assistantBody
+            case .system: systemBody
+            }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("agent.message.\(message.id)")
     }
 
     @ViewBuilder
@@ -83,12 +87,14 @@ struct AgentMessageView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 case .toolUse(let id, let name, let inputJSON):
                     ToolRunRow(name: name, inputJSON: inputJSON, result: toolResults[id])
+                        .accessibilityIdentifier("agent.message.\(message.id).tool.\(id)")
                 case .toolResult:
                     EmptyView()
                 }
             }
             if !copyableText.isEmpty {
                 CopyMessageButton(text: copyableText)
+                    .accessibilityIdentifier("agent.message.\(message.id).copy")
                     .opacity(isHovering ? 1 : 0)
             }
         }
@@ -172,6 +178,7 @@ private struct CopyMessageButton: View {
         }
         .buttonStyle(.plain)
         .help(L10n.string("Copy message"))
+        .accessibilityLabel(L10n.string("Copy message"))
     }
 }
 

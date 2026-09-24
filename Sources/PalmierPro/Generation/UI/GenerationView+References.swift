@@ -70,10 +70,10 @@ extension GenerationView {
 
     var videoFrameStrip: some View {
         HStack(spacing: AppTheme.Spacing.sm) {
-            FrameSlot(label: L10n.string("First Frame"), asset: firstFrame, isTargeted: $firstFrameTargeted,
+            FrameSlot(label: L10n.string("First Frame"), accessibilityID: "generation.firstFrame", asset: firstFrame, isTargeted: $firstFrameTargeted,
                       onDrop: { firstFrame = $0 }, onClear: { firstFrame = nil }, onError: flashDropError)
             if videoModel.supportsLastFrame {
-                FrameSlot(label: L10n.string("Last Frame"), asset: lastFrame, isTargeted: $lastFrameTargeted,
+                FrameSlot(label: L10n.string("Last Frame"), accessibilityID: "generation.lastFrame", asset: lastFrame, isTargeted: $lastFrameTargeted,
                           onDrop: { lastFrame = $0 }, onClear: { lastFrame = nil }, onError: flashDropError)
             }
         }
@@ -106,6 +106,7 @@ extension GenerationView {
                         Text(L10n.string(key: mode.title))
                     }
                 }
+                .accessibilityIdentifier("generation.videoInputMode.\(mode)")
             }
         } label: {
             HStack(spacing: AppTheme.Spacing.xs) {
@@ -122,6 +123,7 @@ extension GenerationView {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .hoverHighlight()
+        .accessibilityIdentifier("generation.videoInputMode")
     }
 
     // MARK: - Reference strip
@@ -349,6 +351,7 @@ extension GenerationView {
         HStack(spacing: AppTheme.Spacing.xs) {
             FrameSlot(
                 label: L10n.string("Source Video"),
+                accessibilityID: "generation.sourceVideo",
                 asset: sourceVideo,
                 isTargeted: $sourceVideoTargeted,
                 accepting: [.video],
@@ -360,6 +363,7 @@ extension GenerationView {
             if videoModel.maxReferenceImages > 0 {
                 FrameSlot(
                     label: L10n.string("Reference Image"),
+                accessibilityID: "generation.referenceImage",
                     asset: imageReferences.first,
                     isTargeted: $motionReferenceTargeted,
                     accepting: [.image],
@@ -372,6 +376,7 @@ extension GenerationView {
             if videoModel.maxReferenceAudios > 0 {
                 FrameSlot(
                     label: L10n.string("Replacement Audio"),
+                accessibilityID: "generation.replacementAudio",
                     asset: refAudios.first,
                     isTargeted: $refsTargeted,
                     accepting: [.audio],
@@ -387,6 +392,7 @@ extension GenerationView {
     var audioSourceStrip: some View {
         FrameSlot(
             label: audioSourceLabel,
+            accessibilityID: "generation.audioSource",
             asset: audioSource,
             isTargeted: $audioSourceTargeted,
             accepting: audioSourceTypes,
@@ -400,6 +406,7 @@ extension GenerationView {
     var upscaleSourceStrip: some View {
         FrameSlot(
             label: L10n.string("Source Media"),
+            accessibilityID: "generation.upscaleSource",
             asset: upscaleSource,
             isTargeted: $upscaleSourceTargeted,
             accepting: [.video, .image],

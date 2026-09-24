@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ViewSkillsButton: View {
+    var accessibilityID: String? = nil
+
     var body: some View {
         Button(action: openSkills) {
             Image(systemName: "book.closed")
@@ -11,6 +13,8 @@ struct ViewSkillsButton: View {
         .buttonStyle(.plain)
         .focusable(false)
         .help(L10n.string("View Skills"))
+        .accessibilityLabel(L10n.string("View Skills"))
+        .accessibilityIdentifier(accessibilityID ?? "")
         .tourAnchor(.skillsButton)
     }
 

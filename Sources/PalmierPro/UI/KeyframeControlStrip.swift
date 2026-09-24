@@ -7,6 +7,8 @@ struct KeyframeControlStrip: View {
     let isOnKeyframe: Bool
     let hasKeyframes: Bool
     let unavailableKeyframeHelp: String
+    /// Base identifier; the buttons append `.previousKeyframe`, `.keyframe`, and `.nextKeyframe`.
+    var accessibilityID: String? = nil
 
     static var width: CGFloat {
         AppTheme.EditorPanel.fieldMinHeight + AppTheme.Spacing.sm * 2
@@ -26,7 +28,8 @@ struct KeyframeControlStrip: View {
             navigationButton(
                 systemName: "chevron.left",
                 action: previousAction,
-                help: L10n.string("Go to previous keyframe")
+                help: L10n.string("Go to previous keyframe"),
+                identifierSuffix: "previousKeyframe"
             )
             Button(action: { keyframeAction?() }) {
                 Image(systemName: isOnKeyframe ? "diamond.fill" : "diamond")
@@ -39,10 +42,13 @@ struct KeyframeControlStrip: View {
             .disabled(keyframeAction == nil)
             .opacity(keyframeAction == nil ? AppTheme.Opacity.strong : AppTheme.Opacity.opaque)
             .help(keyframeHelp)
+            .accessibilityLabel(keyframeHelp)
+            .accessibilityIdentifier(accessibilityID.map { "\($0).keyframe" } ?? "")
             navigationButton(
                 systemName: "chevron.right",
                 action: nextAction,
-                help: L10n.string("Go to next keyframe")
+                help: L10n.string("Go to next keyframe"),
+                identifierSuffix: "nextKeyframe"
             )
         }
         .fixedSize()
@@ -51,7 +57,8 @@ struct KeyframeControlStrip: View {
     private func navigationButton(
         systemName: String,
         action: (() -> Void)?,
-        help: String
+        help: String,
+        identifierSuffix: String
     ) -> some View {
         Button(action: { action?() }) {
             Image(systemName: systemName)
@@ -64,5 +71,7 @@ struct KeyframeControlStrip: View {
         .disabled(action == nil)
         .opacity(action == nil ? AppTheme.Opacity.strong : AppTheme.Opacity.opaque)
         .help(help)
+        .accessibilityLabel(help)
+        .accessibilityIdentifier(accessibilityID.map { "\($0).\(identifierSuffix)" } ?? "")
     }
 }

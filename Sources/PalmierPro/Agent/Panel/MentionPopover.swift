@@ -71,6 +71,10 @@ struct MentionPopover: View {
                             mentionRow(asset: asset, isHighlighted: index == highlightedIndex)
                                 .contentShape(Rectangle())
                                 .onTapGesture { onPick(asset) }
+                                .accessibilityElement(children: .combine)
+                                .accessibilityAddTraits(.isButton)
+                                .accessibilityAction { onPick(asset) }
+                                .accessibilityIdentifier("agent.mention.\(asset.id)")
                                 .onHover { hovering in if hovering { highlightedIndex = index } }
                                 .id(asset.id)
                                 .onScrollVisibilityChange(threshold: 0.95) { visible in
@@ -126,6 +130,9 @@ struct MentionPopover: View {
                     )
                     .contentShape(Rectangle())
                     .onTapGesture { tab = t }
+                    .accessibilityAddTraits(t == tab ? [.isButton, .isSelected] : .isButton)
+                    .accessibilityAction { tab = t }
+                    .accessibilityIdentifier("agent.mention.tab.\(t)")
             }
         }
         .padding(AppTheme.Spacing.xs)

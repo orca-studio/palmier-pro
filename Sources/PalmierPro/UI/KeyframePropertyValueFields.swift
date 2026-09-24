@@ -33,6 +33,7 @@ struct KeyframePropertyValueFields: View {
     let clips: [Clip]
     let property: AnimatableProperty
     let style: Style
+    var accessibilityID: String? = nil
 
     @Environment(EditorViewModel.self) private var editor
     @State private var interactionClipIds: [String]?
@@ -75,12 +76,14 @@ struct KeyframePropertyValueFields: View {
                 multiplier: Double(editor.timeline.width),
                 axis: .horizontal
             )
+            .accessibilityIdentifier(accessibilityID.map { "\($0).x" } ?? "")
             positionField(
                 label: "Y",
                 value: y,
                 multiplier: Double(editor.timeline.height),
                 axis: .vertical
             )
+            .accessibilityIdentifier(accessibilityID.map { "\($0).y" } ?? "")
         }
         .fixedSize()
     }
@@ -107,6 +110,7 @@ struct KeyframePropertyValueFields: View {
         ) {
             writePosition($0, axis: axis, commit: true)
         }
+        .accessibilityLabel(Text(verbatim: "\(L10n.string(key: property.displayName)) \(label)"))
     }
 
     private var cropControl: some View {
@@ -132,6 +136,8 @@ struct KeyframePropertyValueFields: View {
                 )
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(L10n.string(key: property.displayName))
+        .accessibilityIdentifier(accessibilityID ?? "")
         .popover(isPresented: $detailPresented, arrowEdge: .trailing) {
             cropEditor
                 .padding(AppTheme.Spacing.md)
@@ -155,6 +161,7 @@ struct KeyframePropertyValueFields: View {
                     Button(L10n.string("Use Freeform")) {
                         editor.cropAspectLock = .free
                     }
+                    .accessibilityIdentifier(accessibilityID.map { "\($0).useFreeform" } ?? "")
                 }
             }
         } else {
@@ -187,6 +194,8 @@ struct KeyframePropertyValueFields: View {
             ) {
                 writeCrop($0, edge: edge, commit: true)
             }
+            .accessibilityLabel(label)
+            .accessibilityIdentifier(accessibilityID.map { "\($0).\(edge)" } ?? "")
         }
     }
 
@@ -213,6 +222,8 @@ struct KeyframePropertyValueFields: View {
             editor.rotationSnapGuidesVisible = false
             writeScalar($0, commit: true)
         }
+        .accessibilityLabel(L10n.string(key: property.displayName))
+        .accessibilityIdentifier(accessibilityID ?? "")
     }
 
     private func adjustedScalarValue(_ value: Double) -> Double {

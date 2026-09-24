@@ -10,6 +10,7 @@ struct AIEditMenu: View {
             EmptyView()
         } else if !aiAllowed {
             Button(L10n.string("AI Edit")) {}.disabled(true)
+                .accessibilityIdentifier("generation.aiEdit")
         } else {
             Menu(L10n.string("AI Edit")) {
                 if !enhanceActions.isEmpty {
@@ -22,6 +23,7 @@ struct AIEditMenu: View {
                         }
                         if enhanceActions.contains(.rerun) {
                             Button(L10n.string("Rerun")) { rerun() }
+                                .accessibilityIdentifier("generation.aiEdit.rerun")
                         }
                         if enhanceActions.contains(.lipSync) {
                             editActionButton(L10n.string("Lip Sync…"), action: .lipSync) { lipSync() }
@@ -32,11 +34,15 @@ struct AIEditMenu: View {
                         if enhanceActions.contains(.createVideo) {
                             Menu(L10n.string("Create Video")) {
                                 Button(L10n.string("Set as first frame")) { createVideo(asReference: false) }
+                                    .accessibilityIdentifier("generation.aiEdit.createVideo.firstFrame")
                                 Button(L10n.string("Set as reference")) { createVideo(asReference: true) }
+                                    .accessibilityIdentifier("generation.aiEdit.createVideo.reference")
                             }
+                            .accessibilityIdentifier("generation.aiEdit.createVideo")
                         }
                         if enhanceActions.contains(.enhanceDraft) {
                             Button(L10n.string("FLUX Enhance")) { enhanceDraft() }
+                                .accessibilityIdentifier("generation.aiEdit.enhanceDraft")
                         }
                     }
                 }
@@ -44,23 +50,28 @@ struct AIEditMenu: View {
                     Section(L10n.string("AI Audio")) {
                         if audioActions.contains(.rerun) {
                             Button(L10n.string("Rerun")) { rerun() }
+                                .accessibilityIdentifier("generation.aiEdit.rerun")
                         }
                         ForEach(availableAudioTransforms, id: \.category) { kind in
                             Button(L10n.string(key: kind.menuTitle)) { audioTransform(kind: kind) }
+                                .accessibilityIdentifier("generation.aiEdit.audioTransform.\(kind)")
                         }
                         if audioActions.contains(.generateMusic) {
                             Button(L10n.string(key: VideoToAudioEditKind.music.menuTitle)) {
                                 videoAudio(kind: .music)
                             }
+                            .accessibilityIdentifier("generation.aiEdit.generateMusic")
                         }
                         if audioActions.contains(.generateSFX) {
                             Button(L10n.string(key: VideoToAudioEditKind.sfx.menuTitle)) {
                                 videoAudio(kind: .sfx)
                             }
+                            .accessibilityIdentifier("generation.aiEdit.generateSFX")
                         }
                     }
                 }
             }
+            .accessibilityIdentifier("generation.aiEdit")
         }
     }
 
@@ -97,8 +108,10 @@ struct AIEditMenu: View {
             } label: {
                 Label(L10n.string("\(title) (Paid)"), systemImage: "lock.fill")
             }
+            .accessibilityIdentifier("generation.aiEdit.\(action)")
         } else {
             Button(title, action: perform)
+                .accessibilityIdentifier("generation.aiEdit.\(action)")
         }
     }
 

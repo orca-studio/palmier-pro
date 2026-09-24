@@ -59,6 +59,7 @@ struct AgentPane: View {
                 .buttonStyle(.plain)
                 .fixedSize()
                 .pointerStyle(.link)
+                .accessibilityIdentifier("settings.agent.mcpSetupInstructions")
             }
         }
     }
@@ -98,6 +99,7 @@ struct AgentPane: View {
             .toggleStyle(.switch)
             .controlSize(.mini)
             .accessibilityLabel(L10n.string("MCP Server"))
+            .accessibilityIdentifier("settings.agent.mcpServer")
         }
         .padding(.top, AppTheme.Spacing.xs)
     }
@@ -147,11 +149,14 @@ private struct APIKeySettingRow: View {
             .buttonStyle(.plain)
             .fixedSize()
             .pointerStyle(.link)
+            .accessibilityIdentifier("settings.agent.\(provider.rawValue).getAPIKey")
         }
     }
 
     private var field: some View {
         SecureField(placeholder, text: $draft)
+            .accessibilityIdentifier("settings.agent.\(provider.rawValue).apiKey")
+            .accessibilityLabel(provider.apiKeyPresentation.title)
             .textFieldStyle(.plain)
             .focused($isFocused)
             .font(.system(size: AppTheme.FontSize.sm, design: .monospaced))
@@ -180,6 +185,7 @@ private struct APIKeySettingRow: View {
             Button(L10n.string("Save"), action: save)
                 .buttonStyle(.capsule(.prominent, size: .regular))
                 .controlSize(.large)
+                .accessibilityIdentifier("settings.agent.\(provider.rawValue).saveAPIKey")
         } else if hasKey {
             Button(action: remove) {
                 Image(systemName: "trash")
@@ -190,6 +196,8 @@ private struct APIKeySettingRow: View {
             .buttonStyle(.capsule(.secondary, size: .regular))
             .controlSize(.large)
             .help(L10n.string("Remove API key"))
+            .accessibilityLabel(L10n.string("Remove API key"))
+            .accessibilityIdentifier("settings.agent.\(provider.rawValue).removeAPIKey")
         }
     }
 

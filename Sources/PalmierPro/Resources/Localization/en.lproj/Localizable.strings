@@ -65,6 +65,7 @@
 "Account settings" = "Account settings";
 "Action Safe" = "Action Safe";
 "Activity unavailable" = "Activity unavailable";
+"Add Marker" = "Add Marker";
 "Add Marker (M)" = "Add Marker (M)";
 "Add Point After" = "Add Point After";
 "Add Range to Chat" = "Add Range to Chat";
@@ -289,6 +290,7 @@
 "Delete “%@”" = "Delete “%@”";
 "Delete “%@”?" = "Delete “%@”?";
 "Denoise" = "Denoise";
+"Denoise Strength" = "Denoise Strength";
 "Denoise failed. Playback uses the original audio — adjust Strength to retry." = "Denoise failed. Playback uses the original audio — adjust Strength to retry.";
 "Describe the audio scene" = "Describe the audio scene";
 "Describe the audio scene (minimum %lld characters)" = "Describe the audio scene (minimum %lld characters)";
@@ -392,6 +394,7 @@
 "Fill prompt" = "Fill prompt";
 "Film Grain" = "Film Grain";
 "Filmmaker" = "Filmmaker";
+"Filter" = "Filter";
 "Filter markers by status" = "Filter markers by status";
 "Final Cut Pro" = "Final Cut Pro";
 "First Frame" = "First Frame";
@@ -448,6 +451,8 @@
 "Getting the search model ready." = "Getting the search model ready.";
 "GitHub" = "GitHub";
 "Glow" = "Glow";
+"Go to End" = "Go to End";
+"Go to Start" = "Go to Start";
 "Go to next keyframe" = "Go to next keyframe";
 "Go to previous keyframe" = "Go to previous keyframe";
 "Google" = "Google";
@@ -728,6 +733,7 @@
 "Playback Speed" = "Playback Speed";
 "Playback previews, waveforms, filmstrip thumbnails, and transcripts. Safe to clear; files rebuild as needed." = "Playback previews, waveforms, filmstrip thumbnails, and transcripts. Safe to clear; files rebuild as needed.";
 "Podcast" = "Podcast";
+"Pointer" = "Pointer";
 "Pointer (V)" = "Pointer (V)";
 "Pop In" = "Pop In";
 "Portrait (9:16)" = "Portrait (9:16)";
@@ -751,6 +757,7 @@
 "Quit Palmier Pro" = "Quit Palmier Pro";
 "Radius" = "Radius";
 "Range" = "Range";
+"Razor" = "Razor";
 "Razor (C)" = "Razor (C)";
 "Razor Tool" = "Razor Tool";
 "Re-render the same motion at full quality in 1080p" = "Re-render the same motion at full quality in 1080p";
@@ -926,6 +933,7 @@
 "Smart search" = "Smart search";
 "Smooth" = "Smooth";
 "Soft Light" = "Soft Light";
+"Sort" = "Sort";
 "Sound Effects" = "Sound Effects";
 "Source" = "Source";
 "Source Audio" = "Source Audio";
@@ -1011,6 +1019,7 @@
 "Timecode" = "Timecode";
 "Timeline" = "Timeline";
 "Timeline Format" = "Timeline Format";
+"Timeline Zoom" = "Timeline Zoom";
 "Timeline colors" = "Timeline colors";
 "Timelines" = "Timelines";
 "Tint" = "Tint";
@@ -1034,6 +1043,7 @@
 "Transform with a prompt or motion reference" = "Transform with a prompt or motion reference";
 "Translate" = "Translate";
 "Translate speech into another language" = "Translate speech into another language";
+"Trim" = "Trim";
 "Trim (T)" = "Trim (T)";
 "Trim End to Playhead" = "Trim End to Playhead";
 "Trim End to Playhead (W)" = "Trim End to Playhead (W)";

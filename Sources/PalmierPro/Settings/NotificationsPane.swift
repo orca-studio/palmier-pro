@@ -7,7 +7,8 @@ struct NotificationsPane: View {
         SettingsToggleRow(
             title: L10n.string("Show notifications"),
             subtitle: L10n.string("Get a notification when a generation finishes."),
-            isOn: $notificationsEnabled
+            isOn: $notificationsEnabled,
+            accessibilityID: "settings.general.notifications"
         )
         .onChange(of: notificationsEnabled) { _, newValue in
             AppNotifications.isEnabled = newValue

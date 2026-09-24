@@ -134,6 +134,7 @@ struct MusicSection: View {
     private var musicSection: some View {
         EditorPanelGroup(
             L10n.string("Music"),
+            accessibilityID: "media.music",
             isExpanded: $isExpanded
         ) {
             sourceControls
@@ -149,13 +150,16 @@ struct MusicSection: View {
             InspectorRow(
                 label: L10n.string("Input"),
                 labelAlignment: .leading,
-                onReset: { mode = .videoToMusic }
+                accessibilityID: "media.music.input", onReset: { mode = .videoToMusic }
             ) {
                 Menu {
                     Button(L10n.string("Video to Music")) { mode = .videoToMusic }
                     Button(L10n.string("Text to Music")) { mode = .textToMusic }
                 } label: { EditorMenuValue(text: modeLabel(effectiveMode), expanded: true) }
                 .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).focusable(false)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(L10n.string("Input"))
+                .accessibilityIdentifier("media.music.input")
                 .frame(maxWidth: .infinity)
             }
         }
@@ -164,7 +168,7 @@ struct MusicSection: View {
                 label: L10n.string("Duration"),
                 labelHelp: L10n.string("Length of the generated music. It's placed at the playhead, or at the marked range start."),
                 labelAlignment: .leading,
-                onReset: { textDuration = defaultTextDuration }
+                accessibilityID: "media.music.duration", onReset: { textDuration = defaultTextDuration }
             ) {
                 ScrubbableNumberField(
                     value: textDuration,
@@ -174,6 +178,8 @@ struct MusicSection: View {
                     dragValueAdjustment: { $0.rounded() },
                     onChanged: { textDuration = $0.rounded() }
                 ) { textDuration = $0.rounded() }
+                .accessibilityLabel(L10n.string("Duration"))
+                .accessibilityIdentifier("media.music.duration")
             }
         } else {
             InspectorRow(
@@ -195,7 +201,7 @@ struct MusicSection: View {
         InspectorRow(
             label: L10n.string("Model"),
             labelAlignment: .leading,
-            onReset: { selectModel(nil) }
+            accessibilityID: "media.music.model", onReset: { selectModel(nil) }
         ) {
             Menu {
                 ForEach(models, id: \.id) { m in
@@ -205,6 +211,9 @@ struct MusicSection: View {
                 EditorMenuValue(text: model?.displayName ?? L10n.string("None"), expanded: true)
             }
             .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).focusable(false)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(L10n.string("Model"))
+            .accessibilityIdentifier("media.music.model")
             .frame(maxWidth: .infinity)
         }
     }
@@ -232,6 +241,8 @@ struct MusicSection: View {
                 .foregroundStyle(AppTheme.Text.primaryColor)
                 .padding(AppTheme.Spacing.smMd)
                 .editorValueField()
+                .accessibilityLabel(L10n.string("Prompt"))
+                .accessibilityIdentifier("media.music.prompt")
         }
     }
 
@@ -254,8 +265,10 @@ struct MusicSection: View {
                 .focusable(false)
                 .disabled(!canGenerate || !account.aiAllowed)
                 .help(account.aiAllowed ? String() : L10n.string("Sign in to generate"))
+                .accessibilityIdentifier("media.music.generate")
 
                 agentMenu
+                    .accessibilityIdentifier("media.music.agentMenu")
             }
         }
     }

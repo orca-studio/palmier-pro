@@ -71,7 +71,8 @@ struct TimelineKeyframeLaneHeaderControl: View {
             },
             isOnKeyframe: onKeyframe,
             hasKeyframes: clip?.hasActiveKeyframes(for: property) == true,
-            unavailableKeyframeHelp: L10n.string("Move playhead inside the clip")
+            unavailableKeyframeHelp: L10n.string("Move playhead inside the clip"),
+            accessibilityID: "timeline.track.\(trackId).keyframes.\(property.rawValue)"
         )
     }
 

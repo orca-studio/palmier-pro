@@ -139,6 +139,7 @@ extension GenerationView {
         .accessibilityLabel(aiAllowed
             ? (selectedType == .upscale ? L10n.string("Upscale") : L10n.string("Generate"))
             : L10n.string("Sign in"))
+        .accessibilityIdentifier("generation.submit")
         .disabled(aiAllowed ? !canSubmit : account.isMisconfigured || account.isSigningIn)
         .opacity((aiAllowed ? canSubmit : !account.isMisconfigured && !account.isSigningIn) ? AppTheme.Opacity.opaque : AppTheme.Opacity.strong)
         .help(aiAllowed

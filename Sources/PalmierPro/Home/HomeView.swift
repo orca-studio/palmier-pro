@@ -102,17 +102,20 @@ private struct HomeSidebar: View {
                         action: { Task { await account.signInWithGoogle() } }
                     )
                     .disabled(account.isSigningIn)
+                    .accessibilityIdentifier("home.signIn")
                 }
                 SidebarRowButton(
                     label: L10n.string("New Project"),
                     systemImage: "plus",
                     action: { AppState.shared.createProjectInteractively() }
                 )
+                .accessibilityIdentifier("home.newProject")
                 SidebarRowButton(
                     label: L10n.string("Open Project"),
                     systemImage: "folder",
                     action: { AppState.shared.openProjectFromPanel() }
                 )
+                .accessibilityIdentifier("home.openProject")
             }
             .padding(.horizontal, AppTheme.Spacing.smMd)
             .padding(.vertical, AppTheme.Spacing.md)
@@ -129,6 +132,7 @@ private struct HomeSidebar: View {
                 systemImage: "gearshape",
                 action: { SettingsWindowController.shared.show() }
             )
+            .accessibilityIdentifier("home.settings")
             .padding(.horizontal, AppTheme.Spacing.smMd)
             .padding(.bottom, AppTheme.Spacing.md)
         }

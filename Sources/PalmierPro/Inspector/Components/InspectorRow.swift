@@ -5,6 +5,7 @@ struct InspectorRow<Trailing: View>: View {
     let label: String
     let labelHelp: String?
     let labelAlignment: Alignment
+    let accessibilityID: String?
     let onReset: (() -> Void)?
     @ViewBuilder let trailing: () -> Trailing
 
@@ -12,12 +13,14 @@ struct InspectorRow<Trailing: View>: View {
         label: String,
         labelHelp: String? = nil,
         labelAlignment: Alignment = .leading,
+        accessibilityID: String? = nil,
         onReset: (() -> Void)? = nil,
         @ViewBuilder trailing: @escaping () -> Trailing
     ) {
         self.label = label
         self.labelHelp = labelHelp
         self.labelAlignment = labelAlignment
+        self.accessibilityID = accessibilityID
         self.onReset = onReset
         self.trailing = trailing
     }
@@ -43,7 +46,11 @@ struct InspectorRow<Trailing: View>: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
 
             if let onReset {
-                EditorResetButton(title: label, action: onReset)
+                EditorResetButton(
+                    title: label,
+                    accessibilityID: accessibilityID.map { "\($0).reset" },
+                    action: onReset
+                )
             }
         }
         .frame(maxWidth: .infinity, minHeight: AppTheme.EditorPanel.rowMinHeight)
@@ -52,6 +59,7 @@ struct InspectorRow<Trailing: View>: View {
 
 struct EditorResetButton: View {
     let title: String
+    var accessibilityID: String? = nil
     let action: () -> Void
 
     var body: some View {
@@ -65,5 +73,6 @@ struct EditorResetButton: View {
         .buttonStyle(.plain)
         .help(L10n.string("Reset: \(title)"))
         .accessibilityLabel(L10n.string("Reset: \(title)"))
+        .accessibilityIdentifier(accessibilityID ?? "")
     }
 }

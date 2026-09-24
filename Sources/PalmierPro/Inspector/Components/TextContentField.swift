@@ -32,6 +32,8 @@ struct TextContentField: NSViewRepresentable {
         textView.isAutomaticSpellingCorrectionEnabled = false
         textView.delegate = context.coordinator
         textView.string = text
+        textView.setAccessibilityLabel(L10n.string("Text"))
+        textView.setAccessibilityIdentifier("inspector.text.content")
 
         scrollView.documentView = textView
         context.coordinator.textView = textView

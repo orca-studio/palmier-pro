@@ -19,13 +19,13 @@ extension MediaTab {
         return ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
                 if !visualHits.isEmpty {
-                    momentHeader(L10n.key("Moments"), icon: "sparkle.magnifyingglass", count: visualHits.count, collapsible: true)
+                    momentHeader(L10n.key("Moments"), accessibilityID: "media.search.section.moments", icon: "sparkle.magnifyingglass", count: visualHits.count, collapsible: true)
                     if !collapsedSearchSections.contains(L10n.key("Moments")) {
                         resultsGrid { ForEach(visualHits.indices, id: \.self) { momentCard(visualHits[$0]) } }
                     }
                 }
                 if !spokenHits.isEmpty {
-                    momentHeader(L10n.key("Spoken"), icon: "waveform", count: spokenHits.count, collapsible: true)
+                    momentHeader(L10n.key("Spoken"), accessibilityID: "media.search.section.spoken", icon: "waveform", count: spokenHits.count, collapsible: true)
                     if !collapsedSearchSections.contains(L10n.key("Spoken")) {
                         VStack(spacing: AppTheme.Spacing.sm) {
                             ForEach(spokenHits.indices, id: \.self) { spokenRow(spokenHits[$0]) }
@@ -34,7 +34,7 @@ extension MediaTab {
                     }
                 }
                 if !timelineMatches.isEmpty {
-                    momentHeader(L10n.key("Timelines"), icon: "film.stack", count: timelineMatches.count)
+                    momentHeader(L10n.key("Timelines"), accessibilityID: "media.search.section.timelines", icon: "film.stack", count: timelineMatches.count)
                     resultsGrid {
                         ForEach(timelineMatches) { timeline in
                             timelineTile(timeline)
@@ -43,7 +43,7 @@ extension MediaTab {
                     }
                 }
                 if !nameMatches.isEmpty {
-                    momentHeader(L10n.key("Files"), icon: "doc", count: nameMatches.count)
+                    momentHeader(L10n.key("Files"), accessibilityID: "media.search.section.files", icon: "doc", count: nameMatches.count)
                     resultsGrid { ForEach(nameMatches) { fileCard($0) } }
                 }
                 if visualHits.isEmpty, spokenHits.isEmpty, timelineMatches.isEmpty, nameMatches.isEmpty {
@@ -89,7 +89,7 @@ extension MediaTab {
         .padding(.bottom, AppTheme.Spacing.md)
     }
 
-    private func momentHeader(_ title: String, icon: String, count: Int, collapsible: Bool = false) -> some View {
+    private func momentHeader(_ title: String, accessibilityID: String, icon: String, count: Int, collapsible: Bool = false) -> some View {
         let isCollapsed = collapsedSearchSections.contains(title)
         return Button {
             guard collapsible else { return }
@@ -120,6 +120,7 @@ extension MediaTab {
         }
         .buttonStyle(.plain)
         .disabled(!collapsible)
+        .accessibilityIdentifier(accessibilityID)
     }
 
     // MARK: - Rows
@@ -154,6 +155,9 @@ extension MediaTab {
         }
         .overlay { searchSelectionBorder(for: hit.assetID) }
         .onTapGesture { selectSearchHit(assetID: hit.assetID, atSeconds: range.lowerBound) }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("media.search.moment.\(hit.assetID).\(String(format: "%.0f", hit.shotStart * 1_000))")
     }
 
     @ViewBuilder
@@ -205,6 +209,9 @@ extension MediaTab {
         }
         .overlay { searchSelectionBorder(for: hit.assetID) }
         .onTapGesture { selectSearchHit(assetID: hit.assetID, atSeconds: range.lowerBound) }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("media.search.spoken.\(hit.assetID).\(String(format: "%.0f", hit.start * 1_000))")
     }
 
     private func fileCard(_ asset: MediaAsset) -> some View {
@@ -229,6 +236,9 @@ extension MediaTab {
         .draggable(dragPayload(for: asset)) { dragPreview(for: asset) }
         .overlay { searchSelectionBorder(for: asset.id) }
         .onTapGesture { selectSearchHit(assetID: asset.id, atSeconds: 0) }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("media.search.file.\(asset.id)")
         .task(id: searchThumbnailTaskID(for: asset)) {
             await loadSearchThumbnail(asset)
         }

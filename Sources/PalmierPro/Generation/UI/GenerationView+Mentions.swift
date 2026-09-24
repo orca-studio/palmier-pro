@@ -56,6 +56,9 @@ extension GenerationView {
                     )
                     .contentShape(Rectangle())
                     .onTapGesture { pickRefTag(tag) }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityIdentifier("generation.mention.\(tag.id)")
                     .onHover { hovering in if hovering { highlightedMentionIndex = index } }
                 }
             }

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct EditorPanelGroup<Content: View, HeaderAccessory: View>: View {
     let title: String
+    private let accessibilityID: String?
     private let isExpanded: Binding<Bool>?
     private let contentSpacing: CGFloat
     private let contentInsets: EdgeInsets
@@ -12,6 +13,7 @@ struct EditorPanelGroup<Content: View, HeaderAccessory: View>: View {
 
     init(
         _ title: String,
+        accessibilityID: String? = nil,
         isExpanded: Binding<Bool>? = nil,
         contentSpacing: CGFloat = AppTheme.Spacing.smMd,
         contentInsets: EdgeInsets = AppTheme.EditorPanel.contentInsets,
@@ -20,6 +22,7 @@ struct EditorPanelGroup<Content: View, HeaderAccessory: View>: View {
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.title = title
+        self.accessibilityID = accessibilityID
         self.isExpanded = isExpanded
         self.contentSpacing = contentSpacing
         self.contentInsets = contentInsets
@@ -54,6 +57,7 @@ struct EditorPanelGroup<Content: View, HeaderAccessory: View>: View {
             .buttonStyle(.plain)
             .focusable(false)
             .accessibilityLabel(Text(verbatim: "\(expanded ? L10n.string("Collapse") : L10n.string("Expand")) \(title)"))
+            .accessibilityIdentifier(accessibilityID.map { "\($0).toggle" } ?? "")
 
             HStack(spacing: AppTheme.Spacing.sm) {
                 HStack(spacing: AppTheme.Spacing.sm) {
@@ -70,7 +74,7 @@ struct EditorPanelGroup<Content: View, HeaderAccessory: View>: View {
                 headerAccessory()
 
                 if let onReset {
-                    EditorResetButton(title: title, action: onReset)
+                    EditorResetButton(title: title, accessibilityID: accessibilityID.map { "\($0).reset" }, action: onReset)
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.smMd)
@@ -111,6 +115,7 @@ struct EditorPanelGroup<Content: View, HeaderAccessory: View>: View {
 extension EditorPanelGroup where HeaderAccessory == EmptyView {
     init(
         _ title: String,
+        accessibilityID: String? = nil,
         isExpanded: Binding<Bool>? = nil,
         contentSpacing: CGFloat = AppTheme.Spacing.smMd,
         contentInsets: EdgeInsets = AppTheme.EditorPanel.contentInsets,
@@ -119,6 +124,7 @@ extension EditorPanelGroup where HeaderAccessory == EmptyView {
     ) {
         self.init(
             title,
+            accessibilityID: accessibilityID,
             isExpanded: isExpanded,
             contentSpacing: contentSpacing,
             contentInsets: contentInsets,

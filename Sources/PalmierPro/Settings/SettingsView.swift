@@ -100,6 +100,7 @@ private struct SettingsSidebar: View {
                     isSelected: selectedTab == tab,
                     action: { selectedTab = tab }
                 )
+                .accessibilityIdentifier("settings.tab.\(tab.rawValue)")
             }
         }
         .padding(.horizontal, AppTheme.Spacing.smMd)
@@ -200,6 +201,7 @@ struct SettingsToggleRow: View {
     let title: String
     let subtitle: String
     @Binding var isOn: Bool
+    let accessibilityID: String
 
     var body: some View {
         HStack(alignment: .center, spacing: AppTheme.Spacing.md) {
@@ -221,6 +223,7 @@ struct SettingsToggleRow: View {
                 .controlSize(.mini)
                 .accessibilityLabel(title)
                 .accessibilityHint(subtitle)
+                .accessibilityIdentifier(accessibilityID)
         }
         .frame(maxWidth: .infinity)
     }

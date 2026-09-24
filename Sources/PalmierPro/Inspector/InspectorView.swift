@@ -71,6 +71,18 @@ struct InspectorView: View {
             case .ai: "wand.and.stars"
             }
         }
+
+        var accessibilityID: String {
+            switch self {
+            case .text: "inspector.tab.text"
+            case .textAnimate: "inspector.tab.textAnimate"
+            case .video: "inspector.tab.video"
+            case .effects: "inspector.tab.effects"
+            case .audio: "inspector.tab.audio"
+            case .multicam: "inspector.tab.multicam"
+            case .ai: "inspector.tab.ai"
+            }
+        }
     }
 
     @State private var preferredTab: ClipTab = .video
@@ -160,11 +172,12 @@ struct InspectorView: View {
             ScrollView {
                 EditorPanelGroup(
                     L10n.string("Canvas"),
+                    accessibilityID: "inspector.canvas",
                     contentSpacing: AppTheme.Spacing.sm
                 ) {
-                    menuMetadataRow(label: L10n.string("Resolution"), value: "\(editor.timeline.width) × \(editor.timeline.height)") { qualityMenuItems }
-                    menuMetadataRow(label: L10n.string("Frame Rate"), value: "\(editor.timeline.fps) fps") { fpsMenuItems }
-                    menuMetadataRow(label: L10n.string("Aspect Ratio"), value: CanvasAspectRatio.displayLabel(width: editor.timeline.width, height: editor.timeline.height)) { aspectMenuItems }
+                    menuMetadataRow(label: L10n.string("Resolution"), value: "\(editor.timeline.width) × \(editor.timeline.height)", accessibilityID: "inspector.canvas.resolution") { qualityMenuItems }
+                    menuMetadataRow(label: L10n.string("Frame Rate"), value: "\(editor.timeline.fps) fps", accessibilityID: "inspector.canvas.frameRate") { fpsMenuItems }
+                    menuMetadataRow(label: L10n.string("Aspect Ratio"), value: CanvasAspectRatio.displayLabel(width: editor.timeline.width, height: editor.timeline.height), accessibilityID: "inspector.canvas.aspectRatio") { aspectMenuItems }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -225,6 +238,7 @@ struct InspectorView: View {
     private func menuMetadataRow<MenuContent: View>(
         label: String,
         value: String,
+        accessibilityID: String,
         @ViewBuilder menu: @escaping () -> MenuContent
     ) -> some View {
         HStack(spacing: AppTheme.Spacing.sm) {
@@ -242,6 +256,10 @@ struct InspectorView: View {
             .buttonStyle(.plain)
             .menuIndicator(.hidden)
             .fixedSize()
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(L10n.string(key: label))
+            .accessibilityValue(Text(verbatim: value))
+            .accessibilityIdentifier(accessibilityID)
         }
     }
 
@@ -259,6 +277,7 @@ struct InspectorView: View {
                     }
                 }
             }
+            .accessibilityIdentifier("inspector.canvas.aspectRatio.\(preset)")
         }
         Divider()
         Button(L10n.string("Custom…")) {
@@ -268,6 +287,7 @@ struct InspectorView: View {
                 height: editor.timeline.height
             )
         }
+        .accessibilityIdentifier("inspector.canvas.aspectRatio.custom")
     }
 
     @ViewBuilder
@@ -284,6 +304,7 @@ struct InspectorView: View {
                     }
                 }
             }
+            .accessibilityIdentifier("inspector.canvas.frameRate.\(fps)")
         }
     }
 
@@ -302,6 +323,7 @@ struct InspectorView: View {
                     }
                 }
             }
+            .accessibilityIdentifier("inspector.canvas.resolution.\(preset)")
         }
     }
 
@@ -421,7 +443,7 @@ struct InspectorView: View {
     private func tabBar(_ tabs: [ClipTab], selectedTab: ClipTab?) -> some View {
         TitleTabBar(
             items: tabs.map {
-                TitleTabBar.Item(titleKey: $0.titleKey, systemImage: $0.systemImage)
+                TitleTabBar.Item(titleKey: $0.titleKey, systemImage: $0.systemImage, accessibilityID: $0.accessibilityID)
             },
             selected: selectedTab?.titleKey,
             tourAnchors: tabs.contains(.ai) ? [ClipTab.ai.titleKey: .aiEditTab] : [:]
@@ -443,9 +465,10 @@ struct InspectorView: View {
     @ViewBuilder
     func speedSection(clips: [Clip]) -> some View {
         if !clips.isEmpty {
-            EditorPanelGroup(L10n.string("Playback"), contentSpacing: AppTheme.Spacing.smMd) {
+            EditorPanelGroup(L10n.string("Playback"), accessibilityID: "inspector.playback", contentSpacing: AppTheme.Spacing.smMd) {
                 propertyRow(
                     label: L10n.string("Speed"),
+                    accessibilityID: "inspector.playback.speed",
                     onReset: { editor.commitClipSpeed(ids: clips.map(\.id), newSpeed: 1) }
                 ) {
                     ScrubbableNumberField(
@@ -461,6 +484,8 @@ struct InspectorView: View {
                     ) { newVal in
                         editor.commitClipSpeed(ids: clips.map(\.id), newSpeed: newVal)
                     }
+                    .accessibilityLabel(L10n.string("Speed"))
+                    .accessibilityIdentifier("inspector.playback.speed")
                 }
             }
         }
@@ -486,6 +511,7 @@ struct InspectorView: View {
     private func transformSection(clips: [Clip]) -> some View {
         EditorPanelGroup(
             L10n.string("Transform"),
+            accessibilityID: "inspector.transform",
             isExpanded: $transformExpanded,
             onReset: {
                 commitPropertiesToClips(clips, actionName: "Reset Transform") { clip in
@@ -513,6 +539,7 @@ struct InspectorView: View {
                 label: L10n.string("Position"),
                 clips: clips,
                 property: .position,
+                accessibilityID: "inspector.transform.position",
                 onReset: {
                     commitPropertiesToClips(clips, actionName: "Reset Position") { clip in
                         clip.transform.centerX = Transform().centerX
@@ -525,6 +552,7 @@ struct InspectorView: View {
                 label: L10n.string("Scale"),
                 clips: clips,
                 property: .scale,
+                accessibilityID: "inspector.transform.scale",
                 onReset: {
                     commitPropertiesToClips(clips, actionName: "Reset Scale") { clip in
                         let fitted = editor.fitTransform(for: clip)
@@ -538,6 +566,7 @@ struct InspectorView: View {
                 label: L10n.string("Rotation"),
                 clips: clips,
                 property: .rotation,
+                accessibilityID: "inspector.transform.rotation",
                 onReset: {
                     commitPropertiesToClips(clips, actionName: "Reset Rotation") { clip in
                         clip.transform.rotation = Transform().rotation
@@ -549,6 +578,7 @@ struct InspectorView: View {
                 label: L10n.string("Opacity"),
                 clips: clips,
                 property: .opacity,
+                accessibilityID: "inspector.transform.opacity",
                 onReset: {
                     commitPropertiesToClips(clips, actionName: "Reset Opacity") { clip in
                         clip.opacity = 1
@@ -565,6 +595,7 @@ struct InspectorView: View {
     private func imageAdjustmentSection(clips: [Clip]) -> some View {
         EditorPanelGroup(
             L10n.string("Image Adjustment"),
+            accessibilityID: "inspector.imageAdjustment",
             isExpanded: $imageAdjustmentExpanded,
             onReset: {
                 commitPropertiesToClips(clips, actionName: "Reset Image Adjustment") { clip in
@@ -583,6 +614,7 @@ struct InspectorView: View {
     private func edgeSoftnessRow(clips: [Clip]) -> some View {
         propertyRow(
             label: L10n.string("Edge Softness"),
+            accessibilityID: "inspector.imageAdjustment.edgeSoftness",
             onReset: {
                 commitPropertiesToClips(clips, actionName: "Reset Edge Softness") {
                     $0.edgeSoftness = 0
@@ -609,6 +641,8 @@ struct InspectorView: View {
                     $0.edgeSoftness = newValue
                 }
             }
+            .accessibilityLabel(L10n.string("Edge Softness"))
+            .accessibilityIdentifier("inspector.imageAdjustment.edgeSoftness")
         }
         .frame(height: AppTheme.EditorPanel.fieldMinHeight)
     }
@@ -616,6 +650,7 @@ struct InspectorView: View {
     private func edgeRoundingRow(clips: [Clip]) -> some View {
         propertyRow(
             label: L10n.string("Edge Rounding"),
+            accessibilityID: "inspector.imageAdjustment.edgeRounding",
             onReset: {
                 commitPropertiesToClips(clips, actionName: "Reset Edge Rounding") {
                     $0.edgeRounding = 0
@@ -642,6 +677,8 @@ struct InspectorView: View {
                     $0.edgeRounding = newValue
                 }
             }
+            .accessibilityLabel(L10n.string("Edge Rounding"))
+            .accessibilityIdentifier("inspector.imageAdjustment.edgeRounding")
         }
         .frame(height: AppTheme.EditorPanel.fieldMinHeight)
     }
@@ -657,11 +694,12 @@ struct InspectorView: View {
 
     func propertyRow<Trailing: View>(
         label: String,
+        accessibilityID: String? = nil,
         onReset: (() -> Void)? = nil,
         reservesKeyframeControls: Bool = false,
         @ViewBuilder trailing: @escaping () -> Trailing
     ) -> some View {
-        InspectorRow(label: label, onReset: onReset) {
+        InspectorRow(label: label, accessibilityID: accessibilityID, onReset: onReset) {
             if reservesKeyframeControls {
                 HStack(spacing: AppTheme.Spacing.sm) {
                     trailing()
@@ -677,10 +715,16 @@ struct InspectorView: View {
         label: String,
         clips: [Clip],
         property: AnimatableProperty,
+        accessibilityID: String,
         onReset: @escaping () -> Void
     ) -> some View {
-        propertyRow(label: label, onReset: onReset) {
-            InspectorKeyframePropertyControl(clips: clips, property: property)
+        propertyRow(label: label, accessibilityID: accessibilityID, onReset: onReset) {
+            InspectorKeyframePropertyControl(
+                clips: clips,
+                property: property,
+                label: label,
+                accessibilityID: accessibilityID
+            )
         }
     }
 
@@ -691,6 +735,7 @@ struct InspectorView: View {
         let mixed = clips.count > 1 && !clips.allSatisfy { ($0.blendMode ?? .normal) == current }
         return propertyRow(
             label: L10n.string("Blend"),
+            accessibilityID: "inspector.blendMode",
             onReset: {
                 commitPropertiesToClips(clips, actionName: "Reset Blend Mode") {
                     $0.blendMode = nil
@@ -705,11 +750,15 @@ struct InspectorView: View {
                             $0.blendMode = (m == .normal ? nil : m)
                         }
                     }
+                    .accessibilityIdentifier("inspector.blendMode.\(m.rawValue)")
                 }
             } label: {
                 EditorMenuValue(text: mixed ? "—" : L10n.string(key: current.displayName))
             }
             .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize().focusable(false)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(L10n.string("Blend"))
+            .accessibilityIdentifier("inspector.blendMode")
         }
         .frame(height: AppTheme.EditorPanel.fieldMinHeight)
     }
@@ -720,6 +769,7 @@ struct InspectorView: View {
         let activeV = clips.first?.transform.flipVertical ?? false
         propertyRow(
             label: L10n.string("Flip"),
+            accessibilityID: "inspector.transform.flip",
             onReset: {
                 commitPropertiesToClips(clips, actionName: "Reset Flip") { clip in
                     clip.transform.flipHorizontal = false
@@ -732,7 +782,8 @@ struct InspectorView: View {
                 iconToggleButton(
                     systemName: "arrow.left.and.right",
                     isOn: activeH,
-                    help: activeH ? L10n.string("Remove horizontal flip") : L10n.string("Flip horizontally")
+                    help: activeH ? L10n.string("Remove horizontal flip") : L10n.string("Flip horizontally"),
+                    accessibilityID: "inspector.transform.flip.horizontal"
                 ) {
                     let newValue = !activeH
                     commitPropertiesToClips(clips, actionName: "Flip Horizontal") {
@@ -742,7 +793,8 @@ struct InspectorView: View {
                 iconToggleButton(
                     systemName: "arrow.up.and.down",
                     isOn: activeV,
-                    help: activeV ? L10n.string("Remove vertical flip") : L10n.string("Flip vertically")
+                    help: activeV ? L10n.string("Remove vertical flip") : L10n.string("Flip vertically"),
+                    accessibilityID: "inspector.transform.flip.vertical"
                 ) {
                     let newValue = !activeV
                     commitPropertiesToClips(clips, actionName: "Flip Vertical") {
@@ -758,6 +810,7 @@ struct InspectorView: View {
         systemName: String,
         isOn: Bool,
         help: String,
+        accessibilityID: String,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
@@ -773,6 +826,8 @@ struct InspectorView: View {
         }
         .buttonStyle(.plain)
         .help(L10n.string(key: help))
+        .accessibilityLabel(L10n.string(key: help))
+        .accessibilityIdentifier(accessibilityID)
     }
 
     // MARK: - Crop
@@ -783,6 +838,7 @@ struct InspectorView: View {
         let disabled = single == nil
         propertyRow(
             label: L10n.string("Crop"),
+            accessibilityID: "inspector.transform.crop",
             onReset: {
                 guard let single else { return }
                 editor.cropAspectLock = .free
@@ -798,7 +854,8 @@ struct InspectorView: View {
                     isOn: editing,
                     help: disabled ? L10n.key("Crop applies to one clip at a time")
                           : editing ? L10n.key("Stop editing crop on canvas")
-                          : L10n.key("Edit crop on canvas")
+                          : L10n.key("Edit crop on canvas"),
+                    accessibilityID: "inspector.transform.crop.edit"
                 ) {
                     if !editor.cropEditingActive { editor.maskEditingActive = false }
                     editor.cropEditingActive.toggle()
@@ -816,7 +873,8 @@ struct InspectorView: View {
                 }
                 InspectorKeyframeControls(
                     clipId: single?.id,
-                    property: .crop
+                    property: .crop,
+                    accessibilityID: "inspector.transform.crop"
                 )
             }
         }
@@ -857,6 +915,8 @@ struct InspectorView: View {
         .fixedSize()
         .disabled(single == nil)
         .help(L10n.string("Choose a crop aspect"))
+        .accessibilityLabel(L10n.string("Choose a crop aspect"))
+        .accessibilityIdentifier("inspector.transform.crop.aspect")
     }
 
     @ViewBuilder
@@ -934,6 +994,7 @@ struct InspectorView: View {
             .hoverHighlight(cornerRadius: AppTheme.Radius.sm)
             .help(infoLabel)
             .accessibilityLabel(infoLabel)
+            .accessibilityIdentifier("inspector.asset.info")
             .popover(isPresented: $assetInfoPresented, arrowEdge: .top) {
                 assetFileInfoContent(asset)
                     .frame(width: AppTheme.EditorPanel.defaultWidth)
@@ -988,6 +1049,7 @@ struct InspectorView: View {
         let metadata = inputMetadataSummary(gen)
         return EditorPanelGroup(
             L10n.string("Generation Input"),
+            accessibilityID: "inspector.generationInput",
             contentSpacing: AppTheme.Spacing.zero,
             contentInsets: EdgeInsets(
                 top: AppTheme.Spacing.xxs,
@@ -1169,6 +1231,8 @@ struct PromptCopyButton: View {
         }
         .buttonStyle(.plain)
         .help(copied ? L10n.string("Copied") : L10n.string("Copy prompt"))
+        .accessibilityLabel(copied ? L10n.string("Copied") : L10n.string("Copy prompt"))
+        .accessibilityIdentifier("inspector.generationInput.copyPrompt")
     }
 
     private func copy() {

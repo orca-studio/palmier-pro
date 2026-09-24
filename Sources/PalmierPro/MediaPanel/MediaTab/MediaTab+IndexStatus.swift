@@ -9,7 +9,7 @@ struct MediaSearchIndexStatus: View {
         let model = VisualModelLoader.shared
         switch model.state {
         case .notInstalled where model.enabled && hasIndexableAssets:
-            statusButton(icon: "sparkle.magnifyingglass", label: L10n.string("Smart search")) {
+            statusButton(icon: "sparkle.magnifyingglass", label: L10n.string("Smart search"), accessibilityID: "media.smartSearch.download") {
                 model.download()
             }
             .help(L10n.string("Downloads a \(modelSizeLabel) on-device model so you can search media visually."))
@@ -24,7 +24,7 @@ struct MediaSearchIndexStatus: View {
                             help: L10n.string("Analyzing media so you can search it."),
                             progress: search.indexingProgress)
         case .failed where model.enabled:
-            statusButton(icon: "exclamationmark.triangle", label: L10n.string("Retry")) { model.download() }
+            statusButton(icon: "exclamationmark.triangle", label: L10n.string("Retry"), accessibilityID: "media.smartSearch.retry") { model.download() }
                 .help(L10n.string("Visual search model download failed. Check your connection and try again."))
         default:
             EmptyView()
@@ -40,7 +40,7 @@ struct MediaSearchIndexStatus: View {
         return ByteCountFormatter.string(fromByteCount: files.imageEncoder.bytes + files.textEncoder.bytes, countStyle: .file)
     }
 
-    private func statusButton(icon: String, label: String, action: @escaping () -> Void) -> some View {
+    private func statusButton(icon: String, label: String, accessibilityID: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: AppTheme.Spacing.xxs) {
                 Image(systemName: icon)
@@ -50,6 +50,7 @@ struct MediaSearchIndexStatus: View {
             .foregroundStyle(AppTheme.Text.secondaryColor)
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier(accessibilityID)
     }
 
     private func statusIndicator(_ label: String, help: String, progress: Double? = nil) -> some View {

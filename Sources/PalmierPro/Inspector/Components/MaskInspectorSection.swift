@@ -7,7 +7,7 @@ struct MaskInspectorSection: View {
     @State private var featherValue = 0.0
 
     var body: some View {
-        EditorPanelGroup(L10n.string("Mask"), onReset: {
+        EditorPanelGroup(L10n.string("Mask"), accessibilityID: "inspector.mask", onReset: {
             if let clip { editor.clearMask(clipId: clip.id); editor.maskEditingActive = false }
         }, headerAccessory: {
             Toggle(L10n.string("Enable Mask"), isOn: Binding(
@@ -21,11 +21,13 @@ struct MaskInspectorSection: View {
                 .toggleStyle(.switch)
                 .controlSize(.mini)
                 .disabled(clip == nil)
+                .accessibilityIdentifier("inspector.mask.enabled")
         }) {
             if let clip {
                 let shape = clip.maskAt(frame: editor.activeFrame)
                 HStack(spacing: AppTheme.Spacing.sm) {
-                    shapeButton(L10n.key("Linear Mask"), symbol: "rectangle.split.1x2", selected: shape?.linear != nil) {
+                    shapeButton(L10n.key("Linear Mask"), symbol: "rectangle.split.1x2", selected: shape?.linear != nil,
+                                accessibilityID: "inspector.mask.shape.linear") {
                         if shape?.linear != nil {
                             editor.setMaskEnabled(clipId: clip.id, enabled: true)
                             editor.cropEditingActive = false
@@ -33,7 +35,8 @@ struct MaskInspectorSection: View {
                         } else { editor.beginMaskEditing(clipId: clip.id, linear: true) }
                     }
                     shapeButton(L10n.key("Path Mask"), symbol: "point.topleft.down.to.point.bottomright.curvepath",
-                                selected: shape?.linear == nil && (shape != nil || editor.maskEditingActive)) {
+                                selected: shape?.linear == nil && (shape != nil || editor.maskEditingActive),
+                                accessibilityID: "inspector.mask.shape.path") {
                         if shape != nil && shape?.linear == nil {
                             editor.setMaskEnabled(clipId: clip.id, enabled: true)
                             editor.cropEditingActive = false
@@ -46,7 +49,7 @@ struct MaskInspectorSection: View {
                         HStack {
                             Text(L10n.string("Mask Parameters"))
                             Spacer()
-                            InspectorKeyframeControls(clipId: clip.id, property: .mask)
+                            InspectorKeyframeControls(clipId: clip.id, property: .mask, accessibilityID: "inspector.mask")
                         }
                         if shape.linear != nil { LinearMaskControls(clip: clip) }
                         HStack {
@@ -60,27 +63,35 @@ struct MaskInspectorSection: View {
                                 else { editor.setMaskFeather(clipId: clip.id, feather: featherValue, commit: true) }
                             })
                             .accessibilityLabel(L10n.string("Mask Feather"))
+                            .accessibilityIdentifier("inspector.mask.feather.slider")
                             ScrubbableNumberField(value: shape.feather, range: 0...1,
                                 displayMultiplier: 100, valueSuffix: "%") {
                                 editor.setMaskFeather(clipId: clip.id, feather: $0, commit: true)
                             }
+                            .accessibilityLabel(L10n.string("Feather"))
+                            .accessibilityIdentifier("inspector.mask.feather")
                         }
                         Toggle(L10n.string("Invert (Keep Outside)"), isOn: Binding(
                             get: { shape.inverted },
                             set: { editor.setMaskInverted(clipId: clip.id, inverted: $0) }))
                             .toggleStyle(.checkbox)
+                            .accessibilityIdentifier("inspector.mask.invert")
                         HStack {
                             Button(editor.maskEditingActive ? L10n.string("Done") : L10n.string("Edit on Canvas")) {
                                 editor.cropEditingActive = false
                                 editor.maskEditingActive.toggle()
                             }
+                            .accessibilityIdentifier("inspector.mask.editOnCanvas")
                             Spacer()
                             Menu(L10n.string("Tracking")) {
                                 Button("Track Hands") { Task { await editor.runSubjectTracking(clipId: clip.id, mode: .hands) } }
+                                    .accessibilityIdentifier("inspector.mask.tracking.hands")
                                 Button("Track This Mask") { Task { await editor.runSubjectTracking(clipId: clip.id, mode: .region) } }
                                     .disabled(shape.linear != nil)
+                                    .accessibilityIdentifier("inspector.mask.tracking.region")
                             }
                             .disabled(editor.trackingClipId != nil)
+                            .accessibilityIdentifier("inspector.mask.tracking")
                         }
                     }
                     .disabled(!clip.maskEnabled)
@@ -104,7 +115,13 @@ struct MaskInspectorSection: View {
         }
     }
 
-    private func shapeButton(_ title: String, symbol: String, selected: Bool, action: @escaping () -> Void) -> some View {
+    private func shapeButton(
+        _ title: String,
+        symbol: String,
+        selected: Bool,
+        accessibilityID: String,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             VStack(spacing: AppTheme.Spacing.sm) {
                 Image(systemName: symbol).font(.title2)
@@ -118,5 +135,6 @@ struct MaskInspectorSection: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? .isSelected : [])
+        .accessibilityIdentifier(accessibilityID)
     }
 }

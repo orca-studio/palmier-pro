@@ -41,6 +41,8 @@ struct AdjustSlider: View {
             )
         }
         .frame(height: AppTheme.Slider.thumbSize)
+        // Always paired with a ScrubbableNumberField, which is the adjustable accessibility element.
+        .accessibilityHidden(true)
     }
 
     @ViewBuilder

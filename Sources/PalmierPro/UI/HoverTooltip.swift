@@ -3,6 +3,7 @@ import SwiftUI
 private struct HoverTooltip: ViewModifier {
     let text: String
     let alignment: Alignment
+    let accessibilityLabel: String?
     @State private var isHovering = false
 
     func body(content: Content) -> some View {
@@ -35,12 +36,12 @@ private struct HoverTooltip: ViewModifier {
             }
             .onHover { isHovering = $0 }
             .animation(.easeOut(duration: AppTheme.Anim.hover), value: isHovering)
-            .accessibilityLabel(Text(verbatim: text))
+            .accessibilityLabel(Text(verbatim: accessibilityLabel ?? text))
     }
 }
 
 extension View {
-    func hoverTooltip(_ text: String, alignment: Alignment = .bottom) -> some View {
-        modifier(HoverTooltip(text: text, alignment: alignment))
+    func hoverTooltip(_ text: String, alignment: Alignment = .bottom, accessibilityLabel: String? = nil) -> some View {
+        modifier(HoverTooltip(text: text, alignment: alignment, accessibilityLabel: accessibilityLabel))
     }
 }

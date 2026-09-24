@@ -18,6 +18,7 @@ struct SkillExternalAgentMenu: View {
         }
         .buttonStyle(.capsule(.secondary, fill: AnyShapeStyle(AppTheme.Background.raisedColor)))
         .help(L10n.string("Add this skill to an external agent"))
+        .accessibilityIdentifier("settings.skills.detail.addToExternalAgent")
         .popover(isPresented: $isPresented, arrowEdge: .bottom) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.zero) {
                 ForEach(SkillExternalAgent.allCases, id: \.self) { agent in
@@ -39,6 +40,7 @@ struct SkillExternalAgentMenu: View {
                         .hoverHighlight(cornerRadius: AppTheme.Radius.sm)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings.skills.detail.addToExternalAgent.\(agent.rawValue)")
                 }
             }
             .padding(.vertical, AppTheme.Spacing.xs)

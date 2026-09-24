@@ -52,6 +52,7 @@ struct MyProjectsSection: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(L10n.string("Search projects"))
+                .accessibilityIdentifier("home.search")
                 .help(L10n.string("Search projects"))
             }
 
@@ -61,11 +62,14 @@ struct MyProjectsSection: View {
                 }
                 .buttonStyle(.capsule(fill: AnyShapeStyle(AppTheme.Status.errorColor)))
                 .disabled(selectedProjectIDs.isEmpty)
+                .accessibilityIdentifier("home.deleteSelected")
                 Button(L10n.string("Done")) { endSelection() }
                     .buttonStyle(.capsule)
+                    .accessibilityIdentifier("home.endSelection")
             } else if !ProjectRegistry.shared.entries.isEmpty {
                 Button(L10n.string("Select")) { isSelecting = true }
                     .buttonStyle(.capsule)
+                    .accessibilityIdentifier("home.select")
             }
         }
         .padding(.horizontal, AppTheme.Spacing.xlXxl)
@@ -76,7 +80,9 @@ struct MyProjectsSection: View {
             set: { if !$0 { projectsPendingDeletion = [] } }
         )) {
             Button(L10n.string("Cancel"), role: .cancel) { projectsPendingDeletion = [] }
+                .accessibilityIdentifier("home.deleteAlert.cancel")
             Button(L10n.string("Delete"), role: .destructive) { deletePendingProjects() }
+                .accessibilityIdentifier("home.deleteAlert.delete")
         } message: {
             Text(deletionPrompt)
         }
@@ -85,6 +91,7 @@ struct MyProjectsSection: View {
             set: { if !$0 { deletionMessage = nil } }
         )) {
             Button(L10n.string("OK")) { deletionMessage = nil }
+                .accessibilityIdentifier("home.deleteError.ok")
         } message: {
             Text(verbatim: deletionMessage ?? String())
         }
@@ -104,6 +111,7 @@ struct MyProjectsSection: View {
                 .font(.system(size: AppTheme.FontSize.sm))
                 .focused($isSearchFocused)
                 .onExitCommand { collapseSearch() }
+                .accessibilityIdentifier("home.searchField")
             if !searchQuery.isEmpty {
                 Button(action: collapseSearch) {
                     Image(systemName: "xmark.circle.fill")
@@ -113,6 +121,8 @@ struct MyProjectsSection: View {
                 .buttonStyle(.plain)
                 .focusable(false)
                 .help(L10n.string("Clear search"))
+                .accessibilityLabel(L10n.string("Clear search"))
+                .accessibilityIdentifier("home.clearSearch")
             }
         }
         .padding(.leading, AppTheme.Spacing.smMd)
@@ -274,6 +284,11 @@ private struct NewProjectCard: View {
         }
         .contentShape(Rectangle())
         .onTapGesture { action() }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(L10n.string("New Project"))
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { action() }
+        .accessibilityIdentifier("home.newProjectCard")
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.mdLg, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: AppTheme.Radius.mdLg, style: .continuous)

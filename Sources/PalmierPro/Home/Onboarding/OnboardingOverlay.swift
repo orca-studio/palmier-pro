@@ -89,19 +89,20 @@ struct OnboardingOverlay: View {
     private var footer: some View {
         HStack(spacing: AppTheme.Spacing.sm) {
             if onboarding.step != .welcome {
-                secondaryButton(L10n.string("Back"), action: onboarding.goBack)
+                secondaryButton(L10n.string("Back"), accessibilityID: "home.onboarding.back", action: onboarding.goBack)
             }
             Spacer()
             switch onboarding.step {
             case .welcome:
-                primaryButton(L10n.string("Continue"), action: onboarding.advance)
+                primaryButton(L10n.string("Continue"), accessibilityID: "home.onboarding.continue", action: onboarding.advance)
             case .discovery:
-                primaryButton(L10n.string("Continue"), action: onboarding.advance)
+                primaryButton(L10n.string("Continue"), accessibilityID: "home.onboarding.continue", action: onboarding.advance)
             case .profile:
-                primaryButton(L10n.string("Continue"), action: onboarding.submitSurvey)
+                primaryButton(L10n.string("Continue"), accessibilityID: "home.onboarding.continue", action: onboarding.submitSurvey)
             case .account:
                 secondaryButton(
                     L10n.string("Skip"),
+                    accessibilityID: "home.onboarding.skip",
                     action: onboarding.skip,
                     disabled: account.isSigningIn
                 )
@@ -124,25 +125,29 @@ struct OnboardingOverlay: View {
         if account.isSignedIn || account.isMisconfigured {
             primaryButton(
                 onboarding.sampleState == .loading ? L10n.string("Loading…") : L10n.string("Tutorial"),
+                accessibilityID: "home.onboarding.tutorial",
                 action: onboarding.openSampleProject
             )
         } else {
             primaryButton(
                 account.isSigningIn ? L10n.string("Opening Google…") : L10n.string("Sign in with Google"),
+                accessibilityID: "home.onboarding.signIn",
                 action: signIn
             )
         }
     }
 
-    private func primaryButton(_ label: String, action: @escaping () -> Void) -> some View {
+    private func primaryButton(_ label: String, accessibilityID: String, action: @escaping () -> Void) -> some View {
         Button(label, action: action)
             .buttonStyle(.capsule(.prominent, size: .regular))
             .keyboardShortcut(.defaultAction)
             .disabled(isBusy)
+            .accessibilityIdentifier(accessibilityID)
     }
 
     private func secondaryButton(
         _ label: String,
+        accessibilityID: String,
         action: @escaping () -> Void,
         disabled: Bool? = nil
     ) -> some View {
@@ -153,6 +158,7 @@ struct OnboardingOverlay: View {
                 fill: AnyShapeStyle(AppTheme.Onboarding.secondaryButtonFill)
             ))
             .disabled(disabled ?? isBusy)
+            .accessibilityIdentifier(accessibilityID)
     }
 
     private var isBusy: Bool {

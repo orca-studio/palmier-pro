@@ -13,7 +13,8 @@ struct PrivacyPane: View {
             SettingsToggleRow(
                 title: L10n.string("Share usage data"),
                 subtitle: L10n.string("Send usage data from your interactions with Palmier Pro to help improve the app."),
-                isOn: $analyticsEnabled
+                isOn: $analyticsEnabled,
+                accessibilityID: "settings.general.shareUsageData"
             )
             .onChange(of: analyticsEnabled) { _, newValue in
                 Analytics.isEnabled = newValue
@@ -25,7 +26,8 @@ struct PrivacyPane: View {
             SettingsToggleRow(
                 title: L10n.string("Send crash reports"),
                 subtitle: L10n.string("Send crash and error reports to help diagnose problems. Media and project content are never included."),
-                isOn: $telemetryEnabled
+                isOn: $telemetryEnabled,
+                accessibilityID: "settings.general.sendCrashReports"
             )
             .onChange(of: telemetryEnabled) { _, newValue in
                 Telemetry.isEnabled = newValue

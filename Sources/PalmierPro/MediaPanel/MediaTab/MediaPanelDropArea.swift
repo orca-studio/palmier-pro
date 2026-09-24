@@ -8,6 +8,7 @@ struct MediaPanelDropArea<Content: View>: NSViewRepresentable {
 
     func makeNSView(context: Context) -> DropHostingView<Content> {
         let view = DropHostingView(rootView: content())
+        view.setAccessibilityIdentifier("media.browser")
         view.onTargetChanged = { isTargeted = $0 }
         view.onDrop = onDrop
         return view

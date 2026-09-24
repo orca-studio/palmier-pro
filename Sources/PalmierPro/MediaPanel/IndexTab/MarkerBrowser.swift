@@ -80,12 +80,12 @@ struct MarkerBrowser: View {
     private var toolbar: some View {
         HStack(spacing: AppTheme.Spacing.xs) {
             if editor.isMediaPanelSearchExpanded {
-                ExpandablePanelSearch(text: $searchQuery, focus: $isSearchFocused)
+                ExpandablePanelSearch(text: $searchQuery, focus: $isSearchFocused, accessibilityID: "media.markers.search")
                     .layoutPriority(1)
             } else {
                 IndexModeTabs(selection: $indexSection)
                 Spacer(minLength: AppTheme.Spacing.zero)
-                ExpandablePanelSearch(text: $searchQuery, focus: $isSearchFocused)
+                ExpandablePanelSearch(text: $searchQuery, focus: $isSearchFocused, accessibilityID: "media.markers.search")
                 statusFilterMenu
             }
         }
@@ -119,6 +119,7 @@ struct MarkerBrowser: View {
         .accessibilityValue(statusFilter.map { L10n.string(key: $0.titleKey) }
             ?? L10n.string("All Statuses"))
         .help(L10n.string("Filter markers by status"))
+        .accessibilityIdentifier("media.markers.statusFilter")
     }
 
     private var emptyState: some View {
@@ -204,6 +205,7 @@ private struct MarkerBrowserRow: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityAction { select() }
+        .accessibilityIdentifier("media.marker.\(marker.id)")
     }
 
     private var markerColorButton: some View {
@@ -224,6 +226,7 @@ private struct MarkerBrowserRow: View {
         }
         .buttonStyle(.plain).focusable(false)
         .accessibilityLabel(L10n.string("Color"))
+        .accessibilityIdentifier("media.marker.\(marker.id).color")
         .popover(isPresented: $isColorPickerPresented, arrowEdge: .bottom) {
             MarkerColorPicker(selection: marker.color) { color in
                 change(actionName: "Change Marker Color") { $0.color = color }
@@ -239,6 +242,8 @@ private struct MarkerBrowserRow: View {
         }
         .buttonStyle(.plain).focusable(false)
         .help(L10n.string("Delete Marker"))
+        .accessibilityLabel(L10n.string("Delete Marker"))
+        .accessibilityIdentifier("media.marker.\(marker.id).delete")
     }
 
     private var statusButton: some View {
@@ -251,7 +256,10 @@ private struct MarkerBrowserRow: View {
             actionIcon("circle.fill", color: marker.status.color)
         }
         .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).focusable(false)
+        .accessibilityElement(children: .combine)
         .help(L10n.string("Status: \(L10n.string(key: marker.status.titleKey))"))
+        .accessibilityLabel(L10n.string("Status: \(L10n.string(key: marker.status.titleKey))"))
+        .accessibilityIdentifier("media.marker.\(marker.id).status")
     }
 
     private func actionIcon(_ systemName: String, color: Color) -> some View {
@@ -296,6 +304,7 @@ private struct MarkerBrowserRow: View {
             }
         )
         .accessibilityLabel(label).help(label)
+        .accessibilityIdentifier("media.marker.\(marker.id).\(isDuration ? "duration" : "time")")
     }
 
     private var commentField: some View {
@@ -307,6 +316,7 @@ private struct MarkerBrowserRow: View {
             .editorValueField(minHeight: AppTheme.MediaPanel.markerIndexCommentHeight,
                               fill: AppTheme.Background.raisedColor)
             .focused($commentFocused).accessibilityLabel(L10n.string("Comments")).help(comment)
+            .accessibilityIdentifier("media.marker.\(marker.id).comment")
             .onChange(of: commentFocused) { _, focused in
                 if focused {
                     syncCommentFromModel()

@@ -137,6 +137,7 @@ struct AccountPopoverCard: View {
             }
             .buttonStyle(.capsule(.prominent))
             .controlSize(.small)
+            .accessibilityIdentifier("account.popover.upgrade.\(tier.rawValue)")
         } else {
             Button(L10n.string("Upgrade")) {
                 Task { await account.subscribe(tier: tier) }
@@ -144,6 +145,7 @@ struct AccountPopoverCard: View {
             }
             .buttonStyle(.capsule(.secondary))
             .controlSize(.small)
+            .accessibilityIdentifier("account.popover.upgrade.\(tier.rawValue)")
         }
     }
 
@@ -195,15 +197,18 @@ struct AccountPopoverCard: View {
                 SettingsWindowController.shared.show()
                 dismiss()
             }
+            .accessibilityIdentifier("account.popover.settings")
             footerButton(label: L10n.string("Feedback"), systemImage: "bubble.left.and.bubble.right") {
                 FeedbackWindowController.shared.show()
                 dismiss()
             }
+            .accessibilityIdentifier("account.popover.feedback")
             if account.isSignedIn {
                 footerButton(label: L10n.string("Sign out"), systemImage: "rectangle.portrait.and.arrow.right") {
                     Task { await account.signOut() }
                     dismiss()
                 }
+                .accessibilityIdentifier("account.popover.signOut")
             } else {
                 footerButton(
                     label: account.isSigningIn ? L10n.string("Opening Google…") : L10n.string("Sign in"),
@@ -213,6 +218,7 @@ struct AccountPopoverCard: View {
                     dismiss()
                 }
                 .disabled(account.isSigningIn)
+                .accessibilityIdentifier("account.popover.signIn")
             }
         }
     }

@@ -25,6 +25,7 @@ struct CreditSummaryView: View {
                 }
                 .buttonStyle(.plain)
                 .help(L10n.string("Manage credits"))
+                .accessibilityIdentifier("account.credits")
                 .popover(isPresented: $showActions, arrowEdge: .bottom) {
                     CreditActionsPopover(isPresented: $showActions)
                 }
@@ -115,6 +116,7 @@ private struct CreditActionsPopover: View {
         }
         .buttonStyle(.capsule(.prominent))
         .controlSize(.small)
+        .accessibilityIdentifier("account.credits.accountSettings")
     }
 
     // MARK: - Paid tier
@@ -122,7 +124,7 @@ private struct CreditActionsPopover: View {
     @ViewBuilder
     private var paidActions: some View {
         sectionCaption(L10n.string("Add credits"))
-        TopOffField(dollars: $topOffDollars, controlSize: .small, fillWidth: false) {
+        TopOffField(dollars: $topOffDollars, accessibilityID: "account.credits.topOff", controlSize: .small, fillWidth: false) {
             account.buyCredits(dollars: topOffDollars)
             isPresented = false
         } trailing: {
@@ -131,6 +133,7 @@ private struct CreditActionsPopover: View {
             }
             .buttonStyle(.capsule(.secondary))
             .controlSize(.small)
+            .accessibilityIdentifier("account.credits.accountSettings")
         }
     }
 

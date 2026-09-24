@@ -104,8 +104,10 @@ struct SkillDetailSheet: View {
         }
         .alert(L10n.string("Unable to save skill"), isPresented: $showingSaveError) {
             Button(L10n.string("Keep Editing"), role: .cancel) { failedExit = nil }
+                .accessibilityIdentifier("settings.skills.detail.saveError.keepEditing")
             if failedExit != nil {
                 Button(L10n.string("Discard Changes"), role: .destructive) { discardChanges() }
+                    .accessibilityIdentifier("settings.skills.detail.saveError.discardChanges")
             }
         } message: {
             Text(L10n.string("Add nonempty name and description fields to the skill frontmatter."))
@@ -203,6 +205,7 @@ struct SkillDetailSheet: View {
             } else {
                 Button(L10n.string("Update")) { update(skill) }
                     .buttonStyle(.capsule(.secondary, fill: AnyShapeStyle(AppTheme.Background.raisedColor)))
+                    .accessibilityIdentifier("settings.skills.detail.update")
             }
         }
 
@@ -220,12 +223,14 @@ struct SkillDetailSheet: View {
             }
             .buttonStyle(.capsule(.prominent))
             .keyboardShortcut("s", modifiers: .command)
+            .accessibilityIdentifier("settings.skills.detail.saveChanges")
         }
 
         Button(editing ? L10n.string("Preview") : L10n.string("Edit")) {
             Task { await toggleEditing(skill) }
         }
         .buttonStyle(.capsule(.secondary, fill: AnyShapeStyle(AppTheme.Background.raisedColor)))
+        .accessibilityIdentifier("settings.skills.detail.toggleEditing")
 
         actionsMenu(skill)
     }
@@ -242,6 +247,7 @@ struct SkillDetailSheet: View {
             }
             .buttonStyle(.capsule(.prominent))
             .keyboardShortcut("s", modifiers: .command)
+            .accessibilityIdentifier("settings.skills.detail.saveDraft")
         }
     }
 
@@ -258,6 +264,7 @@ struct SkillDetailSheet: View {
         .disabled(isSaving)
         .accessibilityLabel(L10n.string("Close"))
         .help(L10n.string("Close"))
+        .accessibilityIdentifier("settings.skills.detail.close")
     }
 
     @ViewBuilder
@@ -268,6 +275,7 @@ struct SkillDetailSheet: View {
                 .font(.system(size: AppTheme.FontSize.xl, weight: AppTheme.FontWeight.regular))
                 .foregroundStyle(AppTheme.Text.primaryColor)
                 .accessibilityLabel(L10n.string("Skill name"))
+                .accessibilityIdentifier("settings.skills.detail.name")
                 .focused($titleFocused)
                 .padding(.horizontal, AppTheme.Spacing.sm)
                 .padding(.vertical, AppTheme.Spacing.xs)
@@ -290,6 +298,7 @@ struct SkillDetailSheet: View {
             .buttonStyle(.plain)
             .accessibilityLabel(L10n.string("Rename Skill"))
             .help(L10n.string("Rename Skill"))
+            .accessibilityIdentifier("settings.skills.detail.title")
         }
     }
 
@@ -298,13 +307,16 @@ struct SkillDetailSheet: View {
             Button(L10n.string("Rename Skill"), systemImage: "pencil") {
                 beginTitleEditing(skill.name)
             }
+            .accessibilityIdentifier("settings.skills.detail.rename")
             Button(L10n.string("Show in Finder"), systemImage: "folder") {
                 store.reveal(skill.path)
             }
+            .accessibilityIdentifier("settings.skills.detail.showInFinder")
             Divider()
             Button(L10n.string("Delete Skill"), systemImage: "trash", role: .destructive) {
                 skillPendingDeletion = skill
             }
+            .accessibilityIdentifier("settings.skills.detail.delete")
         } label: {
             Image(systemName: "ellipsis")
                 .font(.system(size: AppTheme.FontSize.md, weight: AppTheme.FontWeight.medium))
@@ -318,6 +330,7 @@ struct SkillDetailSheet: View {
         .fixedSize()
         .accessibilityLabel(L10n.string("More skill actions"))
         .help(L10n.string("More skill actions"))
+        .accessibilityIdentifier("settings.skills.detail.actions")
     }
 
     private func toggleEditing(_ skill: Skill) async {
@@ -474,6 +487,7 @@ struct SkillDetailSheet: View {
             .font(.system(size: AppTheme.FontSize.sm, design: .monospaced))
             .foregroundStyle(AppTheme.Text.primaryColor)
             .accessibilityLabel(L10n.string("Skill instructions"))
+            .accessibilityIdentifier("settings.skills.detail.instructions")
             .scrollContentBackground(.hidden)
             .padding(AppTheme.Spacing.md)
             .background(AppTheme.Background.raisedColor)
@@ -507,6 +521,7 @@ struct SkillDetailSheet: View {
                 copyToast = nil
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("settings.skills.detail.copyToast.open")
             .font(.system(size: AppTheme.FontSize.sm, weight: AppTheme.FontWeight.medium))
             .foregroundStyle(AppTheme.Accent.link)
         }
@@ -522,6 +537,8 @@ struct SkillDetailSheet: View {
         .shadow(AppTheme.Shadow.lg)
         .padding(.top, AppTheme.Spacing.lgXl)
         .onTapGesture { copyToast = nil }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("settings.skills.detail.copyToast")
         .task(id: toast) {
             try? await Task.sleep(for: AppTheme.Settings.skillToastDuration)
             guard !Task.isCancelled else { return }

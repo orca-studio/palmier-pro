@@ -7,6 +7,7 @@ struct InlineRenameField: View {
     var font: Font = .system(size: AppTheme.FontSize.xs, weight: AppTheme.FontWeight.medium)
     var maximumLength: Int? = nil
     var allowsEmptyCommit = false
+    var accessibilityID: String? = nil
     let onCommit: (String) -> Void
     let onCancel: () -> Void
 
@@ -20,6 +21,7 @@ struct InlineRenameField: View {
             .textFieldStyle(.plain)
             .lineLimit(1)
             .focused($focused)
+            .accessibilityIdentifier(accessibilityID ?? "")
             .onSubmit { commit() }
             .onChange(of: focused) { _, isFocused in
                 if !isFocused { commit() }

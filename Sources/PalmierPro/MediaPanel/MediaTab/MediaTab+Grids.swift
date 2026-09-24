@@ -272,6 +272,8 @@ extension MediaTab {
                 .buttonStyle(.plain)
                 .focusable(false)
                 .help(isCollapsed ? L10n.string("Expand") : L10n.string("Collapse"))
+                .accessibilityLabel(isCollapsed ? L10n.string("Expand") : L10n.string("Collapse"))
+                .accessibilityIdentifier("media.group.\(folderId ?? "library").toggle")
 
                 if let folderId {
                     Button {
@@ -290,6 +292,7 @@ extension MediaTab {
                     .buttonStyle(.plain)
                     .focusable(false)
                     .help(L10n.string("Open \(title)"))
+                    .accessibilityIdentifier("media.group.\(folderId).open")
                     .contextMenu {
                         Button(L10n.string("Open")) {
                             openFolder(id: folderId)

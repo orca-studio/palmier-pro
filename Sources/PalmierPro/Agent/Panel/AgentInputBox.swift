@@ -95,6 +95,8 @@ struct AgentInputBox<LeadingTools: View>: View {
                 .padding(.top, AppTheme.Spacing.smMd)
                 .padding(.bottom, AppTheme.Spacing.xs)
                 .focused($focused)
+                .accessibilityLabel(L10n.string("Ask, or type @ to reference media"))
+                .accessibilityIdentifier("agent.input")
                 .frame(minHeight: 32, maxHeight: 64)
                 .onChange(of: draft) { old, new in
                     updateMentionQuery(from: new)
@@ -152,6 +154,8 @@ struct AgentInputBox<LeadingTools: View>: View {
             .tint(AppTheme.Text.secondaryColor)
             .glassEffectID("sendStop", in: sendStopNamespace)
             .help(L10n.string("Stop"))
+            .accessibilityLabel(L10n.string("Stop"))
+            .accessibilityIdentifier("agent.stop")
             .transition(.scale.combined(with: .opacity))
         } else {
             Button(action: onSend) {
@@ -166,6 +170,8 @@ struct AgentInputBox<LeadingTools: View>: View {
             .glassEffectID("sendStop", in: sendStopNamespace)
             .disabled(!canSend)
             .opacity(canSend ? 1 : AppTheme.Opacity.strong)
+            .accessibilityLabel(L10n.string("Send"))
+            .accessibilityIdentifier("agent.send")
             .transition(.scale.combined(with: .opacity))
         }
     }

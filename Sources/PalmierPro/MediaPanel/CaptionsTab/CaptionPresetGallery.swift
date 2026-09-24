@@ -25,6 +25,9 @@ struct CaptionPresetGallery: View {
                 ForEach(presets, id: \.self) { preset in
                     CaptionPresetCell(preset: preset, selected: selection == preset, highlight: highlight)
                         .onTapGesture { selection = preset }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityAddTraits(selection == preset ? [.isButton, .isSelected] : .isButton)
+                        .accessibilityIdentifier("media.captions.animationPreset.\(preset.rawValue)")
                 }
             }
         }

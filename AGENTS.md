@@ -195,6 +195,17 @@ All UI styling MUST use `AppTheme` constants from `Sources/PalmierPro/UI/AppThem
 
 If a needed value doesn't exist in AppTheme, add it there first — don't hardcode it.
 
+## Accessibility
+
+Every interactive control carries a stable identifier and an accessibility label, so VoiceOver and UI automation (`scripts/accessibility/ax.swift`) can find and drive it.
+
+- Identifiers are machine-facing: `<area>.<element>[.<qualifier>]`, lowerCamel segments, never localized. Areas: `panel`, `window`, `toolbar`, `media`, `preview`, `inspector`, `timeline`, `agent`, `export`, `settings`, `home`, `generation`, `project`, `account`, `help`, `search`, `tour`, `editor`.
+- Repeated elements append a stable entity id or raw value, never an index or display text: `media.asset.<assetId>`, `inspector.blendMode.<rawValue>`.
+- Write identifiers as string literals at the call site with `.accessibilityIdentifier(_:)` (AppKit: `setAccessibilityIdentifier(_:)`). An identifier must be unique among on-screen elements.
+- Icon-only controls need `.accessibilityLabel(L10n.string(...))`; do not rely on SwiftUI's SF Symbol names, which read wrong. Labels name the action without its shortcut.
+- `ScrubbableNumberField` is one adjustable element: identify and label it at the call site.
+- `scripts/accessibility/ax.swift audit` lists on-screen controls missing a valid identifier or label, and duplicates.
+
 ## Drag and drop
 
 SwiftUI `.onDrop` on a parent view shadows every drop target inside its layout area on macOS 26 — even AppKit `NSDraggingDestination` children registered directly with the window. Inner `.onDrop` modifiers silently never fire while a parent `.onDrop` is active.

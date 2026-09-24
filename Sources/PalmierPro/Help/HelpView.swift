@@ -72,6 +72,7 @@ struct HelpView: View {
             .hoverHighlight(isActive: isActive)
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("help.tab.\(tab == .shortcuts ? "shortcuts" : "mcp")")
     }
 
     @ViewBuilder

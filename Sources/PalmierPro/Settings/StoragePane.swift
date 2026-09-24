@@ -50,6 +50,7 @@ struct StoragePane: View {
             }
             .buttonStyle(actionButtonStyle)
             .disabled(isClearing || cacheBytes == 0)
+            .accessibilityIdentifier("settings.storage.clearCache")
         }
     }
 
@@ -71,6 +72,7 @@ struct StoragePane: View {
                     .controlSize(.mini)
                     .labelsHidden()
                     .accessibilityLabel(L10n.string("Media search"))
+                    .accessibilityIdentifier("settings.storage.mediaIndexing")
                     .onChange(of: searchEnabled) { _, newValue in
                         VisualModelLoader.shared.setEnabled(newValue)
                     }
@@ -87,6 +89,7 @@ struct StoragePane: View {
                 Button(L10n.string("Clear index")) { clearIndex() }
                     .buttonStyle(actionButtonStyle)
                     .disabled(indexBytes == 0)
+                    .accessibilityIdentifier("settings.storage.clearIndex")
             }
             .padding(.top, AppTheme.Spacing.xs)
 
@@ -101,6 +104,7 @@ struct StoragePane: View {
                     Spacer(minLength: AppTheme.Spacing.md)
                     Button(L10n.string("Remove model")) { removeModel() }
                         .buttonStyle(actionButtonStyle)
+                        .accessibilityIdentifier("settings.storage.removeModel")
                 }
             }
         }

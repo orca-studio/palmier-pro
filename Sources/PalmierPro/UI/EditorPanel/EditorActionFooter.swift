@@ -22,6 +22,7 @@ struct EditorActionFooter<Actions: View>: View {
 
 struct EditorAgentMenu<MenuContent: View>: View {
     let help: String
+    var accessibilityID: String? = nil
     @ViewBuilder let menuContent: () -> MenuContent
 
     var body: some View {
@@ -38,10 +39,12 @@ struct EditorAgentMenu<MenuContent: View>: View {
             .fixedSize()
         }
         .menuStyle(.button)
+        .accessibilityElement(children: .combine)
         .buttonStyle(.capsule(.secondary))
         .menuIndicator(.hidden)
         .focusable(false)
         .help(L10n.string(key: help))
         .accessibilityLabel(L10n.string("Agent Mode"))
+        .accessibilityIdentifier(accessibilityID ?? "")
     }
 }

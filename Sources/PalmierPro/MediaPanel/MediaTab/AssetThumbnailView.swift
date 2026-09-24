@@ -67,6 +67,10 @@ struct AssetThumbnailView: View {
             handleTap()
         }
         .contextMenu { contextMenuItems }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text(verbatim: asset.name))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityIdentifier("media.asset.\(asset.id)")
         .opacity(isSwapDimmed ? AppTheme.Opacity.muted : 1)
         .allowsHitTesting(!isSwapDimmed)
         .task(id: "\(asset.id)|\(asset.url.path)|\(asset.generationStatus.serialized)|\(isMissing)") {
@@ -222,6 +226,8 @@ struct AssetThumbnailView: View {
             .padding(AppTheme.Spacing.xs)
             .transition(.opacity)
             .help(L10n.string("Add to chat"))
+            .accessibilityLabel(L10n.string("Add to chat"))
+            .accessibilityIdentifier("media.asset.\(asset.id).addToChat")
         }
     }
 

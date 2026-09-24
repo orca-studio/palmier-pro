@@ -11,28 +11,32 @@ struct TextStyleTraitButtons: View {
     let onUnderline: (Bool) -> Void
     let onStrikethrough: (Bool) -> Void
     let onOverline: (Bool) -> Void
+    var accessibilityID: String? = nil
 
     var body: some View {
         HStack(spacing: AppTheme.Spacing.xs) {
             traitButton(
                 systemName: "bold",
                 label: L10n.string("Bold"),
+                identifierSuffix: "bold",
                 state: isBold,
                 action: { onBold(!(isBold ?? false)) }
             )
             traitButton(
                 systemName: "italic",
                 label: L10n.string("Italic"),
+                identifierSuffix: "italic",
                 state: isItalic,
                 action: { onItalic(!(isItalic ?? false)) }
             )
-            traitButton(systemName: "underline", label: L10n.string("Underline"), state: isUnderlined) {
+            traitButton(systemName: "underline", label: L10n.string("Underline"), identifierSuffix: "underline", state: isUnderlined) {
                 onUnderline(!(isUnderlined ?? false))
             }
-            traitButton(systemName: "strikethrough", label: L10n.string("Strikethrough"), state: isStruckThrough) {
+            traitButton(systemName: "strikethrough", label: L10n.string("Strikethrough"), identifierSuffix: "strikethrough", state: isStruckThrough) {
                 onStrikethrough(!(isStruckThrough ?? false))
             }
-            traitButton(systemName: "textformat", label: L10n.string("Overline"), state: isOverlined, overline: true) {
+            traitButton(systemName: "textformat", label: L10n.string("Overline"), identifierSuffix: "overline",
+                        state: isOverlined, overline: true) {
                 onOverline(!(isOverlined ?? false))
             }
         }
@@ -41,6 +45,7 @@ struct TextStyleTraitButtons: View {
     private func traitButton(
         systemName: String,
         label: String,
+        identifierSuffix: String,
         state: Bool?,
         overline: Bool = false,
         action: @escaping () -> Void
@@ -72,5 +77,6 @@ struct TextStyleTraitButtons: View {
         .buttonStyle(.plain)
         .help(L10n.string(key: label))
         .accessibilityLabel(L10n.string(key: label))
+        .accessibilityIdentifier(accessibilityID.map { "\($0).\(identifierSuffix)" } ?? "")
     }
 }

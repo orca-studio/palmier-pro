@@ -37,6 +37,7 @@ struct AccountPane: View {
                 Task { await account.signOut() }
             }
             .buttonStyle(.capsule(.secondary, size: .regular))
+            .accessibilityIdentifier("settings.account.signOut")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -51,12 +52,14 @@ struct AccountPane: View {
                     }
                     .buttonStyle(.capsule(.prominent, size: .regular))
                     .pointerStyle(.link)
+                    .accessibilityIdentifier("settings.account.upgrade.pro")
 
                     Button(L10n.string("Upgrade to Max")) {
                         Task { await account.subscribe(tier: .max) }
                     }
                     .buttonStyle(accountSecondaryButtonStyle)
                     .pointerStyle(.link)
+                    .accessibilityIdentifier("settings.account.upgrade.max")
                 }
             } else {
                 HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
@@ -121,6 +124,7 @@ struct AccountPane: View {
             fill: isPrimary ? nil : AnyShapeStyle(AppTheme.Background.raisedColor)
         ))
         .pointerStyle(.link)
+        .accessibilityIdentifier("settings.account.upgrade.\(plan.tier.rawValue)")
     }
 
     private var subscriptionSection: some View {
@@ -157,6 +161,7 @@ struct AccountPane: View {
                     }
                     .buttonStyle(accountSecondaryButtonStyle)
                     .pointerStyle(.link)
+                    .accessibilityIdentifier("settings.account.manageSubscription")
                 }
             }
         }
@@ -195,6 +200,7 @@ struct AccountPane: View {
 
             TopOffField(
                 dollars: $topOffDollars,
+                accessibilityID: "settings.account.topOff",
                 fieldFill: AppTheme.Background.raisedColor,
                 buttonFill: AnyShapeStyle(AppTheme.Background.raisedColor),
                 showsExternalLinkIcon: true
@@ -252,6 +258,7 @@ struct AccountPane: View {
         }
         .buttonStyle(.capsule(.secondary, size: .regular))
         .disabled(account.isSigningIn)
+        .accessibilityIdentifier("settings.account.signIn")
         .padding(.top, AppTheme.Spacing.xs)
     }
 }

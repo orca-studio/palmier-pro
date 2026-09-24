@@ -126,33 +126,34 @@ extension InspectorView {
     @ViewBuilder
     func effectsTabContent(clips: [Clip]) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            adjustSection(title: L10n.string("Basic Correction"), effectIds: basicEffectIds, clips: clips) {
-                adjustSubgroup(title: L10n.string("Tone"), controls: toneControls, clips: clips)
-                adjustSubgroup(title: L10n.string("White Balance"), controls: whiteBalanceControls, clips: clips)
-                adjustSubgroup(title: L10n.string("Presence"), controls: presenceControls, clips: clips)
+            adjustSection(title: L10n.string("Basic Correction"), id: "basic", effectIds: basicEffectIds, clips: clips) {
+                adjustSubgroup(title: L10n.string("Tone"), id: "tone", controls: toneControls, clips: clips)
+                adjustSubgroup(title: L10n.string("White Balance"), id: "whiteBalance", controls: whiteBalanceControls, clips: clips)
+                adjustSubgroup(title: L10n.string("Presence"), id: "presence", controls: presenceControls, clips: clips)
             }
-            adjustSection(title: L10n.string("Curves"), effectIds: ["color.curves"], clips: clips) {
+            adjustSection(title: L10n.string("Curves"), id: "curves", effectIds: ["color.curves"], clips: clips) {
                 curvesContent(clips: clips)
             }
-            adjustSection(title: L10n.string("Color Wheels"), effectIds: ["color.wheels"], clips: clips) {
+            adjustSection(title: L10n.string("Color Wheels"), id: "colorWheels", effectIds: ["color.wheels"], clips: clips) {
                 wheelsContent(clips: clips)
             }
-            adjustSection(title: L10n.string("Hue Curves"), effectIds: ["color.hueCurves"], clips: clips) {
+            adjustSection(title: L10n.string("Hue Curves"), id: "hueCurves", effectIds: ["color.hueCurves"], clips: clips) {
                 hueCurvesContent(clips: clips)
             }
-            adjustSection(title: L10n.string("LUTs"), effectIds: ["color.lut"], clips: clips) {
+            adjustSection(title: L10n.string("LUTs"), id: "lut", effectIds: ["color.lut"], clips: clips) {
                 lutContent(clips: clips)
             }
-            adjustSection(title: L10n.string("Effects"), effectIds: effectsEffectIds, clips: clips) {
-                adjustSubgroup(title: L10n.string("Detail"), controls: detailControls, clips: clips)
-                adjustSubgroup(title: L10n.string("Blur"), controls: blurControls, clips: clips)
-                adjustSubgroup(title: L10n.string("Motion Blur"), controls: motionBlurControls, clips: clips)
-                adjustSubgroup(title: L10n.string("Vignette"), controls: vignetteControls, clips: clips)
-                adjustSubgroup(title: L10n.string("Film Grain"), controls: grainControls, clips: clips)
-                adjustSubgroup(title: L10n.string("Glow"), controls: glowControls, clips: clips)
-                adjustSubgroup(title: L10n.string("Chroma Key"), controls: chromaKeyControls, clips: clips)
+            adjustSection(title: L10n.string("Effects"), id: "effects", effectIds: effectsEffectIds, clips: clips) {
+                adjustSubgroup(title: L10n.string("Detail"), id: "detail", controls: detailControls, clips: clips)
+                adjustSubgroup(title: L10n.string("Blur"), id: "blur", controls: blurControls, clips: clips)
+                adjustSubgroup(title: L10n.string("Motion Blur"), id: "motionBlur", controls: motionBlurControls, clips: clips)
+                adjustSubgroup(title: L10n.string("Vignette"), id: "vignette", controls: vignetteControls, clips: clips)
+                adjustSubgroup(title: L10n.string("Film Grain"), id: "filmGrain", controls: grainControls, clips: clips)
+                adjustSubgroup(title: L10n.string("Glow"), id: "glow", controls: glowControls, clips: clips)
+                adjustSubgroup(title: L10n.string("Chroma Key"), id: "chromaKey", controls: chromaKeyControls, clips: clips)
                 adjustToggleRow(
                     title: L10n.string("Invert Colors"),
+                    id: "invert",
                     isOn: Binding(
                         get: { invertApplied(to: clips) },
                         set: { setInvertApplied($0, clips: clips) }
@@ -175,6 +176,7 @@ extension InspectorView {
     @ViewBuilder
     private func adjustSection<Content: View>(
         title: String,
+        id: String,
         effectIds: Set<String>,
         clips: [Clip],
         @ViewBuilder content: @escaping () -> Content
@@ -182,6 +184,7 @@ extension InspectorView {
         let state = adjustSectionState(effectIds, clips: clips)
         EditorPanelGroup(
             title,
+            accessibilityID: "inspector.adjust.\(id)",
             isExpanded: adjustSectionExpandedBinding(title),
             contentSpacing: AppTheme.Spacing.md,
             contentInsets: EdgeInsets(
@@ -194,6 +197,7 @@ extension InspectorView {
                 if state.hasEffects {
                     EditorResetButton(
                         title: title,
+                        accessibilityID: "inspector.adjust.\(id).reset",
                         action: { resetEffects(effectIds, clips: clips, actionName: "Reset \(title)") }
                     )
                 }
@@ -208,6 +212,7 @@ extension InspectorView {
                     ? L10n.string("Enable: \(title)")
                     : L10n.string("No adjustments yet"))
                 .accessibilityLabel(L10n.string("Enable: \(title)"))
+                .accessibilityIdentifier("inspector.adjust.\(id).enabled")
             }
         ) {
             Group {
@@ -232,7 +237,7 @@ extension InspectorView {
     }
 
     @ViewBuilder
-    private func adjustSubgroup(title: String, controls: [EffectControl], clips: [Clip]) -> some View {
+    private func adjustSubgroup(title: String, id: String, controls: [EffectControl], clips: [Clip]) -> some View {
         let expanded = !collapsedAdjustSubgroups.contains(title)
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
             HStack(spacing: AppTheme.Spacing.xs) {
@@ -242,7 +247,7 @@ extension InspectorView {
                     .frame(width: AppTheme.IconSize.xxs, alignment: .center)
                 adjustSubgroupTitleLabel(title: title)
                 Spacer(minLength: 0)
-                if title == "Chroma Key", clips.count == 1, let clip = clips.first {
+                if id == "chromaKey", clips.count == 1, let clip = clips.first {
                     let sampling = editor.chromaKeySamplingClipId == clip.id
                     Button { editor.toggleChromaKeySampling(clipId: clip.id) } label: {
                         Image(systemName: "eyedropper")
@@ -256,14 +261,17 @@ extension InspectorView {
                     .accessibilityLabel(sampling
                         ? L10n.string("Cancel Key Color Sampling")
                         : L10n.string("Sample Key Color"))
+                    .accessibilityIdentifier("inspector.adjust.chromaKey.sample")
                 }
             }
             .padding(.leading, adjustSubgroupInset)
             .contentShape(Rectangle())
-            .onTapGesture {
-                if expanded { collapsedAdjustSubgroups.insert(title) }
-                else { collapsedAdjustSubgroups.remove(title) }
-            }
+            .onTapGesture { toggleSubgroup(title, expanded: expanded) }
+            .accessibilityElement(children: .contain)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel(Text(verbatim: "\(expanded ? L10n.string("Collapse") : L10n.string("Expand")) \(title)"))
+            .accessibilityIdentifier("inspector.adjust.\(id).toggle")
+            .accessibilityAction { toggleSubgroup(title, expanded: expanded) }
             if expanded {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
                     ForEach(controls, id: \.self) { control in
@@ -272,6 +280,11 @@ extension InspectorView {
                 }
             }
         }
+    }
+
+    private func toggleSubgroup(_ title: String, expanded: Bool) {
+        if expanded { collapsedAdjustSubgroups.insert(title) }
+        else { collapsedAdjustSubgroups.remove(title) }
     }
 
     private func adjustSubgroupTitleLabel(title: String) -> some View {
@@ -290,7 +303,7 @@ extension InspectorView {
             .frame(width: AppTheme.Slider.labelColumn, alignment: .leading)
     }
 
-    private func adjustToggleRow(title: String, isOn: Binding<Bool>) -> some View {
+    private func adjustToggleRow(title: String, id: String, isOn: Binding<Bool>) -> some View {
         HStack(spacing: AppTheme.Spacing.xs) {
             Color.clear
                 .frame(width: AppTheme.IconSize.xxs, height: AppTheme.IconSize.xxs)
@@ -300,6 +313,7 @@ extension InspectorView {
                 .toggleStyle(.checkbox)
                 .labelsHidden()
                 .accessibilityLabel(L10n.string(key: title))
+                .accessibilityIdentifier("inspector.adjust.\(id)")
         }
         .padding(.leading, adjustSubgroupInset)
     }
@@ -507,6 +521,9 @@ extension InspectorView {
             }
             .buttonStyle(.plain)
             .help(path ?? L10n.string("Choose…"))
+            .accessibilityLabel(L10n.string("File"))
+            .accessibilityValue(Text(verbatim: path.map { ($0 as NSString).lastPathComponent } ?? ""))
+            .accessibilityIdentifier("inspector.adjust.lut.file")
         }
         .frame(height: AppTheme.EditorPanel.fieldMinHeight)
     }
@@ -527,6 +544,8 @@ extension InspectorView {
                 valueSuffix: "%", dragSensitivity: 0.5, fieldWidth: AppTheme.EditorPanel.numericFieldWidth,
                 onChanged: { setLUTIntensity($0 / 100, clips: clips, commit: false) }
             ) { setLUTIntensity($0 / 100, clips: clips, commit: true) }
+            .accessibilityLabel(L10n.string("Intensity"))
+            .accessibilityIdentifier("inspector.adjust.lut.intensity")
         }
         .frame(height: AppTheme.EditorPanel.fieldMinHeight)
     }
@@ -622,6 +641,8 @@ extension InspectorView {
                         fieldWidth: AppTheme.EditorPanel.numericFieldWidth,
                         onChanged: { setControlParam(control, label: label, value: $0, clips: clips, commit: false) }
                     ) { setControlParam(control, label: label, value: $0, clips: clips, commit: true) }
+                    .accessibilityLabel(L10n.string(key: label))
+                    .accessibilityIdentifier("inspector.adjust.\(control.effectId).\(control.paramKey)")
                 }
             }
             .frame(height: AppTheme.EditorPanel.fieldMinHeight)

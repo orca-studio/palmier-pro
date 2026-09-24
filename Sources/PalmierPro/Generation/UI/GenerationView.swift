@@ -201,6 +201,8 @@ struct GenerationView: View {
                         .hoverHighlight()
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("generation.close")
+                .accessibilityLabel(L10n.string("Close"))
             }
             .padding(.horizontal, AppTheme.Spacing.md)
 
@@ -224,6 +226,7 @@ struct GenerationView: View {
                         secondaryField(
                             placeholder: L10n.string("Lyrics (optional). [Verse] and [Chorus] tags supported."),
                             text: $lyrics,
+                            accessibilityID: "generation.lyrics",
                             minHeight: 60, maxHeight: 120
                         )
                     }
@@ -232,6 +235,7 @@ struct GenerationView: View {
                         secondaryField(
                             placeholder: L10n.string("Style instructions (optional). e.g., warm and slow, British accent."),
                             text: $styleInstructions,
+                            accessibilityID: "generation.styleInstructions",
                             minHeight: 36, maxHeight: 72
                         )
                     }
@@ -389,6 +393,8 @@ struct GenerationView: View {
                 .padding(.top, AppTheme.Spacing.sm)
                 .padding(.bottom, AppTheme.Spacing.xs)
                 .focused($isPromptFocused)
+                .accessibilityIdentifier("generation.prompt")
+                .accessibilityLabel(promptPlaceholder)
                 .onChange(of: prompt) { _, new in updateRefMentionQuery(from: new) }
                 .onKeyPress(phases: [.down, .repeat]) { press in handleMentionKey(press) }
                 .popover(isPresented: Binding(
@@ -420,6 +426,7 @@ struct GenerationView: View {
     private func secondaryField(
         placeholder: String,
         text: Binding<String>,
+        accessibilityID: String,
         minHeight: CGFloat,
         maxHeight: CGFloat
     ) -> some View {
@@ -430,6 +437,8 @@ struct GenerationView: View {
                 .scrollIndicators(.automatic)
                 .padding(.horizontal, AppTheme.Spacing.sm)
                 .padding(.vertical, AppTheme.Spacing.xs)
+                .accessibilityIdentifier(accessibilityID)
+                .accessibilityLabel(placeholder)
 
             if text.wrappedValue.isEmpty {
                 Text(placeholder)

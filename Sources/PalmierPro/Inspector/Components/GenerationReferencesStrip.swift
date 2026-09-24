@@ -92,9 +92,15 @@ struct GenerationReferencesStrip: View {
                 .lineLimit(1)
         }
         .help(Text(verbatim: "\(L10n.string(key: label)) · \(asset.name)"))
-        .onTapGesture {
-            editor.selectMediaAsset(asset)
-            editor.mediaPanelRevealAssetId = asset.id
-        }
+        .onTapGesture { reveal(asset) }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { reveal(asset) }
+        .accessibilityIdentifier("inspector.generationInput.reference.\(asset.id)")
+    }
+
+    private func reveal(_ asset: MediaAsset) {
+        editor.selectMediaAsset(asset)
+        editor.mediaPanelRevealAssetId = asset.id
     }
 }

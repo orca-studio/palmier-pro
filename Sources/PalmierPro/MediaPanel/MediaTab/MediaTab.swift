@@ -188,6 +188,7 @@ struct MediaTab: View {
             Spacer(minLength: AppTheme.Spacing.sm)
             Button(L10n.string("Cancel")) { editor.cancelMediaSwap() }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("media.swap.cancel")
                 .font(.system(size: AppTheme.FontSize.xs, weight: .medium))
                 .foregroundStyle(AppTheme.Text.secondaryColor)
         }
@@ -239,6 +240,8 @@ struct MediaTab: View {
             guard toast.kind != .progress else { return }
             editor.dismissMediaPanelToast()
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("media.toast")
         .task(id: toast) {
             guard toast.kind != .progress else { return }
             try? await Task.sleep(for: .seconds(4))
@@ -300,14 +303,15 @@ struct MediaTab: View {
             if editor.isMediaPanelSearchExpanded {
                 ExpandablePanelSearch(
                     text: $searchQuery,
-                    focus: $isSearchFocused
+                    focus: $isSearchFocused,
+                    accessibilityID: "media.search"
                 )
                     .layoutPriority(1)
             } else {
-                toolbarButton(title: L10n.string("Import"), action: importMedia)
+                toolbarButton(title: L10n.string("Import"), accessibilityID: "media.import", action: importMedia)
                     .tourAnchor(.importButton)
                 if showGenerate {
-                    toolbarButton(title: L10n.string("Generate"), prominent: true, action: toggleGenerationPanel)
+                    toolbarButton(title: L10n.string("Generate"), prominent: true, accessibilityID: "media.generate", action: toggleGenerationPanel)
                         .tourAnchor(.generateButton)
                 }
                 overflowMenu
@@ -320,7 +324,8 @@ struct MediaTab: View {
             if !editor.isMediaPanelSearchExpanded {
                 ExpandablePanelSearch(
                     text: $searchQuery,
-                    focus: $isSearchFocused
+                    focus: $isSearchFocused,
+                    accessibilityID: "media.search"
                 )
             }
 
@@ -388,7 +393,11 @@ struct MediaTab: View {
 
     @ViewBuilder
     private var displayControls: some View {
-        toolbarMenuIcon(systemName: "rectangle.grid.2x2") {
+        toolbarMenuIcon(
+            systemName: "rectangle.grid.2x2",
+            accessibilityLabel: L10n.string("View"),
+            accessibilityID: "media.viewOptions"
+        ) {
             Section(L10n.string("View")) {
                 ForEach(ViewMode.allCases, id: \.self) { mode in
                     Button {
@@ -410,7 +419,11 @@ struct MediaTab: View {
             }
         }
 
-        toolbarMenuIcon(systemName: "arrow.up.arrow.down") {
+        toolbarMenuIcon(
+            systemName: "arrow.up.arrow.down",
+            accessibilityLabel: L10n.string("Sort"),
+            accessibilityID: "media.sort"
+        ) {
             ForEach(SortMode.allCases, id: \.self) { mode in
                 Button {
                     sortMode = mode
@@ -422,6 +435,8 @@ struct MediaTab: View {
 
         toolbarMenuIcon(
             systemName: "line.3.horizontal.decrease",
+            accessibilityLabel: L10n.string("Filter"),
+            accessibilityID: "media.filter",
             foregroundStyle: hasActiveFilters ? AppTheme.Accent.primary : AppTheme.Text.tertiaryColor
         ) {
             ForEach(Self.filterableTypes, id: \.self) { type in
@@ -457,6 +472,7 @@ struct MediaTab: View {
             handleProviderDrop(providers, into: item.folderId)
             return true
         }
+        .accessibilityIdentifier("media.breadcrumb.\(item.folderId ?? "library")")
     }
 
     // MARK: - Selection / state derivations
@@ -568,6 +584,7 @@ struct MediaTab: View {
     private func toolbarButton(
         title: String,
         prominent: Bool = false,
+        accessibilityID: String,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
@@ -577,6 +594,7 @@ struct MediaTab: View {
         .fixedSize(horizontal: true, vertical: false)
         .focusable(false)
         .help(title)
+        .accessibilityIdentifier(accessibilityID)
     }
 
     private var mediaAreaCollapsed: Bool {
@@ -596,7 +614,11 @@ struct MediaTab: View {
 
     private var overflowMenu: some View {
         let canOrganize = !AccountService.shared.isMisconfigured && !editor.mediaAssets.isEmpty
-        return toolbarMenuIcon(systemName: "ellipsis") {
+        return toolbarMenuIcon(
+            systemName: "ellipsis",
+            accessibilityLabel: L10n.string("More"),
+            accessibilityID: "media.more"
+        ) {
             Button(action: createNewFolderInCurrent) {
                 Label(L10n.string("New Folder"), systemImage: "folder.badge.plus")
             }
@@ -631,6 +653,8 @@ struct MediaTab: View {
 
     private func toolbarMenuIcon<Content: View>(
         systemName: String,
+        accessibilityLabel: String,
+        accessibilityID: String,
         foregroundStyle: some ShapeStyle = AppTheme.Text.tertiaryColor,
         @ViewBuilder content: () -> Content
     ) -> some View {
@@ -645,6 +669,8 @@ struct MediaTab: View {
         .fixedSize()
         .focusable(false)
         .hoverHighlight()
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityIdentifier(accessibilityID)
     }
 
     // MARK: - Folder commands

@@ -85,6 +85,8 @@ struct UserAvatarButton: View {
         }
         .buttonStyle(.plain)
         .help(account.isSignedIn ? L10n.string("Account") : L10n.string("Sign in"))
+        .accessibilityLabel(account.isSignedIn ? L10n.string("Account") : L10n.string("Sign in"))
+        .accessibilityIdentifier("account.avatarButton")
         .popover(isPresented: $isPopoverPresented, arrowEdge: .bottom) {
             AccountPopoverCard()
         }
@@ -107,6 +109,8 @@ struct IdentityStrip: View {
                 .contentShape(Circle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(account.isSignedIn ? L10n.string("Account") : L10n.string("Sign in"))
+            .accessibilityIdentifier("account.identityStrip.avatar")
             .popover(isPresented: $isPopoverPresented, arrowEdge: .trailing) {
                 AccountPopoverCard()
             }

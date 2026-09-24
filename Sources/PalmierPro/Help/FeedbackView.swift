@@ -88,6 +88,8 @@ struct FeedbackView: View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
             fieldLabel(L10n.string("Describe the issue or feedback"))
             TextEditor(text: $message)
+                .accessibilityIdentifier("help.feedback.message")
+                .accessibilityLabel(L10n.string("Describe the issue or feedback"))
                 .font(.system(size: AppTheme.FontSize.md))
                 .foregroundStyle(AppTheme.Text.primaryColor)
                 .scrollContentBackground(.hidden)
@@ -109,6 +111,8 @@ struct FeedbackView: View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
             fieldLabel(L10n.string("Email (optional)"))
             TextField(String(), text: $email, prompt: Text(L10n.string("you@example.com — so we can reply")))
+                .accessibilityIdentifier("help.feedback.email")
+                .accessibilityLabel(L10n.string("Email (optional)"))
                 .textFieldStyle(.plain)
                 .font(.system(size: AppTheme.FontSize.md))
                 .foregroundStyle(AppTheme.Text.primaryColor)
@@ -134,6 +138,7 @@ struct FeedbackView: View {
         .toggleStyle(.checkbox)
         .disabled(!hasReplyEmail)
         .help(hasReplyEmail ? String() : L10n.string("Add an email above to enable a reply"))
+        .accessibilityIdentifier("help.feedback.mayContact")
     }
 
     private var screenshotRow: some View {
@@ -144,6 +149,7 @@ struct FeedbackView: View {
                     .foregroundStyle(AppTheme.Text.secondaryColor)
             }
             .toggleStyle(.checkbox)
+            .accessibilityIdentifier("help.feedback.includeScreenshot")
 
             Spacer(minLength: 0)
 
@@ -187,6 +193,7 @@ struct FeedbackView: View {
                 .controlSize(.large)
                 .disabled(isSending)
                 .keyboardShortcut(.cancelAction)
+                .accessibilityIdentifier("help.feedback.cancel")
             Button(action: submit) {
                 HStack(spacing: AppTheme.Spacing.xs) {
                     if isSending {
@@ -201,6 +208,7 @@ struct FeedbackView: View {
             .controlSize(.large)
             .disabled(!canSubmit)
             .keyboardShortcut(.return, modifiers: [.command])
+            .accessibilityIdentifier("help.feedback.send")
         }
     }
 
@@ -225,6 +233,7 @@ struct FeedbackView: View {
                     .buttonStyle(.capsule(.prominent, size: .regular))
                     .controlSize(.large)
                     .keyboardShortcut(.defaultAction)
+                    .accessibilityIdentifier("help.feedback.done")
             }
         }
     }

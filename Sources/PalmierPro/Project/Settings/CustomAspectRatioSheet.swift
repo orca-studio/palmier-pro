@@ -46,12 +46,12 @@ struct CustomAspectRatioSheet: View {
                 .foregroundStyle(AppTheme.Text.secondaryColor)
 
             HStack(alignment: .bottom, spacing: AppTheme.Spacing.md) {
-                ratioField("Width", text: $horizontalText)
+                ratioField("Width", accessibilityID: "project.aspectRatio.width", text: $horizontalText)
                 Text(verbatim: ":")
                     .font(.system(size: AppTheme.FontSize.md, weight: AppTheme.FontWeight.medium))
                     .foregroundStyle(AppTheme.Text.secondaryColor)
                     .padding(.bottom, AppTheme.Spacing.sm)
-                ratioField("Height", text: $verticalText)
+                ratioField("Height", accessibilityID: "project.aspectRatio.height", text: $verticalText)
             }
 
             if let resolution = validation.resolution {
@@ -69,6 +69,7 @@ struct CustomAspectRatioSheet: View {
                 Button(L10n.string("Cancel")) { dismiss() }
                     .buttonStyle(.capsule(.secondary, size: .regular))
                     .keyboardShortcut(.cancelAction)
+                    .accessibilityIdentifier("project.aspectRatio.cancel")
                 Button(L10n.string("Apply")) {
                     guard let resolution = validation.resolution else { return }
                     editor.applyTimelineSettings(fps: editor.timeline.fps, width: resolution.width, height: resolution.height)
@@ -77,6 +78,7 @@ struct CustomAspectRatioSheet: View {
                     .buttonStyle(.capsule(.prominent, size: .regular))
                     .keyboardShortcut(.defaultAction)
                     .disabled(validation.resolution == nil || !hasChanges)
+                    .accessibilityIdentifier("project.aspectRatio.apply")
             }
         }
         .padding(AppTheme.Spacing.xlXxl)
@@ -84,7 +86,7 @@ struct CustomAspectRatioSheet: View {
         .appSheetBackground()
     }
 
-    private func ratioField(_ label: String, text: Binding<String>) -> some View {
+    private func ratioField(_ label: String, accessibilityID: String, text: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
             Text(label)
                 .font(.system(size: AppTheme.FontSize.xs))
@@ -94,6 +96,7 @@ struct CustomAspectRatioSheet: View {
                 .font(.system(size: AppTheme.FontSize.md).monospacedDigit())
                 .frame(width: AppTheme.EditorPanel.numericFieldWidth)
                 .accessibilityLabel(L10n.string("Aspect ratio: \(label)"))
+                .accessibilityIdentifier(accessibilityID)
         }
     }
 

@@ -178,6 +178,8 @@ struct ProjectActivityButton: View {
         }
         .buttonStyle(.plain)
         .help(L10n.string("Project Activity"))
+        .accessibilityLabel(L10n.string("Project Activity"))
+        .accessibilityIdentifier("toolbar.projectActivity")
         .popover(isPresented: $isPresented, arrowEdge: .bottom) {
             ProjectActivityView(projectId: projectId)
         }

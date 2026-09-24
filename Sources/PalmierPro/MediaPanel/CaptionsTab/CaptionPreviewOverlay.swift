@@ -91,6 +91,9 @@ struct CaptionPreviewOverlay: View {
             )
             .pointerStyle(dragStart == nil ? .grabIdle : .grabActive)
             .gesture(centerDragGesture)
+            .accessibilityElement()
+            .accessibilityLabel(L10n.string("Position"))
+            .accessibilityIdentifier("media.captions.previewPosition")
     }
 
     private var centerDragGesture: some Gesture {

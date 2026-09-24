@@ -29,6 +29,8 @@ struct FontPickerField: View {
         }
         .buttonStyle(.plain)
         .fixedSize()
+        .accessibilityLabel(L10n.string("Font"))
+        .accessibilityValue(Text(verbatim: displayName))
         .background(FontMenuAnchorView(holder: anchorHolder))
     }
 

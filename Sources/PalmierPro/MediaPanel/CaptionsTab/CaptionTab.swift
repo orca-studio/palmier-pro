@@ -194,6 +194,7 @@ struct CaptionTab: View {
     private var sourceSection: some View {
         EditorPanelGroup(
             L10n.string("Source"),
+            accessibilityID: "media.captions.source",
             isExpanded: $sourceExpanded,
             headerAccessory: {
                 if !isTranscriptOnly {
@@ -204,6 +205,7 @@ struct CaptionTab: View {
             InspectorRow(
                 label: L10n.string("Source"),
                 labelHelp: L10n.string("Uses selected clips when available, otherwise all captionable audio. Choose a track to limit captions."),
+                accessibilityID: "media.captions.source",
                 onReset: {
                     selectedTrackId = nil
                     selectedClipTargets = []
@@ -212,6 +214,7 @@ struct CaptionTab: View {
             InspectorRow(
                 label: L10n.string("Mode"),
                 labelHelp: L10n.string("Local runs with Apple's SpeechAnalyzer. Cloud uses credits and a more accurate model with more capabilities."),
+                accessibilityID: "media.captions.mode",
                 onReset: { provider = .cloud }
             ) { providerPicker }
         }
@@ -234,13 +237,14 @@ struct CaptionTab: View {
             .controlSize(.mini)
             .tint(AppTheme.Text.primaryColor.opacity(AppTheme.Opacity.strong))
             .accessibilityLabel(L10n.string("Preview"))
+            .accessibilityIdentifier("media.captions.preview")
         }
         .help(L10n.string("Preview"))
     }
 
     private var settingsSection: some View {
-        EditorPanelGroup(L10n.string("Settings"), isExpanded: $settingsExpanded) {
-            InspectorRow(label: L10n.string("Language"), onReset: { locale = nil }) {
+        EditorPanelGroup(L10n.string("Settings"), accessibilityID: "media.captions.settings", isExpanded: $settingsExpanded) {
+            InspectorRow(label: L10n.string("Language"), accessibilityID: "media.captions.language", onReset: { locale = nil }) {
                 Menu {
                     Button(L10n.string("Auto")) { locale = nil }
                     if !supportedLocales.isEmpty {
@@ -251,12 +255,15 @@ struct CaptionTab: View {
                     }
                 } label: { EditorMenuValue(text: locale.map(languageName) ?? L10n.string("Auto"), expanded: true) }
                 .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).focusable(false)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(L10n.string("Language"))
+                .accessibilityIdentifier("media.captions.language")
                 .frame(maxWidth: .infinity)
             }
             InspectorRow(
                 label: L10n.string("Max words"),
                 labelHelp: L10n.string("Cap the words shown per caption. None fits each line to the box."),
-                onReset: { maxWords = nil }
+                accessibilityID: "media.captions.maxWords", onReset: { maxWords = nil }
             ) {
                 ScrubbableNumberField(
                     value: Double(maxWords ?? 0),
@@ -267,11 +274,12 @@ struct CaptionTab: View {
                     onCommit: updateMaxWords
                 )
                 .accessibilityLabel(L10n.string("Max words"))
+                .accessibilityIdentifier("media.captions.maxWords")
             }
             InspectorRow(
                 label: L10n.string("Max characters"),
                 labelHelp: L10n.string("Cap characters per caption, including spaces and punctuation. A single word may exceed the limit."),
-                onReset: { maxCharacters = nil }
+                accessibilityID: "media.captions.maxCharacters", onReset: { maxCharacters = nil }
             ) {
                 ScrubbableNumberField(
                     value: Double(maxCharacters ?? 0),
@@ -282,11 +290,12 @@ struct CaptionTab: View {
                     onCommit: updateMaxCharacters
                 )
                 .accessibilityLabel(L10n.string("Max characters"))
+                .accessibilityIdentifier("media.captions.maxCharacters")
             }
             InspectorRow(
                 label: L10n.string("Close gaps"),
                 labelHelp: L10n.string("Extends captions across short gaps and holds the final caption."),
-                onReset: {
+                accessibilityID: "media.captions.closeGaps", onReset: {
                     maximumGapSeconds = CaptionGapSettings.default.maximumGapSeconds
                 }
             ) {
@@ -302,13 +311,15 @@ struct CaptionTab: View {
                     onCommit: { maximumGapSeconds = $0 }
                 )
                 .accessibilityLabel(L10n.string("Close gaps"))
+                .accessibilityIdentifier("media.captions.closeGaps")
             }
-            InspectorRow(label: L10n.string("Censor profanity"), onReset: { censorProfanity = false }) {
+            InspectorRow(label: L10n.string("Censor profanity"), accessibilityID: "media.captions.censorProfanity", onReset: { censorProfanity = false }) {
                 Toggle(String(), isOn: $censorProfanity)
                     .labelsHidden()
                     .toggleStyle(.switch)
                     .controlSize(.mini)
                     .accessibilityLabel(L10n.string("Censor profanity"))
+                    .accessibilityIdentifier("media.captions.censorProfanity")
                     .tint(AppTheme.Text.primaryColor.opacity(AppTheme.Opacity.strong))
                     .disabled(provider == .cloud)
                     .opacity(provider == .cloud ? AppTheme.Opacity.muted : AppTheme.Opacity.opaque)
@@ -349,6 +360,9 @@ struct CaptionTab: View {
             EditorMenuValue(text: sourceSummary, expanded: true)
         }
         .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).focusable(false)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(L10n.string("Source"))
+        .accessibilityIdentifier("media.captions.sourceMenu")
         .frame(maxWidth: .infinity)
     }
 
@@ -383,6 +397,8 @@ struct CaptionTab: View {
         .help(option == .cloud
             ? cloudCreditHelp
             : L10n.string("Local runs with Apple's SpeechAnalyzer."))
+        .accessibilityAddTraits(selected ? .isSelected : [])
+        .accessibilityIdentifier("media.captions.provider.\(option.rawValue)")
     }
 
     private func rememberSelectedClipTargets() {
@@ -411,6 +427,7 @@ struct CaptionTab: View {
             defaults: .caption,
             styleExpanded: $styleExpanded,
             groupsExpandedByDefault: false,
+            accessibilityID: "media.captions.style",
             actions: styleActions,
             afterAlignment: { captionPositionRow },
             afterColor: { EmptyView() }
@@ -420,6 +437,7 @@ struct CaptionTab: View {
     private var captionPositionRow: some View {
         InspectorRow(
             label: L10n.string("Position"),
+            accessibilityID: "media.captions.position",
             onReset: { center = AppTheme.Caption.defaultCenter }
         ) {
             HStack(spacing: AppTheme.Spacing.sm) {
@@ -427,12 +445,14 @@ struct CaptionTab: View {
                     value: center.x,
                     canvasLength: max(1, editor.timeline.width),
                     label: "X",
+                    accessibilityID: "media.captions.position.x",
                     onChange: { center.x = $0 }
                 )
                 captionPositionField(
                     value: center.y,
                     canvasLength: max(1, editor.timeline.height),
                     label: "Y",
+                    accessibilityID: "media.captions.position.y",
                     onChange: { center.y = $0 }
                 )
             }
@@ -444,6 +464,7 @@ struct CaptionTab: View {
         value: CGFloat,
         canvasLength: Int,
         label: String,
+        accessibilityID: String,
         onChange: @escaping (CGFloat) -> Void
     ) -> some View {
         ScrubbableNumberField(
@@ -457,6 +478,8 @@ struct CaptionTab: View {
         ) {
             onChange(CaptionPreviewPlacement.snappedCoordinate($0))
         }
+        .accessibilityLabel(Text(verbatim: "\(L10n.string("Position")) \(label)"))
+        .accessibilityIdentifier(accessibilityID)
     }
 
     private var styleActions: TextStyleEditingActions {
@@ -472,15 +495,16 @@ struct CaptionTab: View {
     }
 
     private var animationSection: some View {
-        EditorPanelGroup(L10n.string("Animation"), isExpanded: $animationExpanded) {
+        EditorPanelGroup(L10n.string("Animation"), accessibilityID: "media.captions.animation", isExpanded: $animationExpanded) {
             CaptionPresetGallery(selection: $animationPreset, highlight: animationHighlight)
             if animationPreset.usesHighlight {
                 InspectorRow(
                     label: L10n.string("Highlight"),
                     labelHelp: L10n.string("Color for the active word."),
-                    onReset: { animationHighlight = TextAnimation.defaultHighlight }
+                    accessibilityID: "media.captions.highlightColor", onReset: { animationHighlight = TextAnimation.defaultHighlight }
                 ) {
                     ColorField(displayColor: animationHighlight.swiftUIColor, onUserChange: { animationHighlight = TextStyle.RGBA($0) })
+                        .accessibilityIdentifier("media.captions.highlightColor")
                 }
             }
         }
@@ -550,9 +574,11 @@ struct CaptionTab: View {
                 .focusable(false)
                 .disabled(!canGenerateCaptions)
                 .help(generateHelp)
+                .accessibilityIdentifier("media.captions.generate")
 
                 if !isTranscriptOnly {
                     agentMenu
+                        .accessibilityIdentifier("media.captions.agentMenu")
                 }
             }
         }

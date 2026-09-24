@@ -3,6 +3,7 @@ import SwiftUI
 /// Shared grid-tile chrome: artwork, selection border, name row with rename, clicks, context menu.
 struct MediaTileScaffold<Artwork: View, MenuItems: View>: View {
     let name: String
+    let accessibilityID: String
     let isSelected: Bool
     var isDropHover: Bool = false
     var showsActiveDot: Bool = false
@@ -38,6 +39,10 @@ struct MediaTileScaffold<Artwork: View, MenuItems: View>: View {
         .contentShape(Rectangle())
         .onTapGesture { handleClick() }
         .contextMenu { menuItems() }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text(verbatim: name))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityIdentifier(accessibilityID)
     }
 
     @ViewBuilder

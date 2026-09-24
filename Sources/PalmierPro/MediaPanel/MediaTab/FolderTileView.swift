@@ -15,6 +15,7 @@ struct FolderTileView: View {
     var body: some View {
         MediaTileScaffold(
             name: folder.name,
+            accessibilityID: "media.folder.\(folder.id)",
             isSelected: isSelected,
             isDropHover: isDropHover,
             isRenaming: $isRenaming,
