@@ -243,6 +243,7 @@ struct EffectRenderingTests {
             "blur.sharpen": ["amount": 2],
             "stylize.vignette": ["amount": -1, "midpoint": 0.2],
             "stylize.grain": ["amount": 1, "size": 1.5],
+            "detail.enhance": ["amount": 1],
             "detail.clarity": ["clarity": 1, "dehaze": 0],
             "key.chroma": ["keyHue": 0.333, "tolerance": 0.5],
             "stylize.glow": ["intensity": 1, "radius": 20, "threshold": 0],
