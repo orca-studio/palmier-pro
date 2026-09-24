@@ -174,7 +174,6 @@
 "Chat with your agent! It can generate content, edit clips, organize your assets, and much more. Start by signing in, or bring your own Anthropic API key." = "与 Agent 对话。它可以生成内容、编辑片段、整理素材等。登录即可开始，也可以使用自己的 Anthropic API key。";
 "Check for Updates…" = "检查更新…";
 "Check the marker name, position, and duration." = "请检查标记名称、位置和持续时间。";
-"Choose a .cube LUT file" = "选择 .cube LUT 文件";
 "Choose a crop aspect" = "选择裁剪宽高比";
 "Choose animation clip color" = "选择动画片段颜色";
 "Choose audio clip color" = "选择音频片段颜色";
@@ -1132,7 +1131,6 @@
 
 "Linear Mask" = "线性蒙版";
 
-"Draw Path Mask" = "绘制路径蒙版";
 
 "Move Linear Mask" = "移动线性蒙版";
 
@@ -1151,3 +1149,65 @@
 "Choose a mask shape to begin." = "选择一种蒙版形状开始编辑。";
 
 "Click on the canvas to draw a path. Click the first point to close." = "在画布上点击绘制路径，点击起点闭合。";
+
+"Denoise Strength" = "降噪强度";
+
+"Playhead" = "播放头";
+
+"“%@” is offline." = "“%@”已离线。";
+
+"Pointer" = "指针";
+
+"Out" = "出场";
+
+"In" = "入场";
+
+"Delete Point" = "删除点";
+
+"Invert (Keep Outside)" = "反转（保留外部）";
+
+"Mask applies to one clip at a time" = "蒙版一次只能作用于一个片段";
+
+"Go to Start" = "跳到开头";
+
+"Go to End" = "跳到结尾";
+
+"Razor" = "剃刀";
+
+"Load more" = "加载更多";
+
+"Trim" = "修剪";
+
+"Filter" = "筛选";
+
+"Track This Mask" = "跟踪此蒙版";
+
+"Save as Audio" = "存储为音频";
+
+"Ripple Timeline Markers" = "波纹移动时间线标记";
+
+"Extract Audio" = "提取音频";
+
+"Start its local server, then retry." = "请先启动它的本地服务器，然后重试。";
+
+"Timeline Zoom" = "时间线缩放";
+
+"Add Marker" = "添加标记";
+
+"Slide Left" = "向左滑动";
+
+"Slide Right" = "向右滑动";
+
+"Slide Down" = "向下滑动";
+
+"Import…" = "导入…";
+
+"Mask" = "蒙版";
+
+"Sort" = "排序";
+
+"Add Point After" = "在后面添加点";
+
+"Sources" = "素材源";
+
+"Track Hands" = "跟踪双手";
