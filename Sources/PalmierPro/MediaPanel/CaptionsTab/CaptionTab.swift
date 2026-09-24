@@ -545,13 +545,14 @@ struct CaptionTab: View {
                 captionTask("add relevant emoji to the captions, keeping the text and timing otherwise unchanged.")
             } label: { Label(L10n.string("Add emoji"), systemImage: "face.smiling") }
             .accessibilityIdentifier("media.captions.agentMenu.addEmoji")
-            Menu {
-                ForEach(Self.translateLanguages, id: \.code) { language in
-                    Button(translationLanguageName(language.code)) {
-                        captionTask("translate the captions to \(language.promptName), keeping each caption's timing unchanged.")
-                    }
+            Divider()
+            Text(L10n.string("Translate"))
+            ForEach(Self.translateLanguages, id: \.code) { language in
+                Button(translationLanguageName(language.code)) {
+                    captionTask("translate the captions to \(language.promptName), keeping each caption's timing unchanged.")
                 }
-            } label: { Label(L10n.string("Translate"), systemImage: "globe") }
+                .accessibilityIdentifier("media.captions.agentMenu.translate.\(language.code)")
+            }
         }
     }
 

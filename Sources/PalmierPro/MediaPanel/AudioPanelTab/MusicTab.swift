@@ -293,13 +293,14 @@ struct MusicSection: View {
                 musicTask("Score my timeline with music that matches the visuals. Use a video-to-music model on the full timeline span so the music follows the edit, and place it on an audio track.")
             } label: { Label(L10n.string("Generate music for the timeline"), systemImage: "music.note") }
             .accessibilityIdentifier("media.music.agentMenu.scoreTimeline")
-            Menu {
-                ForEach(["Cinematic", "Upbeat", "Ambient", "Tense", "Lo-fi"], id: \.self) { mood in
-                    Button(mood) {
-                        musicTask("Generate \(mood.lowercased()) music for my timeline and place it on an audio track aligned to the edit.")
-                    }
+            Divider()
+            Text(L10n.string("Mood"))
+            ForEach(["Cinematic", "Upbeat", "Ambient", "Tense", "Lo-fi"], id: \.self) { mood in
+                Button(mood) {
+                    musicTask("Generate \(mood.lowercased()) music for my timeline and place it on an audio track aligned to the edit.")
                 }
-            } label: { Label(L10n.string("Mood"), systemImage: "slider.horizontal.3") }
+                .accessibilityIdentifier("media.music.agentMenu.mood.\(mood.lowercased())")
+            }
         }
     }
 

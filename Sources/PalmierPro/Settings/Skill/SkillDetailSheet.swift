@@ -325,7 +325,8 @@ struct SkillDetailSheet: View {
                 .padding(AppTheme.Spacing.xs)
                 .hoverHighlight(cornerRadius: AppTheme.Radius.sm)
         }
-        .menuStyle(.borderlessButton)
+        .menuStyle(.button)
+        .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .fixedSize()
         .accessibilityLabel(L10n.string("More skill actions"))

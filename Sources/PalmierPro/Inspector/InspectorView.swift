@@ -907,7 +907,8 @@ struct InspectorView: View {
                 .contentShape(Rectangle())
             }
         }
-        .menuStyle(.borderlessButton)
+        .menuStyle(.button)
+        .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .fixedSize()
         .disabled(single == nil)

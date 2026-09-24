@@ -146,7 +146,8 @@ extension GenerationView {
             .padding(.horizontal, AppTheme.Spacing.xs)
             .padding(.vertical, AppTheme.Spacing.xxs)
         }
-        .menuStyle(.borderlessButton)
+        .menuStyle(.button)
+        .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .hoverHighlight()
         .accessibilityIdentifier("generation.model")
@@ -211,7 +212,8 @@ extension GenerationView {
             .padding(.horizontal, AppTheme.Spacing.xs)
             .padding(.vertical, AppTheme.Spacing.xs)
         }
-        .menuStyle(.borderlessButton)
+        .menuStyle(.button)
+        .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .hoverHighlight()
         .accessibilityIdentifier("generation.voice")
@@ -247,7 +249,8 @@ extension GenerationView {
             .padding(.horizontal, AppTheme.Spacing.xs)
             .padding(.vertical, AppTheme.Spacing.xs)
         }
-        .menuStyle(.borderlessButton)
+        .menuStyle(.button)
+        .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .hoverHighlight()
         .help(L10n.string("Target Language"))

@@ -269,74 +269,53 @@ struct PreviewContainerView: View {
         }
     }
 
+    /// Flat sections, not submenus: SwiftUI drops identifiers on items inside a nested Menu.
     @ViewBuilder
     private var canvasGuideMenuItems: some View {
-        Menu {
+        Text(L10n.string("Grid"))
+        Button {
+            canvasOverlays.grid = nil
+        } label: {
+            selectionMenuLabel(L10n.string("None"), selected: canvasOverlays.grid == nil)
+        }
+        .accessibilityIdentifier("preview.guides.grid.none")
+        ForEach(CanvasGridOverlay.allCases) { grid in
             Button {
-                canvasOverlays.grid = nil
+                canvasOverlays.grid = grid
             } label: {
-                selectionMenuLabel(
-                    L10n.string("None"),
-                    selected: canvasOverlays.grid == nil
-                )
+                selectionMenuLabel(grid.label, selected: canvasOverlays.grid == grid)
             }
-            .accessibilityIdentifier("preview.guides.grid.none")
-            Divider()
-            ForEach(CanvasGridOverlay.allCases) { grid in
-                Button {
-                    canvasOverlays.grid = grid
-                } label: {
-                    selectionMenuLabel(
-                        grid.label,
-                        selected: canvasOverlays.grid == grid
-                    )
-                }
-                .accessibilityIdentifier("preview.guides.grid.\(grid.rawValue)")
-            }
-        } label: {
-            Text(L10n.string("Grid"))
+            .accessibilityIdentifier("preview.guides.grid.\(grid.rawValue)")
         }
-        .accessibilityIdentifier("preview.guides.grid")
 
-        Menu {
-            ForEach(CanvasGuideOverlay.allCases) { guide in
-                Toggle(
-                    L10n.string(key: guide.localizationKey),
-                    isOn: guideBinding(for: guide)
-                )
-                .accessibilityIdentifier("preview.guides.safeZone.\(guide.rawValue)")
-            }
-        } label: {
-            Text(L10n.string("Safe Zones"))
-        }
-        .accessibilityIdentifier("preview.guides.safeZones")
-
-        Menu {
+        Divider()
+        Text(L10n.string("Safe Zones"))
+        ForEach(CanvasGuideOverlay.allCases) { guide in
+            let binding = guideBinding(for: guide)
             Button {
-                canvasOverlays.format = nil
+                binding.wrappedValue.toggle()
             } label: {
-                selectionMenuLabel(
-                    L10n.string("None"),
-                    selected: canvasOverlays.format == nil
-                )
+                selectionMenuLabel(L10n.string(key: guide.localizationKey), selected: binding.wrappedValue)
             }
-            .accessibilityIdentifier("preview.guides.format.none")
-            Divider()
-            ForEach(CanvasFormatOverlay.allCases) { format in
-                Button {
-                    canvasOverlays.format = format
-                } label: {
-                    selectionMenuLabel(
-                        L10n.string(key: format.localizationKey),
-                        selected: canvasOverlays.format == format
-                    )
-                }
-                .accessibilityIdentifier("preview.guides.format.\(format.rawValue)")
-            }
-        } label: {
-            Text(L10n.string("Format References"))
+            .accessibilityIdentifier("preview.guides.safeZone.\(guide.rawValue)")
         }
-        .accessibilityIdentifier("preview.guides.format")
+
+        Divider()
+        Text(L10n.string("Format References"))
+        Button {
+            canvasOverlays.format = nil
+        } label: {
+            selectionMenuLabel(L10n.string("None"), selected: canvasOverlays.format == nil)
+        }
+        .accessibilityIdentifier("preview.guides.format.none")
+        ForEach(CanvasFormatOverlay.allCases) { format in
+            Button {
+                canvasOverlays.format = format
+            } label: {
+                selectionMenuLabel(L10n.string(key: format.localizationKey), selected: canvasOverlays.format == format)
+            }
+            .accessibilityIdentifier("preview.guides.format.\(format.rawValue)")
+        }
 
         Divider()
         Button(L10n.string("Hide Guides")) {
@@ -412,9 +391,10 @@ struct PreviewContainerView: View {
             menu()
         } label: {
             settingsMenuLabel(systemImage: systemImage, text: label, isActive: isActive)
-                .accessibilityLabel(L10n.string(key: help))
         }
-        .menuStyle(.borderlessButton)
+        // Button style, not borderless: borderless menus read the symbol name and ignore the label.
+        .menuStyle(.button)
+        .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .fixedSize()
         .hoverHighlight()
@@ -428,6 +408,7 @@ struct PreviewContainerView: View {
     private func settingsMenuLabel(systemImage: String, text: String?, isActive: Bool) -> some View {
         if let text {
             badgeLabel(systemImage: systemImage, text: text)
+                .accessibilityElement(children: .combine)
         } else {
             Image(systemName: systemImage)
                 .font(.system(size: AppTheme.FontSize.sm, weight: AppTheme.FontWeight.semibold))
@@ -842,7 +823,8 @@ struct PreviewContainerView: View {
                 .foregroundStyle(AppTheme.Text.secondaryColor)
                 .frame(width: AppTheme.IconSize.md, height: AppTheme.IconSize.md)
         }
-        .menuStyle(.borderlessButton)
+        .menuStyle(.button)
+        .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .fixedSize()
         .hoverHighlight(cornerRadius: AppTheme.Radius.sm)

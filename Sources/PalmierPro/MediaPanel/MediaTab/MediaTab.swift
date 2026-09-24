@@ -671,7 +671,9 @@ struct MediaTab: View {
                 .foregroundStyle(foregroundStyle)
                 .frame(width: AppTheme.IconSize.sm, height: AppTheme.IconSize.sm)
         }
-        .menuStyle(.borderlessButton)
+        // Button style, not borderless: borderless menus read the symbol name and ignore the label.
+        .menuStyle(.button)
+        .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .fixedSize()
         .focusable(false)

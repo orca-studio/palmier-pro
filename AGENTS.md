@@ -207,6 +207,7 @@ Every interactive control carries a stable identifier and an accessibility label
 - `ScrubbableNumberField` is one adjustable element: identify and label it at the call site.
 - Menu items carry identifiers too: `<menu id>.<item>`. SwiftUI keeps them only for Buttons placed directly in the Menu; `Section`, inline `Picker`, and nested `Menu` drop them, so use a disabled `Text` header plus Buttons instead.
 - A menu label with several views (text plus chevron) must be one element (`.accessibilityElement(children: .combine)` on the label), or it surfaces as several menu buttons and only one opens. Never combine the `Menu` itself; that stops it from opening.
+- Use `.menuStyle(.button)` with `.buttonStyle(.plain)` for menus, not `.borderlessButton`: a borderless menu ignores `accessibilityLabel` and reads its SF Symbol name. Keep menus one level deep for the same identifier reason.
 - `scripts/accessibility/ax.swift audit --menus` lists on-screen controls missing a valid identifier or label, duplicates, and menu items without identifiers; `menu <id> <item id>` drives menus. Popup menus open only while the app is frontmost.
 
 ## Drag and drop

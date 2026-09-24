@@ -162,7 +162,8 @@ struct AgentPanelView: View {
                 }
             }
         }
-        .menuStyle(.borderlessButton)
+        .menuStyle(.button)
+        .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .layoutPriority(1)
         .accessibilityLabel(L10n.string("Model"))
@@ -193,7 +194,8 @@ struct AgentPanelView: View {
                     .accessibilityHidden(true)
             }
         }
-        .menuStyle(.borderlessButton)
+        .menuStyle(.button)
+        .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .accessibilityLabel(L10n.string("Reasoning effort"))
         .accessibilityValue(L10n.string(key: service.reasoningEffort.labelKey))
