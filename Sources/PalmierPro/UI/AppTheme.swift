@@ -412,6 +412,7 @@ enum AppTheme {
         static let projectCardHeight: CGFloat = 120
         static let projectSearchWidth: CGFloat = 260
         static let timelineClipBorderMinWidth: CGFloat = 8
+        static let timelineClipAnimationBarHeight: CGFloat = 3
         static let timelineClipDetailMinWidth: CGFloat = 32
         static let timelineClipControlsMinWidth: CGFloat = 48
         static let timelineTabRenameWidth: CGFloat = 120

@@ -73,6 +73,26 @@ enum ClipRenderer {
         isSelected && showsFadeControls(isSelected: isSelected, isHovered: isHovered, in: rect)
     }
 
+    /// Entrance and exit animation spans as a bar along the clip's bottom edge, clear of the fade lane on top.
+    private static func drawAnimationRanges(clip: Clip, in rect: NSRect, clipPath: CGPath, context: CGContext) {
+        guard clip.durationFrames > 0, clip.inAnimation != nil || clip.outAnimation != nil else { return }
+        let pxPerFrame = rect.width / CGFloat(clip.durationFrames)
+        let height = AppTheme.ComponentSize.timelineClipAnimationBarHeight
+        let y = rect.maxY - height
+        context.saveGState()
+        context.addPath(clipPath)
+        context.clip()
+        context.setFillColor(AppTheme.Accent.primaryNSColor.withAlphaComponent(AppTheme.Opacity.strong).cgColor)
+        if let entrance = clip.inAnimation {
+            context.fill(CGRect(x: rect.minX, y: y, width: CGFloat(entrance.durationFrames) * pxPerFrame, height: height))
+        }
+        if let exit = clip.outAnimation {
+            let width = CGFloat(exit.durationFrames) * pxPerFrame
+            context.fill(CGRect(x: rect.maxX - width, y: y, width: width, height: height))
+        }
+        context.restoreGState()
+    }
+
     static func draw(
         _ clip: Clip,
         type: ClipType,
@@ -157,6 +177,7 @@ enum ClipRenderer {
             )
         } else {
             drawOpacityFades(clip: clip, in: rect, showsFadeControls: showsFadeControls, context: context)
+            drawAnimationRanges(clip: clip, in: rect, clipPath: path, context: context)
         }
 
         // Border
