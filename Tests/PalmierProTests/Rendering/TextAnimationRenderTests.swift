@@ -52,7 +52,7 @@ struct TextAnimationRenderTests {
     ) -> Double {
         let animation = TextAnimation(
             preset: preset,
-            perWordFrames: 6,
+            durationFrames: 6,
             highlight: .init(r: 1, g: 0, b: 0, a: 1)
         )
         let state = TextAnimator.wordState(
@@ -66,7 +66,7 @@ struct TextAnimationRenderTests {
     }
 
     @Test func highlightPopColorsActiveWord() {
-        let c = clip(TextAnimation(preset: .highlightPop, perWordFrames: 6, highlight: .init(r: 1, g: 0.85, b: 0, a: 1)))
+        let c = clip(TextAnimation(preset: .highlightPop, durationFrames: 6, highlight: .init(r: 1, g: 0.85, b: 0, a: 1)))
         let mid = pixels(c, frame: 45)  // TWO active → some yellow
         #expect(brightCount(pixels(c, frame: 5)) > 0)   // all words visible
         var yellow = 0
@@ -148,7 +148,7 @@ struct TextAnimationRenderTests {
     }
 
     @Test func laterWordOutlinesDoNotPaintOverEarlierFills() {
-        var animated = clip(TextAnimation(preset: .wordReveal, perWordFrames: 4, highlight: .init(r: 1, g: 1, b: 1, a: 1)))
+        var animated = clip(TextAnimation(preset: .wordReveal, durationFrames: 4, highlight: .init(r: 1, g: 1, b: 1, a: 1)))
         animated.textStyle?.border = .init(enabled: true, color: .init(r: 1, g: 0, b: 0, a: 1), width: 40)
         animated.textStyle?.tracking = -6
         var expected = animated

@@ -893,7 +893,7 @@ enum ToolDefinitions {
         ),
         AgentTool(
             name: .addTexts,
-            description: "Adds text clips as timeline layers. Omit trackIndex on every entry to create one new top video track; otherwise set trackIndex on every entry. Text boxes auto-fit their content; transform optionally sets their alignment-relative horizontal anchor, vertical center, Z rotation, and static X/Y perspective tilt. Left-aligned text grows rightward from x, centered text grows around x, and right-aligned text grows leftward from x. Use style widthScale and heightScale to stretch glyphs. Use the nested style object for typography, outline, shadow, background, and whole-layer Gaussian blur. fillMode 'footage' stencils layers below through the letter shapes over a matte set by style.color; it defaults to black when color is omitted. 'inverted' renders white glyphs with Difference blending and ignores color, outline, shadow, and background while active. Use add_captions for spoken audio captions. Unknown fields are rejected.",
+            description: "Adds text clips as timeline layers. Omit trackIndex on every entry to add them on new top video tracks: entries that don't overlap in time share one track, and overlapping entries (a title and its subtitle over the same span) stack on separate tracks, earlier entries above. Otherwise set trackIndex on every entry; entries in one call may not overlap on the same track, while existing clips in the range are overwritten. Text boxes auto-fit their content; transform optionally sets their alignment-relative horizontal anchor, vertical center, Z rotation, and static X/Y perspective tilt. Left-aligned text grows rightward from x, centered text grows around x, and right-aligned text grows leftward from x. Use style widthScale and heightScale to stretch glyphs. Use the nested style object for typography, outline, shadow, background, and whole-layer Gaussian blur. fillMode 'footage' stencils layers below through the letter shapes over a matte set by style.color; it defaults to black when color is omitted. 'inverted' renders white glyphs with Difference blending and ignores color, outline, shadow, and background while active. Use add_captions for spoken audio captions. Unknown fields are rejected.",
             inputSchema: objectSchema(
                 properties: [
                     "entries": [
@@ -902,7 +902,7 @@ enum ToolDefinitions {
                         "items": [
                             "type": "object",
                             "properties": mergedProperties([
-                                "trackIndex": ["type": "integer", "description": "Existing non-audio track. Omit on all entries to create a new top track."],
+                                "trackIndex": ["type": "integer", "description": "Existing non-audio track. Omit on all entries to create new top tracks."],
                                 "startFrame": ["type": "integer", "description": "Timeline start frame."],
                                 "endFrame": ["type": "integer", "description": "Occupy timeline frames [startFrame, endFrame) — copy a clip's frames pair to title exactly that span."],
                                 "content": ["type": "string", "description": "Text. Supports \\n."],
@@ -913,6 +913,7 @@ enum ToolDefinitions {
                                 ],
                             ], textStyleProperties(detailed: false), [
                                 "animation": ["type": "string", "enum": TextAnimation.Preset.agentValues, "description": "Animation preset; off clears."],
+                                "animationDurationFrames": ["type": "integer", "minimum": 1, "description": "Entrance length in frames for popIn or slideUp; requires one of them and must fit the clip. Default 6."],
                                 "highlightColor": ["type": "string", "description": "Active-word hex."],
                                 "fillMode": ["type": "string", "enum": TextFillMode.allCases.map(\.rawValue), "description": "color = solid typography (default). footage = stencil layers below through the letter shapes over a matte set by style.color, defaulting to black when color is omitted. inverted = white Difference-blended glyphs; color, outline, shadow, and background are ignored while active."],
                             ]),
@@ -941,7 +942,8 @@ enum ToolDefinitions {
                         "properties": textTransformProperties(),
                     ],
                 ], textStyleProperties(detailed: true), [
-                    "animation": ["type": "string", "enum": TextAnimation.Preset.agentValues, "description": "Animation preset; off clears."],
+                    "animation": ["type": "string", "enum": TextAnimation.Preset.agentValues, "description": "Animation preset; off clears. Switching between an entrance preset (popIn, slideUp) and any other preset resets the duration to the default."],
+                    "animationDurationFrames": ["type": "integer", "minimum": 1, "description": "Entrance length in frames for popIn or slideUp. Applies to the preset set in this call, or each clip's current one; refused for other presets or when longer than the clip."],
                     "highlightColor": ["type": "string", "description": "Active-word hex."],
                     "fillMode": ["type": "string", "enum": TextFillMode.allCases.map(\.rawValue), "description": "color = solid typography. footage = stencil layers below through the letter shapes over a matte set by style.color, defaulting to black when entering without color. inverted = white Difference-blended glyphs; color, outline, shadow, and background are ignored while active."],
                 ]),

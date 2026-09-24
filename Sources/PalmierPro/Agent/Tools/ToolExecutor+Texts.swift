@@ -99,6 +99,8 @@ fileprivate struct PartialTextSpec {
     let transform: Transform?
     let animation: TextAnimation?
     let fillMode: TextFillMode?
+
+    var frameRange: Range<Int> { startFrame..<(startFrame + durationFrames) }
 }
 
 struct ParsedTextTransform {
@@ -116,12 +118,12 @@ struct ParsedTextTransform {
 extension ToolExecutor {
     private static let addTextsAllowedKeys: Set<String> = Set([
         "trackIndex", "startFrame", "endFrame", "content",
-        "style", "transform", "animation", "highlightColor", "fillMode",
+        "style", "transform", "animation", "animationDurationFrames", "highlightColor", "fillMode",
     ])
 
     private static let updateTextAllowedKeys: Set<String> = Set([
         "clipIds", "captionGroupId", "content",
-        "style", "transform", "animation", "highlightColor", "fillMode",
+        "style", "transform", "animation", "animationDurationFrames", "highlightColor", "fillMode",
     ])
 
     func parseTextStylePatch(_ args: [String: Any], path: String) throws -> ParsedTextStylePatch? {
@@ -366,6 +368,54 @@ extension ToolExecutor {
         return anim
     }
 
+    private func parseAnimationDurationFrames(_ args: [String: Any], path: String) throws -> Int? {
+        guard let raw = args["animationDurationFrames"] else { return nil }
+        guard let frames = exactJSONInt(raw), frames >= 1 else {
+            throw ToolError("\(path).animationDurationFrames must be a positive integer")
+        }
+        return frames
+    }
+
+    private func validateAnimationDuration(
+        _ frames: Int,
+        preset: TextAnimation.Preset?,
+        clipFrames: Int,
+        path: String
+    ) throws {
+        guard let preset, preset.isEntrance else {
+            throw ToolError("\(path): animationDurationFrames applies only to the popIn and slideUp animations")
+        }
+        guard frames <= clipFrames else {
+            throw ToolError("\(path): animationDurationFrames (\(frames)) exceeds the clip's \(clipFrames) frames")
+        }
+    }
+
+    /// First-fit lanes in entry order, so earlier entries land on higher tracks.
+    private static func nonOverlappingLanes(_ specs: [PartialTextSpec]) -> [Int] {
+        var laneRanges: [[Range<Int>]] = []
+        return specs.map { spec in
+            let range = spec.frameRange
+            if let lane = laneRanges.firstIndex(where: { !$0.contains { $0.overlaps(range) } }) {
+                laneRanges[lane].append(range)
+                return lane
+            }
+            laneRanges.append([range])
+            return laneRanges.count - 1
+        }
+    }
+
+    private static func firstSameTrackOverlap(_ specs: [PartialTextSpec]) -> (Int, Int)? {
+        let byTrack = Dictionary(grouping: specs.indices, by: { specs[$0].trackId })
+        for indices in byTrack.values {
+            let sorted = indices.sorted { specs[$0].startFrame < specs[$1].startFrame }
+            for (earlier, later) in zip(sorted, sorted.dropFirst())
+            where specs[earlier].frameRange.overlaps(specs[later].frameRange) {
+                return (min(earlier, later), max(earlier, later))
+            }
+        }
+        return nil
+    }
+
     private func parseTextFillMode(_ raw: String?, path: String) throws -> TextFillMode? {
         guard let raw else { return nil }
         guard let mode = TextFillMode(rawValue: raw) else {
@@ -491,6 +541,12 @@ extension ToolExecutor {
                 canvas: (Double(editor.timeline.width), Double(editor.timeline.height))
             )
 
+            var animation = try parseTextAnimation(preset: entry.string("animation"), highlightColor: entry.string("highlightColor"), path: path)
+            if let frames = try parseAnimationDurationFrames(entry, path: path) {
+                try validateAnimationDuration(frames, preset: animation?.preset, clipFrames: durationFrames, path: path)
+                animation?.durationFrames = frames
+            }
+
             partials.append(.init(
                 trackId: trackId,
                 startFrame: startFrame,
@@ -498,7 +554,7 @@ extension ToolExecutor {
                 content: content,
                 style: style,
                 transform: transform,
-                animation: try parseTextAnimation(preset: entry.string("animation"), highlightColor: entry.string("highlightColor"), path: path),
+                animation: animation,
                 fillMode: fillMode
             ))
         }
@@ -509,21 +565,29 @@ extension ToolExecutor {
             throw ToolError("Mixed trackIndex: \(omittedCount) of \(partials.count) entries omitted trackIndex. Either set it on every entry or omit it on every entry (to auto-create a shared new track).")
         }
 
+        let stacksOnNewTracks = omittedCount == partials.count
+        let lanes = stacksOnNewTracks ? Self.nonOverlappingLanes(partials) : []
+        if !stacksOnNewTracks, let overlap = Self.firstSameTrackOverlap(partials) {
+            throw ToolError("entries[\(overlap.0)] and entries[\(overlap.1)] overlap on the same track. Give them different trackIndex values, or omit trackIndex on every entry to stack overlapping entries on new tracks.")
+        }
+
         let snapshot = timelineSnapshot(editor)
         let actionName = partials.count == 1 ? "Add Text (Agent)" : "Add Texts (Agent)"
         try editor.undo.perform(actionName) {
-            var createdTrackId: String? = nil
-            let resolvedTrackId: String?
-            if omittedCount == partials.count {
-                let newIdx = editor.insertTrack(at: 0, type: .video)
-                createdTrackId = editor.timeline.tracks.indices.contains(newIdx) ? editor.timeline.tracks[newIdx].id : nil
-                resolvedTrackId = createdTrackId
-            } else {
-                resolvedTrackId = nil  // each partial already has its own trackId
+            var createdTrackIds: [String] = []
+            if stacksOnNewTracks {
+                for lane in 0...(lanes.max() ?? 0) {
+                    let newIdx = editor.insertTrack(at: lane, type: .video)
+                    guard editor.timeline.tracks.indices.contains(newIdx) else { break }
+                    createdTrackIds.append(editor.timeline.tracks[newIdx].id)
+                }
             }
 
-            let resolvedSpecs: [EditorViewModel.TextClipSpec] = partials.compactMap { p in
-                let id = resolvedTrackId ?? p.trackId
+            let resolvedSpecs: [EditorViewModel.TextClipSpec] = partials.indices.compactMap { i in
+                let p = partials[i]
+                let id = stacksOnNewTracks
+                    ? (createdTrackIds.indices.contains(lanes[i]) ? createdTrackIds[lanes[i]] : nil)
+                    : p.trackId
                 guard let id, let trackIdx = editor.timeline.tracks.firstIndex(where: { $0.id == id }) else {
                     return nil
                 }
@@ -541,7 +605,7 @@ extension ToolExecutor {
 
             let ids = editor.placeTextClips(resolvedSpecs)
             guard !ids.isEmpty else {
-                if let tid = createdTrackId { editor.removeTrack(id: tid) }
+                for tid in createdTrackIds { editor.removeTrack(id: tid) }
                 throw ToolError("Failed to place any text clips")
             }
 
@@ -582,8 +646,9 @@ extension ToolExecutor {
         let shouldSetAnimation = args.string("animation") != nil
         let highlightOnly = shouldSetAnimation ? nil : try parseColorHex(args.string("highlightColor"), path: "update_text")
         let fillMode = try parseTextFillMode(args.string("fillMode"), path: "update_text")
+        let animationDurationFrames = try parseAnimationDurationFrames(args, path: "update_text")
 
-        guard hasContent || textStylePatch?.hasAnyField == true || transform != nil || shouldSetAnimation || highlightOnly != nil || fillMode != nil else {
+        guard hasContent || textStylePatch?.hasAnyField == true || transform != nil || shouldSetAnimation || highlightOnly != nil || fillMode != nil || animationDurationFrames != nil else {
             throw ToolError("update_text needs at least one text property to apply")
         }
 
@@ -592,6 +657,14 @@ extension ToolExecutor {
             let clip = editor.timeline.tracks[loc.trackIndex].clips[loc.clipIndex]
             guard clip.mediaType == .text else {
                 throw ToolError("update_text only applies to text clips: \(id) is \(clip.mediaType.rawValue)")
+            }
+            if let animationDurationFrames {
+                try validateAnimationDuration(
+                    animationDurationFrames,
+                    preset: shouldSetAnimation ? animation?.preset : clip.textAnimation?.preset,
+                    clipFrames: clip.durationFrames,
+                    path: "update_text \(id)"
+                )
             }
         }
 
@@ -677,6 +750,9 @@ extension ToolExecutor {
                 if shouldSetAnimation {
                     if let animation {
                         var current = clip.textAnimation ?? TextAnimation()
+                        if current.preset.isEntrance != animation.preset.isEntrance {
+                            current.durationFrames = TextAnimation.defaultDurationFrames
+                        }
                         current.preset = animation.preset
                         if let highlight = animation.highlight {
                             current.highlight = highlight
@@ -685,6 +761,9 @@ extension ToolExecutor {
                     } else {
                         clip.textAnimation = nil
                     }
+                }
+                if let animationDurationFrames {
+                    clip.textAnimation?.durationFrames = animationDurationFrames
                 }
                 if let hl = highlightOnly {
                     var a = clip.textAnimation ?? TextAnimation()

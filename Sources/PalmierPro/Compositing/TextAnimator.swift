@@ -20,7 +20,7 @@ enum TextAnimator {
 
     /// Whole-clip entrance. Non-entrance presets return identity.
     static func clipEntry(_ anim: TextAnimation, rel: Int) -> ClipState {
-        let dur = max(1, anim.perWordFrames)
+        let dur = max(1, anim.durationFrames)
         let t = progress(rel, start: 0, dur: dur)
         switch anim.preset {
         case .popIn:
@@ -41,7 +41,7 @@ enum TextAnimator {
         base: TextStyle.RGBA
     ) -> WordState {
         let highlight = anim.highlight ?? TextAnimation.defaultHighlight
-        let hand = max(1, anim.perWordFrames)
+        let hand = max(1, anim.durationFrames)
         switch anim.preset {
         case .wordReveal:
             let t = progress(rel, start: word.startFrame, dur: hand)
@@ -66,7 +66,7 @@ enum TextAnimator {
     /// Tints the active word if a highlight is set.
     private static func activeTint(_ anim: TextAnimation, _ word: WordTiming, _ rel: Int, _ base: TextStyle.RGBA) -> TextStyle.RGBA {
         guard let hl = anim.highlight else { return base }
-        let on = activeRamp(rel, word: word, ramp: max(1, anim.perWordFrames))
+        let on = activeRamp(rel, word: word, ramp: max(1, anim.durationFrames))
         return lerp(base, hl, CGFloat(on))
     }
 

@@ -2786,7 +2786,7 @@ struct SetClipPropertiesTests {
         let highlight = TextStyle.RGBA(r: 1, g: 0, b: 0, a: 1)
         var clip = Fixtures.clip(id: "title", mediaRef: "text", mediaType: .text, start: 0, duration: 60)
         clip.textContent = "Title"
-        clip.textAnimation = TextAnimation(preset: .highlightPop, perWordFrames: 12, highlight: highlight)
+        clip.textAnimation = TextAnimation(preset: .highlightPop, durationFrames: 12, highlight: highlight)
         let h = ToolHarness(timeline: Fixtures.timeline(tracks: [Fixtures.videoTrack(clips: [clip])]))
 
         let result = await h.runRaw("update_text", args: [
@@ -2797,7 +2797,7 @@ struct SetClipPropertiesTests {
         #expect(result.isError == false, "\(ToolHarness.textOf(result))")
         let animation = h.editor.timeline.tracks[0].clips[0].textAnimation
         #expect(animation?.preset == .wordSlide)
-        #expect(animation?.perWordFrames == 12)
+        #expect(animation?.durationFrames == 12)
         #expect(animation?.highlight == highlight)
     }
 

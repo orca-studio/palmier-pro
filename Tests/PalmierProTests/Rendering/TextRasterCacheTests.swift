@@ -73,7 +73,7 @@ struct TextRasterCacheTests {
     @Test func perWordSteadyFramesReuseRasterAndRampsDoNot() {
         // Five tokens over 90 frames → ramps start at 0, 18, 36, 54, 72 and settle after 6 frames.
         let c = clip(content: "ONE TWO THREE \(uniqueContent("FOUR"))",
-                     anim: TextAnimation(preset: .wordReveal, perWordFrames: 6))
+                     anim: TextAnimation(preset: .wordReveal, durationFrames: 6))
         let steady = rasterCount(of: c.textContent!) {
             _ = TextFrameRenderer.image(clip: c, frame: 8, renderSize: size)
             _ = TextFrameRenderer.image(clip: c, frame: 14, renderSize: size)

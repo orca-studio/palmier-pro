@@ -8,7 +8,7 @@ struct WordTiming: Codable, Sendable, Equatable, Hashable {
 
 struct TextAnimation: Codable, Sendable, Equatable {
     var preset: Preset = .none
-    var perWordFrames: Int = 6
+    var durationFrames: Int = TextAnimation.defaultDurationFrames
     var highlight: TextStyle.RGBA?
 
     enum Preset: String, Codable, CaseIterable, Sendable {
@@ -29,6 +29,7 @@ struct TextAnimation: Codable, Sendable, Equatable {
         }
 
         var isPerWord: Bool { renderMode == .perWord }
+        var isEntrance: Bool { self == .popIn || self == .slideUp }
         var usesHighlight: Bool { isPerWord }
 
         var displayName: String {
@@ -52,13 +53,14 @@ struct TextAnimation: Codable, Sendable, Equatable {
 
     var isActive: Bool { preset != .none }
 
+    static let defaultDurationFrames = 6
     static let defaultHighlight = TextStyle.RGBA(r: 1, g: 0.85, b: 0, a: 1)
 
-    private enum CodingKeys: String, CodingKey { case preset, perWordFrames, highlight }
+    private enum CodingKeys: String, CodingKey { case preset, durationFrames, highlight }
 
-    init(preset: Preset = .none, perWordFrames: Int = 6, highlight: TextStyle.RGBA? = nil) {
+    init(preset: Preset = .none, durationFrames: Int = TextAnimation.defaultDurationFrames, highlight: TextStyle.RGBA? = nil) {
         self.preset = preset
-        self.perWordFrames = perWordFrames
+        self.durationFrames = durationFrames
         self.highlight = highlight
     }
 
@@ -66,7 +68,7 @@ struct TextAnimation: Codable, Sendable, Equatable {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         self.init(
             preset: (try? c.decode(Preset.self, forKey: .preset)) ?? .none,
-            perWordFrames: (try? c.decode(Int.self, forKey: .perWordFrames)) ?? 6,
+            durationFrames: (try? c.decode(Int.self, forKey: .durationFrames)) ?? TextAnimation.defaultDurationFrames,
             highlight: try? c.decode(TextStyle.RGBA.self, forKey: .highlight)
         )
     }
