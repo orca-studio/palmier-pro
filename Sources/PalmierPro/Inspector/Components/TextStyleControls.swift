@@ -237,7 +237,6 @@ struct TextStyleControls<AfterAlignment: View, AfterColor: View>: View {
                 EditorMenuValue(text: selection.value(\.fontCase).map { L10n.string(key: $0.label) } ?? "—")
             }
             .menuStyle(.button)
-            .accessibilityElement(children: .combine)
             .buttonStyle(.plain)
             .menuIndicator(.hidden)
             .focusable(false)

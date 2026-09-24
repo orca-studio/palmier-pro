@@ -107,7 +107,6 @@ struct TextTab: View {
                 EditorMenuValue(text: current.map { L10n.string(key: $0.displayName) } ?? "—")
             }
             .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize().focusable(false)
-            .accessibilityElement(children: .combine)
             .accessibilityLabel(L10n.string("Fill"))
             .accessibilityIdentifier("inspector.text.fill")
         }

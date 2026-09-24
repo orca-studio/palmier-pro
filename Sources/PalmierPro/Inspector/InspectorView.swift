@@ -256,7 +256,6 @@ struct InspectorView: View {
             .buttonStyle(.plain)
             .menuIndicator(.hidden)
             .fixedSize()
-            .accessibilityElement(children: .combine)
             .accessibilityLabel(L10n.string(key: label))
             .accessibilityValue(Text(verbatim: value))
             .accessibilityIdentifier(accessibilityID)
@@ -755,7 +754,6 @@ struct InspectorView: View {
                 EditorMenuValue(text: mixed ? "—" : L10n.string(key: current.displayName))
             }
             .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize().focusable(false)
-            .accessibilityElement(children: .combine)
             .accessibilityLabel(L10n.string("Blend"))
             .accessibilityIdentifier("inspector.blendMode")
         }
@@ -931,6 +929,15 @@ struct InspectorView: View {
                     Text(preset.localizedLabel)
                 }
             }
+            .accessibilityIdentifier("inspector.transform.crop.aspect.\(cropPresetKey(preset))")
+        }
+    }
+
+    private func cropPresetKey(_ preset: CropAspectLock) -> String {
+        switch preset {
+        case .free: "free"
+        case .original: "original"
+        case .fixed: preset.label.replacingOccurrences(of: ":", with: "x")
         }
     }
 

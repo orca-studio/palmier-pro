@@ -56,7 +56,6 @@ extension GenerationView {
                         EditorMenuValue(text: selected.label, expanded: true)
                     }
                     .menuStyle(.button)
-                    .accessibilityElement(children: .combine)
                     .buttonStyle(.plain)
                     .menuIndicator(.hidden)
                     .accessibilityIdentifier("generation.upscale.\(setting.id)")

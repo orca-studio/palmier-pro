@@ -247,15 +247,16 @@ struct CaptionTab: View {
             InspectorRow(label: L10n.string("Language"), accessibilityID: "media.captions.language", onReset: { locale = nil }) {
                 Menu {
                     Button(L10n.string("Auto")) { locale = nil }
+                        .accessibilityIdentifier("media.captions.language.auto")
                     if !supportedLocales.isEmpty {
                         Divider()
                         ForEach(supportedLocales, id: \.identifier) { loc in
                             Button(languageName(loc)) { locale = loc }
+                                .accessibilityIdentifier("media.captions.language.\(loc.identifier)")
                         }
                     }
                 } label: { EditorMenuValue(text: locale.map(languageName) ?? L10n.string("Auto"), expanded: true) }
                 .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).focusable(false)
-                .accessibilityElement(children: .combine)
                 .accessibilityLabel(L10n.string("Language"))
                 .accessibilityIdentifier("media.captions.language")
                 .frame(maxWidth: .infinity)
@@ -334,6 +335,7 @@ struct CaptionTab: View {
             } label: {
                 Label(automaticSourceSummary, systemImage: selectedTrackId == nil ? "checkmark" : "")
             }
+            .accessibilityIdentifier("media.captions.sourceMenu.auto")
 
             Divider()
 
@@ -353,6 +355,7 @@ struct CaptionTab: View {
                                 systemImage: selectedTrackId == track.id ? "checkmark" : ""
                             )
                         }
+                        .accessibilityIdentifier("media.captions.sourceMenu.track.\(track.id)")
                     }
                 }
             }
@@ -360,7 +363,6 @@ struct CaptionTab: View {
             EditorMenuValue(text: sourceSummary, expanded: true)
         }
         .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).focusable(false)
-        .accessibilityElement(children: .combine)
         .accessibilityLabel(L10n.string("Source"))
         .accessibilityIdentifier("media.captions.sourceMenu")
         .frame(maxWidth: .infinity)
@@ -534,12 +536,15 @@ struct CaptionTab: View {
             Button {
                 captionTask("remove filler words (um, uh, er, like, you know) from the captions, keeping each caption's timing unchanged.")
             } label: { Label(L10n.string("Remove filler words"), systemImage: "text.badge.minus") }
+            .accessibilityIdentifier("media.captions.agentMenu.removeFillerWords")
             Button {
                 captionTask("fix any misspelled names, brand names, or technical jargon in the captions using the surrounding context, keeping timing unchanged.")
             } label: { Label(L10n.string("Fix names & jargon"), systemImage: "checkmark.bubble") }
+            .accessibilityIdentifier("media.captions.agentMenu.fixNames")
             Button {
                 captionTask("add relevant emoji to the captions, keeping the text and timing otherwise unchanged.")
             } label: { Label(L10n.string("Add emoji"), systemImage: "face.smiling") }
+            .accessibilityIdentifier("media.captions.agentMenu.addEmoji")
             Menu {
                 ForEach(Self.translateLanguages, id: \.code) { language in
                     Button(translationLanguageName(language.code)) {

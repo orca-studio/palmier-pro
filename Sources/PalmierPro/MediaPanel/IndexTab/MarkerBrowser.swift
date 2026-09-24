@@ -256,7 +256,6 @@ private struct MarkerBrowserRow: View {
             actionIcon("circle.fill", color: marker.status.color)
         }
         .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).focusable(false)
-        .accessibilityElement(children: .combine)
         .help(L10n.string("Status: \(L10n.string(key: marker.status.titleKey))"))
         .accessibilityLabel(L10n.string("Status: \(L10n.string(key: marker.status.titleKey))"))
         .accessibilityIdentifier("media.marker.\(marker.id).status")

@@ -130,7 +130,6 @@ struct ToolbarView: View {
                     .contentShape(Rectangle())
             }
             .menuStyle(.button)
-            .accessibilityElement(children: .combine)
             .buttonStyle(.plain)
             .menuIndicator(.hidden)
             .accessibilityLabel(L10n.string("Ripple Timeline Markers"))

@@ -37,9 +37,9 @@ struct EditorAgentMenu<MenuContent: View>: View {
             .foregroundStyle(AppTheme.Text.secondaryColor)
             .lineLimit(1)
             .fixedSize()
+            .accessibilityElement(children: .combine)
         }
         .menuStyle(.button)
-        .accessibilityElement(children: .combine)
         .buttonStyle(.capsule(.secondary))
         .menuIndicator(.hidden)
         .focusable(false)

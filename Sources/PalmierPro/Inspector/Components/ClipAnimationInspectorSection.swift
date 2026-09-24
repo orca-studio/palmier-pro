@@ -77,7 +77,6 @@ struct ClipAnimationInspectorSection: View {
                 EditorMenuValue(text: menuText(current))
             }
             .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).fixedSize().focusable(false)
-            .accessibilityElement(children: .combine)
             .disabled(noRoom)
             .accessibilityLabel(label)
             .accessibilityIdentifier("\(base).preset")

@@ -137,7 +137,6 @@ struct TranscriptSourceMenu: View {
             EditorMenuValue(text: document.map(trackLabel) ?? L10n.string("Transcript"), expanded: true)
         }
         .menuStyle(.button)
-        .accessibilityElement(children: .combine)
         .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .frame(maxWidth: AppTheme.MediaPanel.transcriptSourceMenuWidth)

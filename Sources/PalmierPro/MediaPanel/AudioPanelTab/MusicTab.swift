@@ -157,7 +157,6 @@ struct MusicSection: View {
                     Button(L10n.string("Text to Music")) { mode = .textToMusic }
                 } label: { EditorMenuValue(text: modeLabel(effectiveMode), expanded: true) }
                 .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).focusable(false)
-                .accessibilityElement(children: .combine)
                 .accessibilityLabel(L10n.string("Input"))
                 .accessibilityIdentifier("media.music.input")
                 .frame(maxWidth: .infinity)
@@ -211,7 +210,6 @@ struct MusicSection: View {
                 EditorMenuValue(text: model?.displayName ?? L10n.string("None"), expanded: true)
             }
             .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden).focusable(false)
-            .accessibilityElement(children: .combine)
             .accessibilityLabel(L10n.string("Model"))
             .accessibilityIdentifier("media.music.model")
             .frame(maxWidth: .infinity)
@@ -294,6 +292,7 @@ struct MusicSection: View {
             Button {
                 musicTask("Score my timeline with music that matches the visuals. Use a video-to-music model on the full timeline span so the music follows the edit, and place it on an audio track.")
             } label: { Label(L10n.string("Generate music for the timeline"), systemImage: "music.note") }
+            .accessibilityIdentifier("media.music.agentMenu.scoreTimeline")
             Menu {
                 ForEach(["Cinematic", "Upbeat", "Ambient", "Tense", "Lo-fi"], id: \.self) { mood in
                     Button(mood) {

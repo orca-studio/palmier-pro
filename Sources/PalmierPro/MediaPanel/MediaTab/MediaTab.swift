@@ -399,24 +399,25 @@ struct MediaTab: View {
             accessibilityLabel: L10n.string("View"),
             accessibilityID: "media.viewOptions"
         ) {
-            Section(L10n.string("View")) {
-                ForEach(ViewMode.allCases, id: \.self) { mode in
-                    Button {
-                        setViewMode(mode)
-                    } label: {
-                        Label(L10n.string(key: mode.title), systemImage: viewMode == mode ? "checkmark" : mode.systemImage)
-                    }
+            // Plain buttons, not Section or Picker, so each menu item keeps its identifier.
+            Text(L10n.string("View"))
+            ForEach(ViewMode.allCases, id: \.self) { mode in
+                Button {
+                    setViewMode(mode)
+                } label: {
+                    Label(L10n.string(key: mode.title), systemImage: viewMode == mode ? "checkmark" : mode.systemImage)
                 }
+                .accessibilityIdentifier("media.viewOptions.view.\(mode.rawValue)")
             }
             Divider()
-            Section(L10n.string("Thumbnail Size")) {
-                ForEach(ThumbnailPreset.allCases) { preset in
-                    Button {
-                        thumbnailSize = preset.size
-                    } label: {
-                        Label(L10n.string(key: preset.title), systemImage: thumbnailSize == preset.size ? "checkmark" : "")
-                    }
+            Text(L10n.string("Thumbnail Size"))
+            ForEach(ThumbnailPreset.allCases) { preset in
+                Button {
+                    thumbnailSize = preset.size
+                } label: {
+                    Label(L10n.string(key: preset.title), systemImage: thumbnailSize == preset.size ? "checkmark" : "")
                 }
+                .accessibilityIdentifier("media.viewOptions.thumbnailSize.\(preset.rawValue)")
             }
         }
 
@@ -431,6 +432,7 @@ struct MediaTab: View {
                 } label: {
                     Label(L10n.string(key: mode.title), systemImage: sortMode == mode ? "checkmark" : "")
                 }
+                .accessibilityIdentifier("media.sort.\(mode)")
             }
         }
 
@@ -444,13 +446,16 @@ struct MediaTab: View {
                 Button { toggleFilter(type) } label: {
                     Label(type.localizedTrackLabel, systemImage: filterTypes.contains(type) ? "checkmark" : "")
                 }
+                .accessibilityIdentifier("media.filter.\(type.rawValue)")
             }
             Divider()
             Button { filterAI.toggle() } label: {
                 Label(L10n.string("AI Generated"), systemImage: filterAI ? "checkmark" : "")
             }
+            .accessibilityIdentifier("media.filter.aiGenerated")
             Divider()
             Button(L10n.string("Clear Filters"), action: clearFilters)
+                .accessibilityIdentifier("media.filter.clear")
         }
     }
 
@@ -621,13 +626,16 @@ struct MediaTab: View {
             Button(action: createNewFolderInCurrent) {
                 Label(L10n.string("New Folder"), systemImage: "folder.badge.plus")
             }
+            .accessibilityIdentifier("media.more.newFolder")
             Button { showMatteSheet = true } label: {
                 Label(L10n.string("Create Matte"), systemImage: "square.fill")
             }
+            .accessibilityIdentifier("media.more.createMatte")
             if canOrganize {
                 Button(action: organizeWithAgent) {
                     Label(L10n.string("Organize with Agent"), systemImage: "wand.and.stars")
                 }
+                .accessibilityIdentifier("media.more.organizeWithAgent")
             }
         }
     }

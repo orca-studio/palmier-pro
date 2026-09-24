@@ -2,11 +2,13 @@
 // Drives and audits the running Palmier Pro through the macOS Accessibility API.
 //
 //   scripts/accessibility/ax.swift dump [--all]        tree of identified (or all) elements
-//   scripts/accessibility/ax.swift audit               interactive elements missing a valid identifier or a label
+//   scripts/accessibility/ax.swift audit [--menus]     interactive elements missing a valid identifier or a label;
+//                                                      --menus also opens each menu and checks its items
 //   scripts/accessibility/ax.swift press <identifier>  AXPress the element with that identifier
 //   scripts/accessibility/ax.swift find <identifier>   print the element's role, label, value, and frame
 //   scripts/accessibility/ax.swift set <identifier> <value>       set AXValue (e.g. a timecode for timeline.playhead)
 //   scripts/accessibility/ax.swift increment|decrement <identifier>
+//   scripts/accessibility/ax.swift menu <identifier> <item identifier>  open a menu control and choose an item
 //
 // The calling terminal needs Accessibility permission (System Settings → Privacy & Security).
 import AppKit
@@ -93,11 +95,61 @@ func appElement() -> AXUIElement {
     guard AXIsProcessTrusted() else {
         fail("Accessibility permission is missing for this terminal.")
     }
-    let running = NSWorkspace.shared.runningApplications.first {
+    guard let pid = runningApp()?.processIdentifier else { fail("Palmier Pro is not running.") }
+    return AXUIElementCreateApplication(pid)
+}
+
+func runningApp() -> NSRunningApplication? {
+    NSWorkspace.shared.runningApplications.first {
         $0.bundleIdentifier == "io.palmier.pro" || $0.localizedName == "PalmierPro" || $0.localizedName == "Palmier Pro"
     }
-    guard let pid = running?.processIdentifier else { fail("Palmier Pro is not running.") }
-    return AXUIElementCreateApplication(pid)
+}
+
+/// Popup menus only open for the frontmost app.
+func activateApp() {
+    runningApp()?.activate()
+    usleep(300_000)
+}
+
+/// Cancels open popup menus without sending keys, which the app would otherwise handle (Escape deselects).
+func closeMenus() {
+    func visit(_ element: AXUIElement, depth: Int, inMenuBar: Bool) {
+        guard depth < 80 else { return }
+        let role: String = attribute(element, kAXRoleAttribute) ?? ""
+        if role == "AXMenu", !inMenuBar {
+            AXUIElementPerformAction(element, kAXCancelAction as CFString)
+            return
+        }
+        for child in children(element) {
+            visit(child, depth: depth + 1, inMenuBar: inMenuBar || role == "AXMenuBar")
+        }
+    }
+    visit(appElement(), depth: 0, inMenuBar: false)
+    usleep(200_000)
+}
+
+func openMenu(_ element: AXUIElement) -> Bool {
+    AXUIElementPerformAction(element, kAXPressAction as CFString) == .success
+        || AXUIElementPerformAction(element, kAXShowMenuAction as CFString) == .success
+}
+
+/// Items of open popup menus, excluding the menu bar.
+func popupMenuItems() -> [Node] {
+    var items: [Node] = []
+    func visit(_ element: AXUIElement, depth: Int, inMenuBar: Bool) {
+        guard depth < 80 else { return }
+        let node = Node(element: element, depth: depth)
+        let role = node.role
+        let menuBar = inMenuBar || role == "AXMenuBar"
+        // Disabled items include section headers, which cannot carry identifiers.
+        if role == "AXMenuItem", !menuBar, (attribute(element, kAXTitleAttribute) as String?)?.isEmpty == false,
+           (attribute(element, kAXEnabledAttribute) as Bool?) != false {
+            items.append(node)
+        }
+        for child in children(element) { visit(child, depth: depth + 1, inMenuBar: menuBar) }
+    }
+    visit(appElement(), depth: 0, inMenuBar: false)
+    return items
 }
 
 func fail(_ message: String) -> Never {
@@ -138,6 +190,27 @@ case "audit":
         if !(node.identifier.map(isValidIdentifier) ?? false) { missingID.append(node) }
         if node.label == nil { missingLabel.append(node) }
     }
+    var menuProblems: [String] = []
+    if args.contains("--menus") {
+        activateApp()
+        var menuIds: [String] = []
+        walk(appElement()) { node in
+            if ["AXMenuButton", "AXPopUpButton"].contains(node.role), !node.isSystemChrome,
+               let id = node.identifier, isValidIdentifier(id) { menuIds.append(id) }
+        }
+        // Re-find each menu by identifier; opening a menu can rebuild the elements around it.
+        for menuId in menuIds {
+            guard let menu = find(menuId), openMenu(menu.element) else {
+                menuProblems.append("\(menuId): could not open"); continue
+            }
+            usleep(400_000)
+            for item in popupMenuItems() where !(item.identifier.map(isValidIdentifier) ?? false) {
+                let title: String = attribute(item.element, kAXTitleAttribute) ?? "?"
+                menuProblems.append("\(menuId) → \"\(title)\"\(item.identifier.map { " #\($0)" } ?? "")")
+            }
+            closeMenus()
+        }
+    }
     let duplicates = seen.filter { $0.value > 1 }.keys.sorted()
     print("interactive elements: \(total)")
     print("missing or invalid identifier: \(missingID.count)")
@@ -146,7 +219,11 @@ case "audit":
     for node in missingLabel { print("  " + describe(node)) }
     print("duplicate identifiers: \(duplicates.count)")
     for id in duplicates { print("  \(id) ×\(seen[id]!)") }
-    exit(missingID.isEmpty && missingLabel.isEmpty && duplicates.isEmpty ? 0 : 2)
+    if args.contains("--menus") {
+        print("menu items missing a valid identifier: \(menuProblems.count)")
+        for problem in menuProblems { print("  " + problem) }
+    }
+    exit(missingID.isEmpty && missingLabel.isEmpty && duplicates.isEmpty && menuProblems.isEmpty ? 0 : 2)
 case "press":
     guard args.count == 2 else { fail("usage: press <identifier>") }
     guard let node = find(args[1]) else { fail("No element with identifier \(args[1]).") }
@@ -166,11 +243,27 @@ case "increment", "decrement":
     let result = AXUIElementPerformAction(node.element, action as CFString)
     guard result == .success else { fail("\(args[0]) failed on \(args[1]): \(result.rawValue)") }
     print(describe(find(args[1]) ?? node))
+case "menu":
+    guard args.count == 3 else { fail("usage: menu <identifier> <item identifier>") }
+    activateApp()
+    guard let node = find(args[1]) else { fail("No element with identifier \(args[1]).") }
+    guard openMenu(node.element) else { fail("Could not open the menu on \(args[1]).") }
+    var item: Node?
+    for _ in 0..<20 where item == nil {
+        usleep(100_000)
+        item = popupMenuItems().first { $0.identifier == args[2] }
+    }
+    guard let item else {
+        closeMenus()
+        fail("No menu item \(args[2]) under \(args[1]).")
+    }
+    AXUIElementPerformAction(item.element, kAXPressAction as CFString)
+    print("chose \(args[2]) from \(args[1])")
 case "find":
     guard args.count == 2 else { fail("usage: find <identifier>") }
     guard let node = find(args[1]) else { fail("No element with identifier \(args[1]).") }
     print(describe(node))
     if let frame = node.frame { print("frame \(frame)") }
 default:
-    fail("usage: ax.swift dump [--all] | audit | press|find|increment|decrement <identifier> | set <identifier> <value>")
+    fail("usage: ax.swift dump [--all] | audit | press|find|increment|decrement <identifier> | set <identifier> <value> | menu <identifier> <item identifier>")
 }

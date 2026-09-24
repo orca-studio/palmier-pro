@@ -59,6 +59,8 @@ struct EditorMenuValue: View {
         .padding(.horizontal, AppTheme.Spacing.smMd)
         .frame(maxWidth: expanded ? .infinity : nil)
         .editorValueField()
+        // One element, so a Menu using this label exposes one pressable menu button.
+        .accessibilityElement(children: .combine)
     }
 }
 
