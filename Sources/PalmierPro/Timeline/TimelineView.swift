@@ -22,6 +22,7 @@ final class TimelineView: NSView, NSPopoverDelegate {
     private(set) var hoveredClipId: String?
     private let canvas = TimelineCanvasView()
     private var markerPopover: NSPopover?
+    var timelineAccessibilityCache: TimelineAccessibilityCache?
 
     // MARK: - Init
 
@@ -42,6 +43,10 @@ final class TimelineView: NSView, NSPopoverDelegate {
         registerForDraggedTypes([.string, .fileURL])
         playheadOverlay = PlayheadOverlay(view: self, editor: editor)
         snapOverlay = SnapIndicatorOverlay(view: self)
+        setAccessibilityElement(true)
+        setAccessibilityRole(.group)
+        setAccessibilityIdentifier("timeline.canvas")
+        setAccessibilityLabel(L10n.string("Timeline"))
     }
 
     convenience init(editor: EditorViewModel) {
@@ -52,6 +57,10 @@ final class TimelineView: NSView, NSPopoverDelegate {
     required init?(coder: NSCoder) { fatalError() }
 
     override var isFlipped: Bool { true }
+
+    override func accessibilityChildren() -> [Any]? {
+        (super.accessibilityChildren() ?? []) + timelineAccessibilityElements()
+    }
 
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()

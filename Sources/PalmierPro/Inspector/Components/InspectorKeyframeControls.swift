@@ -3,15 +3,14 @@ import SwiftUI
 struct InspectorKeyframePropertyControl: View {
     let clips: [Clip]
     let property: AnimatableProperty
-    let label: String
     let accessibilityID: String
 
     var body: some View {
         HStack(spacing: AppTheme.Spacing.sm) {
-            InspectorKeyframeValueFields(
+            KeyframePropertyValueFields(
                 clips: clips,
                 property: property,
-                label: label,
+                style: .inspector,
                 accessibilityID: accessibilityID
             )
             InspectorKeyframeControls(
@@ -20,26 +19,6 @@ struct InspectorKeyframePropertyControl: View {
                 accessibilityID: accessibilityID
             )
         }
-    }
-}
-
-struct InspectorKeyframeValueFields: View {
-    let clips: [Clip]
-    let property: AnimatableProperty
-    let label: String
-    let accessibilityID: String
-
-    var body: some View {
-        let fields = KeyframePropertyValueFields(clips: clips, property: property, style: .inspector)
-        Group {
-            if property == .position {
-                fields.accessibilityElement(children: .contain)
-            } else {
-                fields
-            }
-        }
-        .accessibilityLabel(label)
-        .accessibilityIdentifier(accessibilityID)
     }
 }
 

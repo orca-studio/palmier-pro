@@ -256,7 +256,7 @@ final class TimelineInputController {
             } else if isOption, !editor.selectedClipIds.contains(clip.id) {
                 editor.selectedClipIds = [clip.id]
             } else if !isOption, !editor.selectedClipIds.contains(clip.id) {
-                editor.selectedClipIds = linkedOn ? editor.expandToLinkGroup([clip.id]) : [clip.id]
+                editor.selectTimelineClip(clip.id, linked: linkedOn)
             }
 
             let isCommand = event.modifierFlags.contains(.command)

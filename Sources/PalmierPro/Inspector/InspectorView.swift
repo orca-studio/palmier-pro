@@ -722,7 +722,6 @@ struct InspectorView: View {
             InspectorKeyframePropertyControl(
                 clips: clips,
                 property: property,
-                label: label,
                 accessibilityID: accessibilityID
             )
         }

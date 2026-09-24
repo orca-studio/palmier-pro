@@ -22,7 +22,11 @@ struct HueCurveEditorView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             Picker(String(), selection: $channel) {
-                ForEach(HueCurves.Channel.allCases) { Text(channelTitle($0)).tag($0) }
+                ForEach(HueCurves.Channel.allCases) {
+                    Text(channelTitle($0))
+                        .accessibilityIdentifier("inspector.adjust.hueCurves.channel.\($0)")
+                        .tag($0)
+                }
             }
             .pickerStyle(.segmented)
             .labelsHidden()

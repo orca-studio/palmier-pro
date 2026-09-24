@@ -34,6 +34,12 @@ extension EditorViewModel {
 
     // MARK: - Group lookup
 
+    /// A plain click on a timeline clip: select it and its link group, clearing marker selection.
+    func selectTimelineClip(_ id: String, linked: Bool = true) {
+        selectedTimelineMarkerIds = []
+        selectedClipIds = linked ? expandToLinkGroup([id]) : [id]
+    }
+
     /// Returns every clip id sharing a link group with any id in `ids`,
     /// including the inputs themselves.
     func expandToLinkGroup(_ ids: Set<String>) -> Set<String> {

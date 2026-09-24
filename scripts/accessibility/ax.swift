@@ -5,6 +5,8 @@
 //   scripts/accessibility/ax.swift audit               interactive elements missing a valid identifier or a label
 //   scripts/accessibility/ax.swift press <identifier>  AXPress the element with that identifier
 //   scripts/accessibility/ax.swift find <identifier>   print the element's role, label, value, and frame
+//   scripts/accessibility/ax.swift set <identifier> <value>       set AXValue (e.g. a timecode for timeline.playhead)
+//   scripts/accessibility/ax.swift increment|decrement <identifier>
 //
 // The calling terminal needs Accessibility permission (System Settings → Privacy & Security).
 import AppKit
@@ -151,11 +153,24 @@ case "press":
     let result = AXUIElementPerformAction(node.element, kAXPressAction as CFString)
     guard result == .success else { fail("AXPress failed on \(args[1]): \(result.rawValue)") }
     print("pressed \(describe(node))")
+case "set":
+    guard args.count == 3 else { fail("usage: set <identifier> <value>") }
+    guard let node = find(args[1]) else { fail("No element with identifier \(args[1]).") }
+    let result = AXUIElementSetAttributeValue(node.element, kAXValueAttribute as CFString, args[2] as CFString)
+    guard result == .success else { fail("Setting value failed on \(args[1]): \(result.rawValue)") }
+    print(describe(find(args[1]) ?? node))
+case "increment", "decrement":
+    guard args.count == 2 else { fail("usage: \(args[0]) <identifier>") }
+    guard let node = find(args[1]) else { fail("No element with identifier \(args[1]).") }
+    let action = args[0] == "increment" ? kAXIncrementAction : kAXDecrementAction
+    let result = AXUIElementPerformAction(node.element, action as CFString)
+    guard result == .success else { fail("\(args[0]) failed on \(args[1]): \(result.rawValue)") }
+    print(describe(find(args[1]) ?? node))
 case "find":
     guard args.count == 2 else { fail("usage: find <identifier>") }
     guard let node = find(args[1]) else { fail("No element with identifier \(args[1]).") }
     print(describe(node))
     if let frame = node.frame { print("frame \(frame)") }
 default:
-    fail("usage: ax.swift dump [--all] | audit | press <identifier> | find <identifier>")
+    fail("usage: ax.swift dump [--all] | audit | press|find|increment|decrement <identifier> | set <identifier> <value>")
 }

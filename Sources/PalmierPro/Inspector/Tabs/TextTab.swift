@@ -147,10 +147,10 @@ struct TextTab: View {
                 }
             }
         ) {
-            InspectorKeyframeValueFields(
+            KeyframePropertyValueFields(
                 clips: clips,
                 property: .opacity,
-                label: L10n.string("Opacity"),
+                style: .inspector,
                 accessibilityID: "inspector.text.opacity"
             )
         }
@@ -169,10 +169,10 @@ struct TextTab: View {
                 }
             }
         ) {
-            InspectorKeyframeValueFields(
+            KeyframePropertyValueFields(
                 clips: clips,
                 property: .position,
-                label: L10n.string("Position"),
+                style: .inspector,
                 accessibilityID: "inspector.text.position"
             )
         }
@@ -234,10 +234,10 @@ struct TextTab: View {
                 }
             }
         ) {
-            InspectorKeyframeValueFields(
+            KeyframePropertyValueFields(
                 clips: clips,
                 property: .rotation,
-                label: L10n.string("Rotation"),
+                style: .inspector,
                 accessibilityID: "inspector.text.rotation"
             )
         }

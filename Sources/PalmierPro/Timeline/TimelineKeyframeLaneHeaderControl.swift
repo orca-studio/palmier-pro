@@ -20,7 +20,8 @@ struct TimelineKeyframeLaneHeaderControl: View {
             KeyframePropertyValueFields(
                 clips: clip.map { [$0] } ?? [],
                 property: property,
-                style: .timeline
+                style: .timeline,
+                accessibilityID: "timeline.track.\(trackId).\(property.rawValue)"
             )
             .disabled(clip == nil)
             .opacity(clip == nil ? AppTheme.Opacity.strong : AppTheme.Opacity.opaque)

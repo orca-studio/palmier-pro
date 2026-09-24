@@ -31,7 +31,11 @@ struct CurveEditorView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             Picker(String(), selection: $channel) {
-                ForEach(Channel.allCases) { Text($0.rawValue).tag($0) }
+                ForEach(Channel.allCases) {
+                    Text($0.rawValue)
+                        .accessibilityIdentifier("inspector.adjust.curves.channel.\($0)")
+                        .tag($0)
+                }
             }
             .pickerStyle(.segmented)
             .labelsHidden()

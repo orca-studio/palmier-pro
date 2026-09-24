@@ -524,7 +524,6 @@ struct TextStyleControls<AfterAlignment: View, AfterColor: View>: View {
             InspectorKeyframePropertyControl(
                 clips: keyframeClips,
                 property: .scale,
-                label: L10n.string("Size"),
                 accessibilityID: elementID("size") ?? ""
             )
         }
