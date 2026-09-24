@@ -107,6 +107,7 @@ extension InspectorView {
 
     private var detailControls: [EffectControl] {
         [
+            EffectControl(effectId: "detail.enhance", paramKey: "amount", label: L10n.string("Enhance")),
             EffectControl(effectId: "blur.sharpen", paramKey: "amount", label: L10n.string("Sharpen")),
             EffectControl(effectId: "blur.noiseReduction", paramKey: "amount", label: L10n.string("Noise Reduction")),
             EffectControl(effectId: "detail.clarity", paramKey: "clarity", label: L10n.string("Clarity")),

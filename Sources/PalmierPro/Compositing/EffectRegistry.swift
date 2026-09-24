@@ -245,26 +245,13 @@ enum EffectRegistry {
             id: "blur.sharpen", displayName: "Sharpen", category: "Blur & Sharpen",
             params: [EffectParamSpec(key: "amount", label: "Sharpness", range: 0...2,
                                      defaultValue: 0.4, unit: "")],
-            apply: { image, p, extent in
-                image.clampedToExtent()
-                    .applyingFilter("CISharpenLuminance", parameters: [
-                        kCIInputSharpnessKey: p.value("amount"),
-                    ])
-                    .cropped(to: extent)
-            }
+            apply: { image, p, extent in sharpened(image, amount: p.value("amount"), extent: extent) }
         ),
         EffectDescriptor(
             id: "blur.noiseReduction", displayName: "Noise Reduction", category: "Blur & Sharpen",
             params: [EffectParamSpec(key: "amount", label: "Noise Reduction", range: 0...1,
                                      defaultValue: 0, unit: "")],
-            apply: { image, p, _ in
-                let amount = p.value("amount")
-                guard amount > 0 else { return image }
-                return image.applyingFilter("CINoiseReduction", parameters: [
-                    "inputNoiseLevel": amount * 0.1,
-                    "inputSharpness": 0.4,
-                ])
-            }
+            apply: { image, p, _ in denoised(image, amount: p.value("amount")) }
         ),
         EffectDescriptor(
             id: "blur.motion", displayName: "Motion Blur", category: "Blur & Sharpen",
@@ -341,7 +328,35 @@ enum EffectRegistry {
         ),
     ]
 
+    static func sharpened(_ image: CIImage, amount: Double, extent: CGRect) -> CIImage {
+        image.clampedToExtent()
+            .applyingFilter("CISharpenLuminance", parameters: [kCIInputSharpnessKey: amount])
+            .cropped(to: extent)
+    }
+
+    static func denoised(_ image: CIImage, amount: Double) -> CIImage {
+        guard amount > 0 else { return image }
+        return image.applyingFilter("CINoiseReduction", parameters: [
+            "inputNoiseLevel": amount * 0.1,
+            "inputSharpness": 0.4,
+        ])
+    }
+
+    /// Share of each stage at full Enhance: denoise first so clarity and sharpening don't lift grain.
+    private static let enhanceMix = (denoise: 0.3, clarity: 0.35, sharpen: 0.6)
+
     private static let detail: [EffectDescriptor] = [
+        EffectDescriptor(
+            id: "detail.enhance", displayName: "Enhance", category: "Detail",
+            params: [EffectParamSpec(key: "amount", label: "Enhance", range: 0...1, defaultValue: 0.5, unit: "")],
+            apply: { image, p, extent in
+                let amount = p.value("amount")
+                guard amount > 0 else { return image }
+                let clean = denoised(image, amount: amount * enhanceMix.denoise)
+                let clear = ClarityKernel.apply(clean, extent: extent, clarity: amount * enhanceMix.clarity, dehaze: 0)
+                return sharpened(clear, amount: amount * enhanceMix.sharpen, extent: extent)
+            }
+        ),
         EffectDescriptor(
             id: "detail.clarity", displayName: "Clarity & Haze", category: "Detail",
             params: [
@@ -380,7 +395,7 @@ enum EffectRegistry {
     static let canonicalOrder: [String] = [
         "color.exposure", "color.contrast", "color.highlightsShadows", "color.blacksWhites",
         "color.temperature", "color.vibrance", "color.saturation", "color.wheels", "color.curves",
-        "color.hueCurves", "color.lut", "detail.clarity", "key.chroma", "blur.gaussian", "blur.sharpen",
+        "color.hueCurves", "color.lut", "detail.enhance", "detail.clarity", "key.chroma", "blur.gaussian", "blur.sharpen",
         "blur.noiseReduction", "blur.motion", "stylize.invert", "stylize.grain", "stylize.vignette",
         "stylize.glow",
     ]

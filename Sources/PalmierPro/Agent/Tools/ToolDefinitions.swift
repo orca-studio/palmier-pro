@@ -1084,7 +1084,8 @@ enum ToolDefinitions {
             to bypass one without removing it, or list its type in `remove` to delete it. Out-of-range params are \
             clamped; params you omit keep their current (or default) value. Effects render in a fixed canonical \
             order regardless of the order you pass them. Setting blur.gaussian.radius clears blur keyframes. \
-            Undoable. Returns the clips with their resulting \
+            For a one-step "improve quality" request use detail.enhance; its amount scales denoise, clarity, and \
+            sharpening together. Undoable. Returns the clips with their resulting \
             effects as [{type, params}] — the same shape this tool accepts, so copying effects between clips \
             is passing a clip's effects array back in.
 
