@@ -59,8 +59,34 @@ extension ToolExecutor {
         return v
     }
 
+    fileprivate static func linearMaskPatch(_ raw: Any) throws -> LinearMaskPatch {
+        guard let object = raw as? [String: Any] else { throw ToolError("linear: expected an object") }
+        try validateUnknownKeys(object, allowed: ["center", "rotation"], path: "linear")
+        var patch = LinearMaskPatch()
+        if let rawCenter = object["center"] {
+            guard let pair = rawCenter as? [Any], pair.count == 2 else {
+                throw ToolError("linear.center: expected [x, y] in 0–1 of the source box")
+            }
+            patch.center = (
+                try normalized(pair[0], at: "linear.center[0]"),
+                try normalized(pair[1], at: "linear.center[1]")
+            )
+        }
+        if let rawRotation = object["rotation"] {
+            let degrees = try ToolExecutor.kfDouble(rawRotation, at: "linear.rotation")
+            guard (-360...360).contains(degrees) else {
+                throw ToolError("linear.rotation: expected degrees between -360 and 360 (got \(degrees))")
+            }
+            patch.rotation = degrees
+        }
+        guard patch.center != nil || patch.rotation != nil else {
+            throw ToolError("linear: pass center, rotation, or both")
+        }
+        return patch
+    }
+
     func setMask(_ editor: EditorViewModel, _ args: [String: Any]) throws -> ToolResult {
-        try validateUnknownKeys(args, allowed: ["clipIds", "vertices", "feather", "inverted", "remove"], path: "set_mask")
+        try validateUnknownKeys(args, allowed: ["clipIds", "vertices", "linear", "feather", "inverted", "remove"], path: "set_mask")
         guard let clipIds = args["clipIds"] as? [String], !clipIds.isEmpty else {
             throw ToolError("set_mask requires a non-empty 'clipIds' array.")
         }
@@ -69,11 +95,16 @@ extension ToolExecutor {
         }
 
         let removing = args["remove"] as? Bool == true
-        if removing, args["vertices"] != nil {
-            throw ToolError("set_mask: pass either 'remove' or 'vertices', not both.")
+        let shapeFields = ["vertices", "linear"].filter { args[$0] != nil }
+        if removing, !shapeFields.isEmpty {
+            throw ToolError("set_mask: pass either 'remove' or a shape (\(shapeFields.joined(separator: ", "))), not both.")
+        }
+        if shapeFields.count > 1 {
+            throw ToolError("set_mask: pass either 'vertices' (path mask) or 'linear' (linear mask), not both.")
         }
 
         let vertices = try args["vertices"].map { try Self.maskVertices($0, path: "vertices") }
+        let linear = try args["linear"].map { try Self.linearMaskPatch($0) }
         let feather = try args["feather"].map { raw -> Double in
             let v = try ToolExecutor.kfDouble(raw, at: "feather")
             guard (0...1).contains(v) else { throw ToolError("feather: must be between 0 and 1 (got \(v))") }
@@ -81,8 +112,18 @@ extension ToolExecutor {
         }
         let inverted = args["inverted"] as? Bool
 
-        // Reject before mutating: changing the point count under a live track would
-        // silently break every keyframe's correspondence.
+        // Reject before mutating: changing the point count or the mask kind under a live
+        // track would silently break every keyframe's correspondence.
+        if linear != nil {
+            for id in clipIds {
+                guard let clip = editor.clipFor(id: id), let track = clip.maskTrack, track.isActive,
+                      track.keyframes[0].value.linear == nil else { continue }
+                throw ToolError(
+                    "Clip \(id) has an animated path mask; set_mask cannot turn it into a linear mask. "
+                    + "Clear it first with remove:true."
+                )
+            }
+        }
         if let vertices {
             for id in clipIds {
                 guard let clip = editor.clipFor(id: id), let track = clip.maskTrack, track.isActive else { continue }
@@ -97,8 +138,8 @@ extension ToolExecutor {
             }
         }
 
-        guard removing || vertices != nil || feather != nil || inverted != nil else {
-            throw ToolError("set_mask: nothing to change — pass vertices, feather, inverted, or remove.")
+        guard removing || vertices != nil || linear != nil || feather != nil || inverted != nil else {
+            throw ToolError("set_mask: nothing to change — pass vertices, linear, feather, inverted, or remove.")
         }
 
         var changed = false
@@ -112,15 +153,25 @@ extension ToolExecutor {
                         return
                     }
                     var shape = clip.mask ?? MaskShape()
-                    if let vertices { shape.vertices = vertices }
+                    if let vertices {
+                        shape.vertices = vertices
+                        shape.linear = nil
+                    }
+                    if let linear {
+                        shape.linear = linear.applied(to: shape.linear ?? LinearMaskGeometry())
+                        shape.vertices = []
+                    }
                     if let feather { shape.feather = feather }
                     if let inverted { shape.inverted = inverted }
                     if clip.mask != shape { changed = true }
                     clip.mask = shape
                     // A live track owns the animated path; only the static fields carry over.
-                    if let vertices, clip.maskTrack?.isActive == true {
+                    if clip.maskTrack?.isActive == true {
                         for i in clip.maskTrack!.keyframes.indices {
-                            clip.maskTrack!.keyframes[i].value.vertices = vertices
+                            if let vertices { clip.maskTrack!.keyframes[i].value.vertices = vertices }
+                            if let linear, let current = clip.maskTrack!.keyframes[i].value.linear {
+                                clip.maskTrack!.keyframes[i].value.linear = linear.applied(to: current)
+                            }
                         }
                     }
                 }
@@ -131,17 +182,43 @@ extension ToolExecutor {
             guard let clip = editor.clipFor(id: id) else { return nil }
             var row: [String: Any] = ["clipId": id]
             if let mask = clip.mask, mask.isRenderable, !removing {
-                row["mask"] = [
-                    "vertexCount": mask.vertices.count,
+                var receipt: [String: Any] = [
+                    "shape": mask.linear == nil ? "path" : "linear",
                     "feather": mask.feather,
                     "inverted": mask.inverted,
                     "animated": clip.maskTrack?.isActive ?? false,
                 ]
+                if let geometry = mask.linear {
+                    receipt["linear"] = LinearMaskPatch.receipt(geometry)
+                } else {
+                    receipt["vertexCount"] = mask.vertices.count
+                }
+                row["mask"] = receipt
             } else {
                 row["mask"] = NSNull()
             }
             return row
         }
         return .ok(Self.jsonString(["changed": changed, "clips": receipts]) ?? "{}")
+    }
+}
+
+/// Tool-facing linear mask edit: center in 0–1 of the source box, rotation in clockwise degrees.
+fileprivate struct LinearMaskPatch {
+    var center: (x: Double, y: Double)?
+    var rotation: Double?
+
+    func applied(to geometry: LinearMaskGeometry) -> LinearMaskGeometry {
+        var out = geometry
+        if let center {
+            out.centerX = (center.x - 0.5) * 2
+            out.centerY = (center.y - 0.5) * 2
+        }
+        if let rotation { out.rotation = rotation }
+        return out
+    }
+
+    static func receipt(_ geometry: LinearMaskGeometry) -> [String: Any] {
+        ["center": [geometry.centerX / 2 + 0.5, geometry.centerY / 2 + 0.5], "rotation": geometry.rotation]
     }
 }

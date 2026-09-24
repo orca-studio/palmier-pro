@@ -641,7 +641,7 @@ enum ToolDefinitions {
         ),
         AgentTool(
             name: .setMask,
-            description: "Limit a clip to the inside of a closed path — the shape-mask primitive behind masked reveals, local grades, and cut-out graphics. Combine with a solid-colour matte (import_media source.matte) to get a shape layer: the matte supplies the fill, this supplies the shape.\n\nVertices are 0–1 of the SOURCE's display box, not the canvas, so the mask rides with the clip through its transform — move or scale the clip and the mask follows. y runs downward from the top edge, matching crop. A vertex is `[x, y]`, or `{x, y, inControl: [dx, dy], outControl: [dx, dy]}` when it needs bezier handles (offsets relative to the vertex). At least 3 vertices; the path always closes.\n\nTo ANIMATE the path use set_keyframes with property 'maskPath'. Vertex count belongs to the whole track: once a mask is animated this tool can change feather, inversion, or vertex positions, but not how many vertices there are — replace the track or clear it with remove:true instead. Undoable.\n\nMasks render in video exports and are preserved in .palmier projects, but xml/fcpxml interchange omits them, the same as edge rounding.",
+            description: "Limit a clip to the inside of a closed path — the shape-mask primitive behind masked reveals, local grades, and cut-out graphics. Combine with a solid-colour matte (import_media source.matte) to get a shape layer: the matte supplies the fill, this supplies the shape.\n\nVertices are 0–1 of the SOURCE's display box, not the canvas, so the mask rides with the clip through its transform — move or scale the clip and the mask follows. y runs downward from the top edge, matching crop. A vertex is `[x, y]`, or `{x, y, inControl: [dx, dy], outControl: [dx, dy]}` when it needs bezier handles (offsets relative to the vertex). At least 3 vertices; the path always closes.\n\nFor a straight split — wipes, half-frame reveals, split-screen cut-outs — pass `linear` instead of vertices: a line through `center` that keeps one side. rotation 0 keeps the lower half, 90 the right half, 180 the upper half, -90 the left half; feather softens the edge and inverted keeps the other side. A partial linear object keeps the current center or rotation. vertices and linear replace each other.\n\nTo ANIMATE the path use set_keyframes with property 'maskPath'. Vertex count belongs to the whole track: once a mask is animated this tool can change feather, inversion, or vertex positions, but not how many vertices there are — replace the track or clear it with remove:true instead. Undoable.\n\nMasks render in video exports and are preserved in .palmier projects, but xml/fcpxml interchange omits them, the same as edge rounding.",
             inputSchema: objectSchema(
                 properties: [
                     "clipIds": ["type": "array", "items": ["type": "string"], "description": "Clip ids from get_timeline. Works on video, image, and text clips."],
@@ -650,9 +650,17 @@ enum ToolDefinitions {
                         "description": "Closed path, at least 3 entries. Each is [x, y] in 0–1 of the source box, or {x, y, inControl?, outControl?} for a curved anchor.",
                         "items": ["type": "array"],
                     ],
+                    "linear": [
+                        "type": "object",
+                        "description": "Linear mask instead of a path. Omitted fields keep the current linear values (center [0.5, 0.5] and rotation 0 for a new one).",
+                        "properties": [
+                            "center": ["type": "array", "items": ["type": "number"], "description": "[x, y] the line passes through, 0–1 of the source box."],
+                            "rotation": ["type": "number", "description": "Clockwise degrees, -360…360. 0 keeps the lower half; 90 keeps the right half."],
+                        ],
+                    ],
                     "feather": ["type": "number", "description": "Edge falloff, 0–1 of the source's shorter side. 0 is a hard edge."],
                     "inverted": ["type": "boolean", "description": "true keeps the OUTSIDE of the path instead of the inside."],
-                    "remove": ["type": "boolean", "description": "true clears the mask and any maskPath keyframes. Cannot be combined with vertices."],
+                    "remove": ["type": "boolean", "description": "true clears the mask and any maskPath keyframes. Cannot be combined with vertices or linear."],
                 ],
                 required: ["clipIds"]
             )
