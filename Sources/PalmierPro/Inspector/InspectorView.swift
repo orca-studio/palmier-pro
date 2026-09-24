@@ -436,6 +436,7 @@ struct InspectorView: View {
         MaskInspectorSection(clip: clips.count == 1 ? clips.first : nil)
             .id(clips.count == 1 ? clips.first?.id : nil)
         imageAdjustmentSection(clips: clips)
+        ClipAnimationInspectorSection(clips: clips.filter(\.supportsClipAnimation))
         speedSection(clips: (clips + audioClips).filter(\.supportsRetiming))
     }
 

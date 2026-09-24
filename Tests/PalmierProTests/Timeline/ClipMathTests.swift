@@ -187,13 +187,13 @@ struct ClipMathTests {
         #expect(clip.opacityAt(frame: 5) == 0.5)
     }
 
-    // MARK: - clampFadesToDuration / setFade
+    // MARK: - clampEdgeRampsToDuration / setFade
 
     @Test func clampClipsFadesToDuration() {
         var clip = Fixtures.clip(start: 0, duration: 100)
         clip.fadeInFrames = 80
         clip.fadeOutFrames = 80
-        clip.clampFadesToDuration()
+        clip.clampEdgeRampsToDuration()
         // fadeOut clamps to remainder after fadeIn: 100 - 80 = 20.
         #expect(clip.fadeInFrames == 80)
         #expect(clip.fadeOutFrames == 20)

@@ -179,6 +179,7 @@ extension EditorViewModel {
         clip.opacity != 1 || clip.crop != Crop() || clip.edgeRounding != 0 || clip.edgeSoftness != 0
             || clip.effects?.isEmpty == false
             || clip.fadeInFrames > 0 || clip.fadeOutFrames > 0 || clip.blendMode != nil
+            || clip.inAnimation != nil || clip.outAnimation != nil
             || clip.opacityTrack != nil || clip.positionTrack != nil || clip.scaleTrack != nil
             || clip.rotationTrack != nil || clip.cropTrack != nil
             || clip.transform != fitTransform(sourceWidth: child.width, sourceHeight: child.height)

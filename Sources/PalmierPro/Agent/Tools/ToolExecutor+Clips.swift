@@ -83,6 +83,8 @@ fileprivate struct SetClipPropertiesInput: DecodableToolArgs {
     let transform: ParsedTransform?
     let crop: ParsedCrop?
     let blendMode: String?
+    let inAnimation: ParsedClipAnimation?
+    let outAnimation: ParsedClipAnimation?
 
     static let allowedKeys: Set<String> = Set([
         "clipIds",
@@ -92,6 +94,7 @@ fileprivate struct SetClipPropertiesInput: DecodableToolArgs {
         "edgeRounding", "edgeSoftness",
         "transform", "crop",
         "blendMode",
+        "inAnimation", "outAnimation",
     ])
 
     var hasAnyProperty: Bool {
@@ -103,6 +106,25 @@ fileprivate struct SetClipPropertiesInput: DecodableToolArgs {
             || transform?.hasAnyField == true
             || crop?.hasAnyField == true
             || blendMode != nil
+            || inAnimation != nil || outAnimation != nil
+    }
+}
+
+fileprivate struct ParsedClipAnimation: Decodable {
+    let preset: String
+    let durationFrames: Int?
+
+    static let allowedKeys: Set<String> = ["preset", "durationFrames"]
+}
+
+/// nil leaves the animation untouched.
+fileprivate enum ClipAnimationPatch {
+    case clear
+    case set(ClipAnimation)
+
+    var animation: ClipAnimation? {
+        if case .set(let animation) = self { return animation }
+        return nil
     }
 }
 
@@ -613,6 +635,17 @@ extension ToolExecutor {
                 path: "set_clip_properties.crop"
             )
         }
+        for field in ["inAnimation", "outAnimation"] {
+            guard let raw = args[field] else { continue }
+            guard let animation = raw as? [String: Any] else {
+                throw ToolError("set_clip_properties.\(field): expected object")
+            }
+            try validateUnknownKeys(
+                animation,
+                allowed: ParsedClipAnimation.allowedKeys,
+                path: "set_clip_properties.\(field)"
+            )
+        }
         let input: SetClipPropertiesInput = try decodeToolArgs(args, path: "set_clip_properties")
         let clipIds = input.clipIds ?? []
         guard !clipIds.isEmpty else { throw ToolError("Provide a non-empty 'clipIds' array") }
@@ -690,6 +723,33 @@ extension ToolExecutor {
                     throw ToolError(
                         "Fades for clip \(id) must fit within its resulting duration of \(candidate.durationFrames) frames "
                             + "(fadeInFrames \(fadeInFrames) + fadeOutFrames \(fadeOutFrames))"
+                    )
+                }
+            }
+        }
+
+        let inAnimation = try Self.clipAnimationPatch(input.inAnimation, field: "inAnimation")
+        let outAnimation = try Self.clipAnimationPatch(input.outAnimation, field: "outAnimation")
+        if inAnimation != nil || outAnimation != nil {
+            let unsupported = targetClips.filter { !$0.value.supportsClipAnimation }.map(\.key).sorted()
+            if !unsupported.isEmpty {
+                throw ToolError("inAnimation and outAnimation apply to video, image, Lottie, and nested timeline clips; text clips use update_text animation: \(unsupported.joined(separator: ", "))")
+            }
+            for id in clipIds {
+                guard var candidate = targetClips[id] else { continue }
+                _ = Self.applyTimingChanges(
+                    durationFrames: input.durationFrames,
+                    trimStartFrame: input.trimStartFrame,
+                    trimEndFrame: input.trimEndFrame,
+                    speed: input.speed,
+                    to: &candidate
+                )
+                let inFrames = (inAnimation.map(\.animation) ?? candidate.inAnimation)?.durationFrames ?? 0
+                let outFrames = (outAnimation.map(\.animation) ?? candidate.outAnimation)?.durationFrames ?? 0
+                guard inFrames + outFrames <= candidate.durationFrames else {
+                    throw ToolError(
+                        "Animations for clip \(id) must fit within its resulting duration of \(candidate.durationFrames) frames "
+                            + "(inAnimation \(inFrames) + outAnimation \(outFrames))"
                     )
                 }
             }
@@ -784,6 +844,8 @@ extension ToolExecutor {
                     crop: crops[id],
                     blendMode: blendMode,
                     setBlendMode: setBlendMode,
+                    inAnimation: inAnimation,
+                    outAnimation: outAnimation,
                     clipId: id,
                     editor: editor
                 )
@@ -802,6 +864,7 @@ extension ToolExecutor {
                     fadeInInterpolation: nil, fadeOutInterpolation: nil,
                     edgeRounding: nil, edgeSoftness: nil, transform: nil, crop: nil,
                     blendMode: nil, setBlendMode: false,
+                    inAnimation: nil, outAnimation: nil,
                     clipId: partnerId,
                     editor: editor
                 )
@@ -834,6 +897,8 @@ extension ToolExecutor {
         crop: Crop?,
         blendMode: BlendMode?,
         setBlendMode: Bool,
+        inAnimation: ClipAnimationPatch?,
+        outAnimation: ClipAnimationPatch?,
         clipId: String,
         editor: EditorViewModel
     ) -> [String] {
@@ -866,6 +931,8 @@ extension ToolExecutor {
             if let v = edgeRounding { clip.edgeRounding = v; changed.append("edgeRounding") }
             if let v = edgeSoftness { clip.edgeSoftness = v; changed.append("edgeSoftness") }
             if setBlendMode           { clip.blendMode = blendMode; changed.append("blendMode") }
+            if let inAnimation  { clip.inAnimation = inAnimation.animation; changed.append("inAnimation") }
+            if let outAnimation { clip.outAnimation = outAnimation.animation; changed.append("outAnimation") }
             if let t = transform {
                 t.apply(to: &clip)
                 changed.append("transform")
@@ -915,6 +982,24 @@ extension ToolExecutor {
             throw ToolError("\(field) must be 'linear' or 'smooth' (got '\(rawValue)')")
         }
         return value
+    }
+
+    private static func clipAnimationPatch(_ parsed: ParsedClipAnimation?, field: String) throws -> ClipAnimationPatch? {
+        guard let parsed else { return nil }
+        if parsed.preset == "none" {
+            guard parsed.durationFrames == nil else {
+                throw ToolError("\(field).durationFrames must be omitted when preset is 'none'")
+            }
+            return .clear
+        }
+        guard let preset = ClipAnimation.Preset(rawValue: parsed.preset) else {
+            let valid = ["none"] + ClipAnimation.Preset.allCases.map(\.rawValue)
+            throw ToolError("\(field).preset must be one of \(valid.joined(separator: ", ")) (got '\(parsed.preset)')")
+        }
+        guard let frames = parsed.durationFrames, frames >= 1 else {
+            throw ToolError("\(field).durationFrames must be a positive integer")
+        }
+        return .set(ClipAnimation(preset: preset, durationFrames: frames))
     }
 
     // MARK: copy_clip_settings

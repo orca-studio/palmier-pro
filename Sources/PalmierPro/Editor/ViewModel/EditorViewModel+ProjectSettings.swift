@@ -210,8 +210,9 @@ extension Timeline {
                 clip.rescaleKeyframes(by: scale)
                 clip.fadeInFrames = Int((Double(clip.fadeInFrames) * scale).rounded())
                 clip.fadeOutFrames = Int((Double(clip.fadeOutFrames) * scale).rounded())
+                clip.rescaleAnimations(by: scale)
                 clip.clampKeyframesToDuration()
-                clip.clampFadesToDuration()
+                clip.clampEdgeRampsToDuration()
                 tracks[ti].clips[ci] = clip
                 previousEnd = clip.endFrame
             }

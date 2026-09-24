@@ -175,8 +175,8 @@
 "Chat with your agent! It can generate content, edit clips, organize your assets, and much more. Start by signing in, or bring your own Anthropic API key." = "Chat with your agent! It can generate content, edit clips, organize your assets, and much more. Start by signing in, or bring your own Anthropic API key.";
 "Check for Updates…" = "Check for Updates…";
 "Check the marker name, position, and duration." = "Check the marker name, position, and duration.";
-"Choose a .cube LUT file" = "Choose a .cube LUT file";
 "Choose a crop aspect" = "Choose a crop aspect";
+"Choose a mask shape to begin." = "Choose a mask shape to begin.";
 "Choose animation clip color" = "Choose animation clip color";
 "Choose audio clip color" = "Choose audio clip color";
 "Choose color" = "Choose color";
@@ -193,7 +193,6 @@
 "Clean Up Voice…" = "Clean Up Voice…";
 "Clear Filters" = "Clear Filters";
 "Clear Finished" = "Clear Finished";
-"Clear Mask" = "Clear Mask";
 "Clear Range" = "Clear Range";
 "Clear Search" = "Clear Search";
 "Clear cache" = "Clear cache";
@@ -201,6 +200,7 @@
 "Clear search" = "Clear search";
 "Clearing…" = "Clearing…";
 "Click Generate to open the generation panel." = "Click Generate to open the generation panel.";
+"Click on the canvas to draw a path. Click the first point to close." = "Click on the canvas to draw a path. Click the first point to close.";
 "Click to install update" = "Click to install update";
 "Clip" = "Clip";
 "Clip Settings Mismatch" = "Clip Settings Mismatch";
@@ -346,6 +346,7 @@
 "Edit doesn't support subtitles" = "Edit doesn't support subtitles";
 "Edit doesn't support text" = "Edit doesn't support text";
 "Edit model not available" = "Edit model not available";
+"Edit on Canvas" = "Edit on Canvas";
 "Edit supports up to %llds (this is %llds)" = "Edit supports up to %llds (this is %llds)";
 "Editing" = "Editing";
 "Edit…" = "Edit…";
@@ -354,6 +355,7 @@
 "Effects" = "Effects";
 "Email (optional)" = "Email (optional)";
 "Empty" = "Empty";
+"Enable Mask" = "Enable Mask";
 "Enable: %@" = "Enable: %@";
 "Enhance" = "Enhance";
 "Enhance resolution or frame rate with AI" = "Enhance resolution or frame rate with AI";
@@ -380,7 +382,6 @@
 "Fade Out" = "Fade Out";
 "Failed" = "Failed";
 "Feather" = "Feather";
-"Feather %lld%%" = "Feather %lld%%";
 "Featured" = "Featured";
 "Feedback" = "Feedback";
 "File" = "File";
@@ -484,6 +485,8 @@
 "Import Media…" = "Import Media…";
 "Import footage" = "Import footage";
 "Import your footage here, or drag and drop, or copy-paste, into the media panel." = "Import your footage here, or drag and drop, or copy-paste, into the media panel.";
+"Import…" = "Import…";
+"In" = "In";
 "Include screenshot" = "Include screenshot";
 "Index" = "Index";
 "Indexes imported media for on-device search." = "Indexes imported media for on-device search.";
@@ -515,7 +518,6 @@
 "Jump to Playhead" = "Jump to Playhead";
 "Keep Current" = "Keep Current";
 "Keep Editing" = "Keep Editing";
-"Keep Inside" = "Keep Inside";
 "Keep Skill" = "Keep Skill";
 "Keep the best takes" = "Keep the best takes";
 "Keeps this much audio before and after detected speech." = "Keeps this much audio before and after detected speech.";
@@ -542,6 +544,7 @@
 "Lighten" = "Lighten";
 "Line Spacing" = "Line Spacing";
 "Linear" = "Linear";
+"Linear Mask" = "Linear Mask";
 "Link" = "Link";
 "Lip Sync" = "Lip Sync";
 "Lip Sync model not available" = "Lip Sync model not available";
@@ -582,7 +585,10 @@
 "Marker name" = "Marker name";
 "Markers" = "Markers";
 "Marketer" = "Marketer";
-"Mask options" = "Mask options";
+"Mask" = "Mask";
+"Mask Feather" = "Mask Feather";
+"Mask Parameters" = "Mask Parameters";
+"Mask applies to one clip at a time" = "Mask applies to one clip at a time";
 "Master Audio Meter" = "Master Audio Meter";
 "Master — defines the group's clock and transcript." = "Master — defines the group's clock and transcript.";
 "Match Timeline" = "Match Timeline";
@@ -617,6 +623,7 @@
 "More skill actions" = "More skill actions";
 "Motion Blur" = "Motion Blur";
 "Move Clip to New Track" = "Move Clip to New Track";
+"Move Linear Mask" = "Move Linear Mask";
 "Move playhead inside the clip" = "Move playhead inside the clip";
 "Move to Folder" = "Move to Folder";
 "Multicam" = "Multicam";
@@ -637,7 +644,6 @@
 "Newer timeline format with better support for DaVinci Resolve and Final Cut Pro. Supports basic edits, keyframes, and text, but not color, effects, edge softness, or edge rounding." = "Newer timeline format with better support for DaVinci Resolve and Final Cut Pro. Supports basic edits, keyframes, and text, but not color, effects, edge softness, or edge rounding.";
 "Next" = "Next";
 "No Community Skills" = "No Community Skills";
-"No Feather" = "No Feather";
 "No Installed Skills" = "No Installed Skills";
 "No Matching Skills" = "No Matching Skills";
 "No Tracks" = "No Tracks";
@@ -693,6 +699,7 @@
 "Original" = "Original";
 "Original FPS" = "Original FPS";
 "Other" = "Other";
+"Out" = "Out";
 "Outline" = "Outline";
 "Outline Color" = "Outline Color";
 "Outline Width" = "Outline Width";
@@ -707,6 +714,7 @@
 "Paste Clip Settings" = "Paste Clip Settings";
 "Paste Settings" = "Paste Settings";
 "Path" = "Path";
+"Path Mask" = "Path Mask";
 "Per line" = "Per line";
 "Per word" = "Per word";
 "PiP Bottom Left" = "PiP Bottom Left";
@@ -812,6 +820,7 @@
 "Ripple Timeline Markers" = "Ripple Timeline Markers";
 "Ripple Trim" = "Ripple Trim";
 "Ripple-deletes every silent section; downstream clips close the gaps." = "Ripple-deletes every silent section; downstream clips close the gaps.";
+"Rotate Linear Mask" = "Rotate Linear Mask";
 "Rotation" = "Rotation";
 "Roundness" = "Roundness";
 "Run this command once in Terminal." = "Run this command once in Terminal.";
@@ -909,6 +918,9 @@
 "Skip" = "Skip";
 "Skip Backward" = "Skip Backward";
 "Skip Forward" = "Skip Forward";
+"Slide Down" = "Slide Down";
+"Slide Left" = "Slide Left";
+"Slide Right" = "Slide Right";
 "Slide Up" = "Slide Up";
 "Small" = "Small";
 "Smart search" = "Smart search";
@@ -1146,25 +1158,3 @@
 "using OpenAI API key" = "using OpenAI API key";
 "you@example.com — so we can reply" = "you@example.com — so we can reply";
 "“%@” is offline." = "“%@” is offline.";
-
-"Linear Mask" = "Linear Mask";
-
-"Draw Path Mask" = "Draw Path Mask";
-
-"Move Linear Mask" = "Move Linear Mask";
-
-"Enable Mask" = "Enable Mask";
-
-"Path Mask" = "Path Mask";
-
-"Mask Parameters" = "Mask Parameters";
-
-"Mask Feather" = "Mask Feather";
-
-"Edit on Canvas" = "Edit on Canvas";
-
-"Rotate Linear Mask" = "Rotate Linear Mask";
-
-"Choose a mask shape to begin." = "Choose a mask shape to begin.";
-
-"Click on the canvas to draw a path. Click the first point to close." = "Click on the canvas to draw a path. Click the first point to close.";

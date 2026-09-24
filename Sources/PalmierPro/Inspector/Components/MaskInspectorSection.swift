@@ -25,14 +25,14 @@ struct MaskInspectorSection: View {
             if let clip {
                 let shape = clip.maskAt(frame: editor.activeFrame)
                 HStack(spacing: AppTheme.Spacing.sm) {
-                    shapeButton("Linear Mask", symbol: "rectangle.split.1x2", selected: shape?.linear != nil) {
+                    shapeButton(L10n.key("Linear Mask"), symbol: "rectangle.split.1x2", selected: shape?.linear != nil) {
                         if shape?.linear != nil {
                             editor.setMaskEnabled(clipId: clip.id, enabled: true)
                             editor.cropEditingActive = false
                             editor.maskEditingActive = true
                         } else { editor.beginMaskEditing(clipId: clip.id, linear: true) }
                     }
-                    shapeButton("Path Mask", symbol: "point.topleft.down.to.point.bottomright.curvepath",
+                    shapeButton(L10n.key("Path Mask"), symbol: "point.topleft.down.to.point.bottomright.curvepath",
                                 selected: shape?.linear == nil && (shape != nil || editor.maskEditingActive)) {
                         if shape != nil && shape?.linear == nil {
                             editor.setMaskEnabled(clipId: clip.id, enabled: true)

@@ -155,14 +155,14 @@ extension EditorViewModel {
         var left = clip
         left.durationFrames = splitOffset
         left.trimEndFrame = clip.trimEndFrame + rightSource
-        left.fadeOutFrames = 0
+        left.clearTailRamps()
 
         var right = clip
         right.id = UUID().uuidString
         right.startFrame = atFrame
         right.durationFrames = clip.durationFrames - splitOffset
         right.trimStartFrame = clip.trimStartFrame + leftSource
-        right.fadeInFrames = 0
+        right.clearHeadRamps()
 
         (left.opacityTrack,  right.opacityTrack)  = splitKeyframeTrack(clip.opacityTrack,  at: splitOffset, fallback: clip.opacity)
         (left.volumeTrack,   right.volumeTrack)   = splitKeyframeTrack(clip.volumeTrack,   at: splitOffset, fallback: clip.volume)
@@ -177,8 +177,8 @@ extension EditorViewModel {
         )
         left.setBlurKeyframeTrack(blurTracks.left)
         right.setBlurKeyframeTrack(blurTracks.right)
-        left.clampFadesToDuration()
-        right.clampFadesToDuration()
+        left.clampEdgeRampsToDuration()
+        right.clampEdgeRampsToDuration()
         return (left, right)
     }
 
@@ -290,7 +290,7 @@ extension EditorViewModel {
         timeline.tracks[ti].clips[loc.clipIndex].rescaleWordTimings(from: oldDuration)
         timeline.tracks[ti].clips[loc.clipIndex].rescaleKeyframes(by: Double(newDuration) / Double(oldDuration))
         timeline.tracks[ti].clips[loc.clipIndex].clampKeyframesToDuration()
-        timeline.tracks[ti].clips[loc.clipIndex].clampFadesToDuration()
+        timeline.tracks[ti].clips[loc.clipIndex].clampEdgeRampsToDuration()
 
         let rippleDelta = (clip.startFrame + newDuration) - oldEnd
         if ripple, rippleDelta != 0 {

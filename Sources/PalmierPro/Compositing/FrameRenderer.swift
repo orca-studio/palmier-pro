@@ -332,7 +332,7 @@ enum FrameRenderer {
             edgeSoftness: clip.edgeSoftness
         )
 
-        let t = clip.transformAt(frame: frame)
+        let t = clip.presentedTransformAt(frame: frame)
         let av = layer.preferredTransform.concatenating(
             CompositionBuilder.affineTransform(for: t, natSize: layer.natSize, renderSize: renderSize)
         )

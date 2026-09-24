@@ -247,6 +247,7 @@ enum MulticamEngine {
             && a.effects == b.effects
             && a.blendMode == b.blendMode
             && a.fadeOutFrames == 0 && b.fadeInFrames == 0
+            && a.outAnimation == nil && b.inAnimation == nil
             && !a.hasKeyframes && !b.hasKeyframes
     }
 
@@ -263,6 +264,7 @@ enum MulticamEngine {
                 clips[i].durationFrames += clips[i + 1].durationFrames
                 clips[i].trimEndFrame = clips[i + 1].trimEndFrame
                 clips[i].fadeOutFrames = clips[i + 1].fadeOutFrames
+                clips[i].outAnimation = clips[i + 1].outAnimation
                 clips.remove(at: i + 1)
                 merged += 1
             } else {

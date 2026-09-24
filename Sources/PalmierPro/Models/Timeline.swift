@@ -176,6 +176,8 @@ struct Clip: Codable, Sendable, Equatable, Identifiable {
     var fadeOutFrames: Int = 0
     var fadeInInterpolation: Interpolation = .linear
     var fadeOutInterpolation: Interpolation = .linear
+    var inAnimation: ClipAnimation?
+    var outAnimation: ClipAnimation?
     var opacity: Double = 1.0
     var transform: Transform = Transform()
     var crop: Crop = Crop()
@@ -213,6 +215,7 @@ struct Clip: Codable, Sendable, Equatable, Identifiable {
         case id, mediaRef, mediaType, sourceClipType, startFrame, durationFrames
         case trimStartFrame, trimEndFrame, speed, volume
         case fadeInFrames, fadeOutFrames, fadeInInterpolation, fadeOutInterpolation
+        case inAnimation, outAnimation
         case opacity, transform, crop, edgeRounding, edgeSoftness, mask, maskEnabled
         case linkGroupId, captionGroupId, multicamGroupId, textContent, textStyle, textAnimation, wordTimings
         case textFillMode
@@ -235,7 +238,7 @@ struct Clip: Codable, Sendable, Equatable, Identifiable {
     private func keyframeOffset(forFrame frame: Int) -> Int { frame - startFrame }
 
     func opacityAt(frame: Int) -> Double {
-        let base = rawOpacityAt(frame: frame)
+        let base = rawOpacityAt(frame: frame) * animationOpacityMultiplier(at: frame)
         guard mediaType != .audio, fadeInFrames > 0 || fadeOutFrames > 0 else { return base }
         return base * fadeMultiplier(at: frame)
     }
@@ -463,10 +466,11 @@ extension Clip {
         return normalized.keyframes.isEmpty ? nil : normalized
     }
 
-    /// Clamp fade ramps so head + tail can't exceed the clip's duration.
-    mutating func clampFadesToDuration() {
+    /// Clamp fades and animations so each edge pair fits the clip's duration.
+    mutating func clampEdgeRampsToDuration() {
         fadeInFrames = max(0, min(fadeInFrames, durationFrames))
         fadeOutFrames = max(0, min(fadeOutFrames, durationFrames - fadeInFrames))
+        clampAnimationsToDuration()
     }
 
     mutating func rescaleWordTimings(from oldDuration: Int) {
@@ -486,7 +490,7 @@ extension Clip {
         case .left:  fadeInFrames  = v
         case .right: fadeOutFrames = v
         }
-        clampFadesToDuration()
+        clampEdgeRampsToDuration()
     }
 
     mutating func setFadeInterpolation(_ edge: FadeEdge, _ interpolation: Interpolation) {
@@ -509,7 +513,7 @@ extension Clip {
         durationFrames = newDuration
         rescaleWordTimings(from: oldDuration)
         clampKeyframesToDuration()
-        clampFadesToDuration()
+        clampEdgeRampsToDuration()
     }
 
     init(from decoder: Decoder) throws {
@@ -533,6 +537,8 @@ extension Clip {
             fadeOutFrames: (try? c.decode(Int.self, forKey: .fadeOutFrames)) ?? 0,
             fadeInInterpolation: (try? c.decode(Interpolation.self, forKey: .fadeInInterpolation)) ?? .linear,
             fadeOutInterpolation: (try? c.decode(Interpolation.self, forKey: .fadeOutInterpolation)) ?? .linear,
+            inAnimation: try? c.decode(ClipAnimation.self, forKey: .inAnimation),
+            outAnimation: try? c.decode(ClipAnimation.self, forKey: .outAnimation),
             opacity: (try? c.decode(Double.self, forKey: .opacity)) ?? 1.0,
             transform: (try? c.decode(Transform.self, forKey: .transform)) ?? Transform(),
             crop: (try? c.decode(Crop.self, forKey: .crop)) ?? Crop(),
