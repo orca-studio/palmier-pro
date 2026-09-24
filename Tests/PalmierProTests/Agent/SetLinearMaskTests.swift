@@ -80,4 +80,33 @@ struct SetLinearMaskTests {
         #expect(ToolHarness.textOf(result).contains("remove:true"))
         #expect(h.editor.clipFor(id: "v")?.mask?.linear == nil)
     }
+
+    private func readMask(_ h: ToolHarness) async throws -> [String: Any] {
+        let timeline = try #require(try await h.runOK("get_timeline") as? [String: Any])
+        let tracks = try #require(timeline["tracks"] as? [[String: Any]])
+        let clip = try #require((tracks.first?["clips"] as? [[String: Any]])?.first)
+        return try #require(clip["mask"] as? [String: Any])
+    }
+
+    @Test func getTimelineReadsLinearMasksBackInTheSetMaskShape() async throws {
+        let h = harness()
+        _ = try await h.runOK("set_mask", args: ["clipIds": ["v"], "linear": ["center": [0.75, 0.25], "rotation": 90], "inverted": true])
+
+        let mask = try await readMask(h)
+
+        let linear = try #require(mask["linear"] as? [String: Any])
+        #expect(linear["center"] as? [Double] == [0.75, 0.25])
+        #expect(linear["rotation"] as? Double == 90)
+        #expect(mask["inverted"] as? Bool == true)
+        #expect(mask["vertices"] == nil)
+    }
+
+    @Test func getTimelineReadsPathMasksAsVertexPairs() async throws {
+        let h = harness()
+        _ = try await h.runOK("set_mask", args: ["clipIds": ["v"], "vertices": [[0.1, 0.2], [0.9, 0.2], [0.5, 0.8]]])
+
+        let mask = try await readMask(h)
+
+        #expect(mask["vertices"] as? [[Double]] == [[0.1, 0.2], [0.9, 0.2], [0.5, 0.8]])
+    }
 }

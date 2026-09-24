@@ -16,7 +16,7 @@ extension ToolName {
              .undo, .manageMulticam, .changeCam, .addTexts, .updateText, .addCaptions,
              .applyColor, .applyEffect, .denoiseAudio, .trackSubject:
             return .edit(idempotent: false)
-        case .manageMarkers, .manageTracks, .organizeMedia, .addClips, .moveClips, .removeClips,
+        case .manageMarkers, .manageTracks, .organizeMedia, .addClips, .duplicateClips, .moveClips, .removeClips,
              .rippleDeleteRanges, .swapClipMedia, .removeWords, .removeSilence, .manageSkills:
             return .destructive
         case .importMedia, .importSourceAsset, .exportProject, .sendFeedback,

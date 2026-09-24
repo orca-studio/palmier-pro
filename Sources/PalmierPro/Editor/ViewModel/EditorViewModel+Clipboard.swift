@@ -118,6 +118,57 @@ extension EditorViewModel {
     }
 }
 
+enum ClipDuplicatePlacement: String {
+    /// New tracks beside each source track: above for video, below for audio.
+    case newTracks
+    /// The source tracks, shifted in time.
+    case sameTracks
+}
+
+extension EditorViewModel {
+    /// Duplicates `ids` shifted by `frameDelta` as one undoable action; returns source id → copy id.
+    /// Callers pass link-group-expanded ids so partners stay linked, as with Option-drag.
+    func duplicateClips(
+        _ ids: [String],
+        frameDelta: Int,
+        placement: ClipDuplicatePlacement,
+        actionName: String
+    ) -> [String: String] {
+        let sources: [(clip: Clip, trackId: String)] = ids.compactMap { id in
+            guard let loc = findClip(id: id) else { return nil }
+            return (timeline.tracks[loc.trackIndex].clips[loc.clipIndex], timeline.tracks[loc.trackIndex].id)
+        }
+        guard !sources.isEmpty else { return [:] }
+
+        return undo.perform(actionName) {
+            var destination: [String: String] = [:]
+            let sourceTrackIds = Set(sources.map(\.trackId))
+            switch placement {
+            case .sameTracks:
+                for trackId in sourceTrackIds { destination[trackId] = trackId }
+            case .newTracks:
+                // Bottom-up, so each insertion leaves the pending source indices intact.
+                let ordered = sourceTrackIds
+                    .compactMap { id in timeline.tracks.firstIndex { $0.id == id }.map { (id, $0) } }
+                    .sorted { $0.1 > $1.1 }
+                for (trackId, index) in ordered {
+                    let type = timeline.tracks[index].type
+                    let inserted = insertTrack(at: type == .audio ? index + 1 : index, type: type)
+                    guard timeline.tracks.indices.contains(inserted) else { continue }
+                    destination[trackId] = timeline.tracks[inserted].id
+                }
+            }
+            let placements = sources.compactMap { source in
+                destination[source.trackId].map {
+                    ClonePlacement(source: source.clip, trackId: $0, dstStart: source.clip.startFrame + frameDelta)
+                }
+            }
+            let copies = cloneClipsAt(placements, actionName: actionName)
+            return Dictionary(uniqueKeysWithValues: zip(placements.map(\.source.id), copies))
+        }
+    }
+}
+
 private struct ClonePlacement {
     let source: Clip
     let trackId: String

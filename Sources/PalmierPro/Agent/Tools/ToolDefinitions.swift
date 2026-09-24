@@ -35,6 +35,7 @@ enum ToolName: String, CaseIterable, Sendable {
     case swapClipMedia = "swap_clip_media"
     case setClipProperties = "set_clip_properties"
     case copyClipSettings = "copy_clip_settings"
+    case duplicateClips = "duplicate_clips"
     case setKeyframes = "set_keyframes"
     case setMask = "set_mask"
     case trackSubject = "track_subject"
@@ -592,8 +593,20 @@ enum ToolDefinitions {
             )
         ),
         AgentTool(
+            name: .duplicateClips,
+            description: "Duplicate clips exactly — media, trims, speed, transform, crop, mask, effects and color, fades, keyframes, text, and entrance/exit animations — as one undoable action, the same copy the timeline makes with Option-drag or copy/paste. Use it for \"duplicate this clip\", \"stack a copy on top\", \"make a second layer of this shot\", or \"reuse this shot later\", instead of re-adding the media with add_clips and copying settings, which loses keyframes, speed, fades, masks, and links.\n\nLinked partners (a video's audio) are duplicated with it so the copies stay linked; the receipt lists them.\n\nplacement 'newTracks' (default) puts the copies on new tracks beside their sources — above for video, below for audio — at the same time, or at startFrame. placement 'sameTracks' keeps the source tracks and requires a startFrame that moves the copies off the originals; like pasting, anything already in the destination range is overwritten.\n\nstartFrame is where the earliest duplicated clip lands; the rest keep their relative offsets. The receipt maps each sourceClipId to its new clipId. Multicam membership is not copied.",
+            inputSchema: objectSchema(
+                properties: [
+                    "clipIds": ["type": "array", "items": ["type": "string"], "description": "Clips to duplicate, from get_timeline."],
+                    "startFrame": ["type": "integer", "minimum": 0, "description": "Optional timeline frame for the earliest copy. Defaults to the originals' timing."],
+                    "placement": ["type": "string", "enum": ["newTracks", "sameTracks"], "description": "newTracks (default) stacks copies on new tracks; sameTracks moves them along the source tracks and needs startFrame."],
+                ],
+                required: ["clipIds"]
+            )
+        ),
+        AgentTool(
             name: .copyClipSettings,
-            description: "Copy one clip's static settings to one or more clips of the same media type in a single undoable action. Use for requests such as \"make these shots look like that one,\" \"use this title style,\" or \"give these audio clips the same treatment.\"\n\nChoose exactly one target mode. targetClipIds applies to an explicit list and refuses any mismatched media type. targetTrack selects every same-type clip on one stable trackId; add range [startFrame, endFrame) to limit it to clips intersecting that part of the timeline. Track mode excludes the source and mismatched clips, returns compact matched/changed/unchanged/incompatible counts instead of clip IDs, and refuses when no compatible clips match.\n\nVideo, image, Lottie, and nested-timeline clips copy transform, crop, opacity, edge rounding/softness, blend mode, and the complete effect stack including color. Text clips copy typography/style, text animation, fill mode, position, rotation, flips, opacity, and effects; target text, word timings, and caption membership stay intact, and the box is refit to the target content. Audio clips copy volume and effects, including denoise. Settings absent from the source clear the corresponding target setting.\n\nThis does NOT copy placement, duration, trims, speed, fades, entrance/exit animations, top-level keyframes, media, links, caption groups, or multicam membership. Use set_clip_properties and set_keyframes for temporal changes. Linked audio is a separate audio clip: copy it explicitly using the nested audio.id from get_timeline.",
+            description: "Copy one clip's static settings to one or more clips of the same media type in a single undoable action. Use for requests such as \"make these shots look like that one,\" \"use this title style,\" or \"give these audio clips the same treatment.\"\n\nChoose exactly one target mode. targetClipIds applies to an explicit list and refuses any mismatched media type. targetTrack selects every same-type clip on one stable trackId; add range [startFrame, endFrame) to limit it to clips intersecting that part of the timeline. Track mode excludes the source and mismatched clips, returns compact matched/changed/unchanged/incompatible counts instead of clip IDs, and refuses when no compatible clips match.\n\nVideo, image, Lottie, and nested-timeline clips copy transform, crop, opacity, edge rounding/softness, blend mode, and the complete effect stack including color. Text clips copy typography/style, text animation, fill mode, position, rotation, flips, opacity, and effects; target text, word timings, and caption membership stay intact, and the box is refit to the target content. Audio clips copy volume and effects, including denoise. Settings absent from the source clear the corresponding target setting.\n\nThis does NOT copy placement, duration, trims, speed, fades, entrance/exit animations, top-level keyframes, media, links, caption groups, or multicam membership. Use set_clip_properties and set_keyframes for temporal changes. Linked audio is a separate audio clip: copy it explicitly using the nested audio.id from get_timeline. To copy a whole clip rather than its look, use duplicate_clips.",
             inputSchema: objectSchema(
                 properties: [
                     "sourceClipId": ["type": "string", "description": "Clip whose current static settings are copied."],

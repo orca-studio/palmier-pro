@@ -502,6 +502,43 @@ extension ToolExecutor {
         text.count > captionPreviewLimit ? String(text.prefix(captionPreviewLimit)) + "…" : text
     }
 
+    // MARK: - Masks
+
+    /// The set_mask input shape: linear {center, rotation} in 0-1 of the source box, or [x, y] vertices.
+    private static func toolMask(_ raw: [String: Any]) -> [String: Any] {
+        var out: [String: Any] = [:]
+        if let linear = raw["linear"] as? [String: Any] {
+            let centerX = (linear["centerX"] as? NSNumber)?.doubleValue ?? 0
+            let centerY = (linear["centerY"] as? NSNumber)?.doubleValue ?? 0
+            out["linear"] = [
+                "center": [centerX / 2 + 0.5, centerY / 2 + 0.5],
+                "rotation": (linear["rotation"] as? NSNumber)?.doubleValue ?? 0,
+            ]
+        } else {
+            out["vertices"] = toolMaskVertices(raw["vertices"])
+        }
+        if let feather = raw["feather"] as? NSNumber, feather.doubleValue != 0 { out["feather"] = feather }
+        if raw["inverted"] as? Bool == true { out["inverted"] = true }
+        return out
+    }
+
+    private static func toolMaskVertices(_ raw: Any?) -> [Any] {
+        func pair(_ value: Any?) -> [Double]? {
+            guard let p = value as? [String: Any],
+                  let a = (p["a"] as? NSNumber)?.doubleValue, let b = (p["b"] as? NSNumber)?.doubleValue else { return nil }
+            return [a, b]
+        }
+        return (raw as? [[String: Any]] ?? []).compactMap { vertex -> Any? in
+            guard let point = pair(vertex["point"]) else { return nil }
+            let inControl = pair(vertex["inControl"]), outControl = pair(vertex["outControl"])
+            guard inControl != nil || outControl != nil else { return point }
+            var curved: [String: Any] = ["x": point[0], "y": point[1]]
+            if let inControl { curved["inControl"] = inControl }
+            if let outControl { curved["outControl"] = outControl }
+            return curved
+        }
+    }
+
     // MARK: - Keyframes
 
     private static func compactClipKeyframes(_ clip: [String: Any]) -> [String: Any] {
@@ -542,6 +579,17 @@ extension ToolExecutor {
                 return row
             }
         }
+        if let track = clip["maskTrack"] as? [String: Any],
+           let kfs = track["keyframes"] as? [[String: Any]], !kfs.isEmpty {
+            keyframes["maskPath"] = kfs.map { kf -> [Any] in
+                let shape = kf["value"] as? [String: Any] ?? [:]
+                var row: [Any] = [kf["frame"] ?? 0, toolMaskVertices(shape["vertices"])]
+                if let interp = kf["interpolationOut"] as? String, interp != "smooth" { row.append(interp) }
+                return row
+            }
+        }
+        out.removeValue(forKey: "maskTrack")
+        if let mask = clip["mask"] as? [String: Any] { out["mask"] = toolMask(mask) }
         if let effects = clip["effects"] as? [[String: Any]],
            let blurEffect = effects.first(where: {
                $0["type"] as? String == Effect.gaussianBlurType

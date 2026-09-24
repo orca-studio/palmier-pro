@@ -343,6 +343,7 @@ final class ToolExecutor {
         case .swapClipMedia:    return try swapClipMedia(editor, args)
         case .setClipProperties: return try setClipProperties(editor, args)
         case .copyClipSettings: return try copyClipSettings(editor, args)
+        case .duplicateClips: return try duplicateClips(editor, args)
         case .setKeyframes:     return try setKeyframes(editor, args)
         case .setMask:          return try setMask(editor, args)
         case .trackSubject:     return try await trackSubject(editor, args)
