@@ -49,6 +49,7 @@ private struct TimelineTabBarContent: View, Equatable {
                 addButton
             }
             .fixedSize(horizontal: false, vertical: true)
+            .animation(.easeInOut(duration: AppTheme.Anim.transition), value: tabs.map(\.id))
             .onChange(of: renameRequest) { _, id in
                 guard let id else { return }
                 editor.timelineTabRenameRequest = nil
@@ -71,16 +72,12 @@ private struct TimelineTabBarContent: View, Equatable {
     private var overflowMenu: some View {
         Menu {
             Button(L10n.string("Show All Tabs")) {
-                withAnimation(.easeInOut(duration: AppTheme.Anim.transition)) {
-                    editor.openAllTimelineTabs()
-                }
+                editor.openAllTimelineTabs()
             }
             .disabled(tabs.count >= allTabs.count)
             .accessibilityIdentifier("timeline.tab.showAll")
             Button(L10n.string("Close All Tabs")) {
-                withAnimation(.easeInOut(duration: AppTheme.Anim.transition)) {
-                    editor.closeAllTimelineTabs()
-                }
+                editor.closeAllTimelineTabs()
             }
             .disabled(tabs.count <= 1)
             .accessibilityIdentifier("timeline.tab.closeAll")
@@ -117,9 +114,7 @@ private struct TimelineTabBarContent: View, Equatable {
             isCloseable: canClose,
             onClose: canClose
                 ? {
-                    withAnimation(.easeInOut(duration: AppTheme.Anim.transition)) {
-                        editor.closeTimelineTab(tab.id)
-                    }
+                    editor.closeTimelineTab(tab.id)
                 }
                 : nil
         )

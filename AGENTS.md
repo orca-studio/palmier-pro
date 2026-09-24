@@ -173,6 +173,7 @@ scripts/run-signed.sh
 
 - Keep observable UI state on the main actor and make background results cross that boundary as immutable values.
 - Scope observation to the smallest view that needs the value. High-frequency progress, meter, hover, and playback state must not invalidate unrelated view trees.
+- Animate shared editor state in the view that renders it, with `.animation(_:value:)` or a transition, not with `withAnimation` in a button action; UI, menu, shortcut, and Agent changes then animate the same. Keep `withAnimation` for view-local state such as hover, disclosure, and scrolling.
 - Do not start persistent side effects from `body`. Use lifecycle-aware tasks or controllers with explicit cancellation and teardown.
 - Preserve native Mac behavior for keyboard focus, Escape, Return, menus, window restoration, undo, drag state, sheets, and close confirmation.
 - AppKit delegate and completion-handler contracts must complete exactly once on every success, failure, cancellation, and missing-target path.

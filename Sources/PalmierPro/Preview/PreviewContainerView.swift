@@ -771,6 +771,7 @@ struct PreviewContainerView: View {
             TabStrip(items: editor.previewTabs, activeId: editor.activePreviewTabId) { tab in
                 tabItem(for: tab)
             }
+            .animation(.easeInOut(duration: AppTheme.Anim.transition), value: editor.previewTabs.map(\.id))
 
             overflowMenu
         }
@@ -799,9 +800,7 @@ struct PreviewContainerView: View {
             isCloseable: tab.isCloseable,
             onClose: tab.isCloseable
                 ? {
-                    withAnimation(.easeInOut(duration: AppTheme.Anim.transition)) {
-                        editor.closePreviewTab(id: tab.id)
-                    }
+                    editor.closePreviewTab(id: tab.id)
                 }
                 : nil
         )
@@ -833,9 +832,7 @@ struct PreviewContainerView: View {
     private var overflowMenu: some View {
         Menu {
             Button(L10n.string("Close All Tabs")) {
-                withAnimation(.easeInOut(duration: AppTheme.Anim.transition)) {
-                    editor.closeAllPreviewTabs()
-                }
+                editor.closeAllPreviewTabs()
             }
             .disabled(editor.previewTabs.count <= 1)
             .accessibilityIdentifier("preview.tab.closeAll")

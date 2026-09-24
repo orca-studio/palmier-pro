@@ -137,6 +137,7 @@ struct MediaTab: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+            .animation(.easeInOut(duration: AppTheme.Anim.transition), value: editor.showGenerationPanel)
             .layoutPriority(1)
             .onChange(of: searchQuery) { _, _ in scheduleMomentSearch() }
         }
@@ -607,9 +608,7 @@ struct MediaTab: View {
     }
 
     private func toggleGenerationPanel() {
-        withAnimation(.easeInOut(duration: AppTheme.Anim.transition)) {
-            editor.showGenerationPanel.toggle()
-        }
+        editor.showGenerationPanel.toggle()
     }
 
     private var overflowMenu: some View {
