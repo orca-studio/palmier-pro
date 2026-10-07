@@ -9,7 +9,7 @@
 
 Local `dev` tracks `dev/dev`; local `main` tracks `fork/main`. Default development pushes target `dev`. Remote names and push defaults are local Git configuration, so configure them again in a fresh checkout.
 
-Create `release` from `fork/main` with ordinary branch history, retaining all inherited source files. After creation, commit only release materials. Do not update source code on this branch or merge development changes into it. Application builds always use source tags in the development repository, not the inherited source on `release`.
+Create `release` from `fork/main` with ordinary branch history, retaining all inherited source files. After creation, commit only release materials and distribution automation. Do not update application source code on this branch or merge development changes into it. Application builds always use source tags in the development repository, not the inherited source on `release`.
 
 ## Upstream updates
 
@@ -55,3 +55,17 @@ Application → fork/release/appcast.xml → fork GitHub Release DMG → signatu
 ```
 
 Sparkle does not need the source code in the distribution repository. See [Publishing an update](https://sparkle-project.org/documentation/publishing/).
+
+## Release automation ownership
+
+Implement and test all automation changes in `dev` first. Deploy only the distribution workflow, its validation helpers, release documentation, and release materials to `fork/release`. Never merge the development branch into `release` to deploy these files.
+
+When adding GitHub Actions automation, follow the Compositor development workflow's separation:
+
+1. In the development repository, manually select an immutable source tag, test and build it, sign the DMG, and submit it for notarization. Save the pending artifact and Apple submission ID.
+2. In the development repository, manually finalize that exact build: check Apple status, staple the accepted DMG, verify it, and sign its final bytes with Sparkle. Pending notarization publishes no final artifact; rejection reports failure.
+3. In the fork repository, manually select the exact finalized artifact by run ID, attempt, and artifact ID. Validate source provenance, checksums, size, signature, and increasing build number, then publish release assets and finally the appcast.
+
+Keep Apple and Sparkle private credentials in the development repository. The distribution repository needs only permission to read the finalized artifact and publish its own release materials and assets. Serialize signing work and distribution independently. Never overwrite a published version's assets or silently select the latest artifact. A retry after successful asset publication must verify existing assets before completing appcast publication.
+
+Use manual dispatch only; pushing branches or tags must not initiate signing or distribution. Workflow setup does not authorize running a release. The three-stage Actions automation is not implemented in Palmier Pro yet; `scripts/bundle.sh release --dist` remains the local build and notarization entry point.
