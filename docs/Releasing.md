@@ -1,71 +1,151 @@
-# Development and releases
+# Palmier Pro 打包、公证与发布
 
-| Remote / branch | Repository | Responsibility |
+开发和发布自动化全部在私有仓库 `orca-studio/palmier-pro-dev` 的 `dev` 分支维护。日常测试在本机执行，两个 GitHub Actions 都只接受手动触发；推送代码或 tag 不会启动发布。
+
+| 位置 | 职责 |
+| --- | --- |
+| `upstream/main` | 原作者代码，只拉取，不默认推送 |
+| `fork/main` | 同步上游；本地 `main` 跟踪并推送这里 |
+| `dev/dev` | 我们的源码、配置、测试、版本 tag 和发布自动化 |
+| `fork/release` | 从 `fork/main` 切出，保留源码基线；后续仅提交发布物料，不合入开发源码或新增工作流、脚本 |
+| fork GitHub Releases | 保存最终 DMG、manifest 和 SHA256SUMS，不把 DMG 提交到 Git |
+
+Remote：`upstream` = `palmier-io/palmier-pro`，`fork` = `orca-studio/palmier-pro`，`dev` = `orca-studio/palmier-pro-dev`。fork 默认分支是 `release`，Actions 禁用。remote 和 push 设置是本地配置，新 checkout 需要重新设置。
+
+```mermaid
+flowchart TD
+    A[本机测试并创建源码 tag] --> B[手动 Build and submit notarization]
+    B --> C[SwiftPM 构建、签名、DMG、提交 Apple]
+    C --> D[保存原始 DMG 与 submission ID]
+    D --> E[手动 Publish PalmierPro]
+    E --> F{查询 Apple 一次}
+    F -->|In Progress| G[正常结束，稍后再运行 Publish]
+    F -->|Rejected| H[失败并保存日志]
+    F -->|Accepted| I[staple、Gatekeeper、Sparkle 签名与验证]
+    I --> J[上传 fork Release 并验证附件]
+    J --> K[最后更新 fork/release 的 appcast]
+```
+
+## 应用身份和凭据
+
+- Bundle ID：`ai.orca-studio.palmierpro`。
+- Apple Team：`R2MFZSZP4R`；Developer ID：`Developer ID Application: zhen Wu (R2MFZSZP4R)`。
+- macOS runner：Apple Silicon `xcode-27`，Xcode 27.0 build `27A266a`；分发 job 使用 `ubuntu-latest`。
+- 使用 Palmier Pro 独立的 Sparkle 密钥；公钥位于 `Sources/PalmierPro/Resources/Info.plist`，本机私钥保存在 Keychain 的 `ai.orca-studio.palmierpro` account，并有 `.env` 备份。
+- 非 sandbox 应用不再使用原作者的 provisioning profile 或 Keychain 共享 entitlement；Clerk 使用默认 Keychain 存储。
+
+在开发仓库的 Repository Secrets/Variables 配置以下项目。工作流使用 `release` Environment，若使用 Environment 级配置，应允许 `dev` 分支运行。
+
+| 类型 | 名称 | 内容 |
 | --- | --- | --- |
-| `upstream/main` | `palmier-io/palmier-pro` | Original source; fetch only by convention |
-| `fork/main` | `orca-studio/palmier-pro` | Mirror upstream source |
-| `dev/dev` | `orca-studio/palmier-pro-dev` | Development, tests, source tags, and builds |
-| `fork/release` | `orca-studio/palmier-pro` | Branch from `fork/main`; subsequent commits change appcast and release notes only |
+| Variable | `APPLE_TEAM_ID` | `R2MFZSZP4R` |
+| Secret | `APPLE_CERTIFICATE_P12_BASE64` | 含私钥的 Developer ID P12 的 Base64 |
+| Secret | `APPLE_CERTIFICATE_PASSWORD` | P12 导出密码 |
+| Secret | `APPLE_ID` | 有该 team 公证权限的 Apple ID |
+| Secret | `APPLE_APP_SPECIFIC_PASSWORD` | Apple 专用密码 |
+| Secret | `SPARKLE_PRIVATE_KEY` | Palmier Pro 专用 Sparkle 私钥 |
+| Secret | `RELEASE_TOKEN` | 仅授权 `orca-studio/palmier-pro` 的 Contents read/write token |
 
-Local `dev` tracks `dev/dev`; local `main` tracks `fork/main`. Default development pushes target `dev`. Remote names and push defaults are local Git configuration, so configure them again in a fresh checkout.
+Apple 证书和公证凭据可与 Compositor 共用；Sparkle 私钥和应用公钥必须配对。不要复用 Compositor 的 Sparkle 密钥，也不要随意轮换已分发版本的密钥。
 
-Create `release` from `fork/main` with ordinary branch history, retaining all inherited source files. After creation, commit only release materials and distribution automation. Do not update application source code on this branch or merge development changes into it. Application builds always use source tags in the development repository, not the inherited source on `release`.
+`.env.example` 只列模板，真实 `.env` 必须被 Git 忽略且权限为 `0600`。不要把 `.env` 当 shell 脚本执行，不要输出凭据。
 
-## Upstream updates
-
-Fetch `upstream`, update `fork/main` from the selected upstream commit, and explicitly push `main` to `fork`. Integrate upstream changes into `dev/dev` separately and test them. Never merge `dev` into `fork/main` or `fork/release`.
-
-## Source and build
-
-1. Select a commit in the development repository. Update `CFBundleShortVersionString` and `CFBundleVersion` in `Sources/PalmierPro/Resources/Info.plist`; the build number must increase for each published update.
-2. Run the required builds and tests, including `swift build --traits BundledSpeech`, and complete manual verification for the release.
-3. Commit the version and source changes, create an annotated version tag such as `v0.12.0`, and explicitly push the branch and that tag to `dev`.
-4. Build from a clean checkout of that source tag using `scripts/bundle.sh release --dist`. Release builds include all optional traits. Configure the intended Developer ID identity, provisioning profile, entitlements, notary profile, and production services before building.
-5. Keep the final `.build/PalmierPro.dmg`, its Sparkle EdDSA signature and byte length, and the source tag and full commit SHA. The signing private key must match the application's `SUPublicEDKey`; never commit private keys or credentials. Do not change the DMG after generating its Sparkle signature.
-
-Build in the development repository, not in the release-material checkout. `SUFeedURL` points to:
-
-```text
-https://raw.githubusercontent.com/orca-studio/palmier-pro/release/appcast.xml
+```sh
+chmod 600 .env
+python3 scripts/upload_release_secrets.py --check
+python3 scripts/upload_release_secrets.py
 ```
 
-## Release materials and distribution
+上传脚本通过标准输入设置 Secrets，不打印值；未填写 `RELEASE_TOKEN` 时可以先上传其他凭据。token 可以由用户直接在开发仓库 Actions Secrets 中设置。
 
-1. Fetch `fork/release` into a separate worktree. Maintain release notes there, recording the development repository, source tag, full source commit SHA, application version, and build number.
-2. Commit the release notes and create the same version tag in the fork repository. This tag identifies release materials, not the application source. Push that tag explicitly to `fork`; do not push all tags across repositories.
-3. Create a draft GitHub Release in `orca-studio/palmier-pro` for the material tag and upload the final DMG. Include the source provenance in its release notes.
-4. Publish the GitHub Release. Verify the version-specific asset URL is accessible without authentication and downloads the exact signed DMG.
-5. Add an item to `fork/release`'s `appcast.xml` with the build number as `sparkle:version`, the application version as `sparkle:shortVersionString`, macOS minimum version, publication date, DMG URL, byte length, and `sparkle:edSignature`. Keep previous valid entries.
-6. Validate the XML, commit, and explicitly push `release` to `fork`. This publishes the update to Sparkle clients. Verify the public feed and test an update from the previous distributed application.
+Clerk/Convex 配置和可选生产遥测不属于 Apple 签名凭据。账户服务需要在开发仓库配置 `CLERK_PUBLISHABLE_KEY`、`CONVEX_DEPLOYMENT_URL`、`CONVEX_HTTP_URL` Secrets，工作流将其写入应用；没有配置时账户及依赖账户的云端功能不可用。不要把原作者的生产凭据复制到 fork。应用身份或回调注册变化后的登录行为需要手动验证。
 
-DMG URLs have this form:
+## 发布前验证和源码 tag
 
-```text
-https://github.com/orca-studio/palmier-pro/releases/download/v0.12.0/PalmierPro.dmg
+版本和构建号位于 `Sources/PalmierPro/Resources/Info.plist` 的 `CFBundleShortVersionString` 和 `CFBundleVersion`。tag 必须等于 `v` 加版本号，且属于 `dev` 历史；每次分发的构建号必须递增。
+
+本机验证：
+
+```sh
+swift build
+swift build --traits BundledSpeech
+swift test
+.build/release-tools-venv/bin/python -m unittest discover -s scripts/tests -v
+actionlint
+scripts/bundle.sh release --sign
 ```
 
-The feed and assets must be publicly accessible for this setup. Do not advertise draft, missing, unsigned, or unverified assets. An empty initial feed publishes no updates. If an upload or validation fails, leave the live appcast unchanged and report the failure.
+Python 测试需要 `cryptography==46.0.3`，可在 `.build` 中创建独立 venv。签名构建包含全部可选 traits，验证 `.app` 内的字体、本地化、Metal/MLX、Sparkle、模型和 MCPB 资源。手动验证启动、项目打开/保存、登录（已配置后端时）及更新检查。
 
-Existing applications retain their embedded feed URL. Changing this repository's `SUFeedURL` affects newly built applications; it does not redirect applications already using the upstream feed.
+提交并推送开发变更后创建不可变源码 tag，以下版本仅为示例：
 
-## Client update flow
-
-```text
-Application → fork/release/appcast.xml → fork GitHub Release DMG → signature verification → installation
+```sh
+git push dev dev
+git tag -a v0.7.7 -m 'Palmier Pro 0.7.7'
+git push dev refs/tags/v0.7.7
 ```
 
-Sparkle does not need the source code in the distribution repository. See [Publishing an update](https://sparkle-project.org/documentation/publishing/).
+不要移动 tag、推送全部 tag，或在下游发布开始后重新构建同一发布尝试。工作流代码来自选定的 `dev` commit，应用源码和依赖锁文件来自源码 tag，两者的 SHA 都记录在 manifest 中。
 
-## Release automation ownership
+## 第一步：构建并提交公证
 
-Implement and test all automation changes in `dev` first. Deploy only the distribution workflow, its validation helpers, release documentation, and release materials to `fork/release`. Never merge the development branch into `release` to deploy these files.
+在开发仓库 Actions 选择 **Build and submit notarization**，branch 填 `dev`，`source_tag` 填已推送的源码 tag。
 
-When adding GitHub Actions automation, follow the Compositor development workflow's separation:
+工作流通过 SwiftPM 和现有 `bundle.sh` 组装、Developer ID 签名应用，再生成并签名 DMG，提交 Apple 而不等待。原始 DMG 和 `release.json` 保存在 `palmierpro-pending-<run-id>-<attempt>` artifact，保留 14 天。保存 Build Run ID；任务成功只表示提交成功，不表示公证已接受。
 
-1. In the development repository, manually select an immutable source tag, test and build it, sign the DMG, and submit it for notarization. Save the pending artifact and Apple submission ID.
-2. In the development repository, manually finalize that exact build: check Apple status, staple the accepted DMG, verify it, and sign its final bytes with Sparkle. Pending notarization publishes no final artifact; rejection reports failure.
-3. In the fork repository, manually select the exact finalized artifact by run ID, attempt, and artifact ID. Validate source provenance, checksums, size, signature, and increasing build number, then publish release assets and finally the appcast.
+```sh
+gh workflow run release-build.yml --repo orca-studio/palmier-pro-dev --ref dev -f source_tag=v0.7.7
+```
 
-Keep Apple and Sparkle private credentials in the development repository. The distribution repository needs only permission to read the finalized artifact and publish its own release materials and assets. Serialize signing work and distribution independently. Never overwrite a published version's assets or silently select the latest artifact. A retry after successful asset publication must verify existing assets before completing appcast publication.
+## 第二步：查询公证并发布
 
-Use manual dispatch only; pushing branches or tags must not initiate signing or distribution. Workflow setup does not authorize running a release. The three-stage Actions automation is not implemented in Palmier Pro yet; `scripts/bundle.sh release --dist` remains the local build and notarization entry point.
+在开发仓库选择 **Publish PalmierPro**，branch 填 `dev`，`source_run_id` 填 Build Run ID；正常发布时 `resume_publish_run_id` 留空。可以提前在 `fork/release` 提交 `releases/<tag>/notes.md`。
+
+macOS job 只查询 Apple 一次。`In Progress` 正常结束，分发 job 跳过，稍后再运行；拒绝则失败并保存日志。`Accepted` 后 staple 和验证同一 DMG，检查内嵌 app 的身份、版本、Gatekeeper 和公钥，生成最终字节的 Sparkle 签名并验证。
+
+Linux job 自动继续，精确验证 Run ID、attempt、artifact ID、ZIP digest、源码 tag/SHA、文件 checksum/大小、签名及构建号。它只向 fork `release` 写入发布物料，打物料 tag，创建或恢复 Release 草稿，上传并下载验证 DMG、manifest 和 SHA256SUMS。Release 公开且匿名下载验证成功后，最后提交 appcast。
+
+```sh
+gh workflow run release-finalize.yml --repo orca-studio/palmier-pro-dev --ref dev -f source_run_id='<Build Run ID>'
+```
+
+开发 tag 标记源码；fork 的同名 tag 标记发布物料。manifest 保存完整源码 SHA、工作流 SHA/Run ID/attempt、Apple submission ID、原始和最终 hash、版本/构建号、大小、公钥与签名。
+
+## 失败恢复
+
+| 情况 | 处理 |
+| --- | --- |
+| Apple 仍在处理 | 稍后再次正常运行 Publish，不重新构建 |
+| macOS finalization 失败 | 修复原因后正常运行 Publish；无成功最终 artifact 时不能恢复分发 |
+| Linux 分发失败，脚本无需修改 | Re-run failed jobs，复用成功 macOS job 的最终产物 |
+| 脚本已修复并推送到 dev | 新建 Publish，填写原 Build Run ID 及拥有成功 finalize job 的原 Publish Run ID |
+| Artifact 过期或来源不匹配 | 停止恢复，处理版本冲突后重新规划构建，不能覆盖既有版本 |
+
+```sh
+gh workflow run release-finalize.yml --repo orca-studio/palmier-pro-dev --ref dev \
+  -f source_run_id='<原 Build Run ID>' \
+  -f resume_publish_run_id='<原 Publish Run ID>'
+```
+
+恢复模式跳过 macOS，只复用验证过的最终 artifact。两个 Action 共用并发锁。已存在的 manifest 和附件必须精确匹配；不会覆盖不同产物。查找 Release 时包含草稿，避免 GitHub by-tag 接口对草稿返回 404 的问题。
+
+## 更新源和人工验证
+
+```text
+应用 → https://raw.githubusercontent.com/orca-studio/palmier-pro/release/appcast.xml
+     → fork GitHub Release 最终 DMG → Sparkle 签名校验 → 安装
+```
+
+appcast 和下载附件必须公开可访问。已有上游应用不会自动改用新更新源；用户需要手动安装我们签名的新 Bundle ID 版本。项目文件类型保持 `io.palmier.project`，应用身份的变化不修改项目格式。首次发布只验证更新检查，下一版本才能证明跨版本升级。
+
+人工验证：从公开 Release 下载并校验 SHA256SUMS，安装后启动，打开和保存临时项目，检查账号功能（已配置后端时）和更新检查。下一版本发布后，从上一版实际执行 Sparkle 更新并再次检查项目、登录和配置。
+
+当前未触发 Palmier Pro 的打包、公证或发布 Action，没有首次发布记录。不要把 Compositor 的成功记录作为 Palmier Pro 的端到端验证。
+
+## 本次配置验证
+
+2026-10-07：`swift build`、`swift build --traits BundledSpeech`、`swift test`（1642 项）、Python 发布测试（22 项）、`actionlint`、shell 语法检查和 plist 校验均通过。`scripts/bundle.sh release --sign` 生成了完整 `.app`，已验证资源、Developer ID 深度签名、Team、Hardened Runtime 和时间戳；临时 DMG 的制作、签名及 Sparkle 签名验证也通过，测试 DMG 已清理。
+
+构建仍有原有 Convex 二进制的 macOS 26.2 与应用最低版本 26.0 的链接警告。macOS 26.0 实机运行、人工安装/登录、Apple 公证和跨版本更新尚未验证；正式发布前按上述人工步骤完成验证。
+
+参考：[Compositor 已验证的发布手册](https://github.com/orca-studio/Compositor-dev/blob/dev/docs/release-workflows.md)、[Sparkle 发布文档](https://sparkle-project.org/documentation/publishing/)。

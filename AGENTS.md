@@ -16,9 +16,9 @@ Use `swift build --traits BundledSpeech` for changes that touch MLX, speech anal
 
 - `upstream` is `palmier-io/palmier-pro`; fetch upstream changes without pushing to it.
 - `fork/main` mirrors upstream; `dev/dev` in `orca-studio/palmier-pro-dev` owns development and builds.
-- Create `fork/release` from `fork/main`, retaining its source baseline. Subsequent commits change release materials only; do not merge development source into it.
-- Implement and test release automation in `dev` first. Deploy only distribution automation and release materials to `fork/release`; never build its inherited source.
-- Release automation must run only on explicit manual requests: build and notarize in the development repository, then distribute finalized artifacts in the fork.
+- Create `fork/release` from `fork/main`, retaining its source baseline. Subsequent commits change release materials only; do not merge development source or add our scripts and workflows there.
+- Implement and test all release automation in `dev`. Both manual Actions run in the development repository; the fork's Actions are disabled.
+- Build/submit and finalize/distribute require explicit manual release requests. Do not trigger them as part of setup or ordinary pushes.
 - Follow `docs/Releasing.md` for source tags, packaging, artifact publication, and appcast updates.
 
 ## Agents
