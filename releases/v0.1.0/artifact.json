@@ -1,0 +1,20 @@
+{
+  "id": 11463040419,
+  "node_id": "MDg6QXJ0aWZhY3QxMTQ2MzA0MDQxOQ==",
+  "name": "palmierpro-release-37575334680-1",
+  "size_in_bytes": 43083725,
+  "url": "https://api.github.com/repos/orca-studio/palmier-pro-dev/actions/artifacts/11463040419",
+  "archive_download_url": "https://api.github.com/repos/orca-studio/palmier-pro-dev/actions/artifacts/11463040419/zip",
+  "expired": false,
+  "digest": "sha256:fa935e565d335210b42500f80c240c228f416e7f278c2a6f05519bb5ec9278f9",
+  "created_at": "2026-10-07T05:16:54Z",
+  "updated_at": "2026-10-07T05:16:54Z",
+  "expires_at": "2026-10-21T05:16:52Z",
+  "workflow_run": {
+    "id": 37575334680,
+    "repository_id": 1408025877,
+    "head_repository_id": 1408025877,
+    "head_branch": "dev",
+    "head_sha": "555f3e616dc74555de2a32f079fbb620fb648f77"
+  }
+}
