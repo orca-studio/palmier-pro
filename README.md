@@ -1,11 +1,15 @@
-# Palmier Pro — Orca releases
+# Palmier Pro
 
-Download builds from [GitHub Releases](https://github.com/orca-studio/palmier-pro/releases). Published releases include the DMG, release manifest, and SHA256 checksums.
+Palmier Pro is a macOS video editor with AI-assisted editing and support for working with AI agents on the timeline.
 
-This distribution uses bundle ID `ai.orca-studio.palmierpro` and the [Sparkle update feed](https://raw.githubusercontent.com/orca-studio/palmier-pro/release/appcast.xml).
+This repository provides macOS builds of [Palmier Pro](https://github.com/palmier-io/palmier-pro), packaged by Orca Studio.
 
-Application development and builds live in [palmier-pro-dev](https://github.com/orca-studio/palmier-pro-dev), a private repository. Each release manifest records its source tag and full commit SHA. The `release` branch retains the upstream `main` baseline and commits release materials only; its inherited source is not the source used for distributed builds.
+## Download and install
 
-See [Releasing.md](docs/Releasing.md) for packaging, notarization, publication and recovery. Both manual Actions run in the development repository; Actions are disabled here.
+Download the DMG from [GitHub Releases](https://github.com/orca-studio/palmier-pro/releases), open it, and drag **PalmierPro** into **Applications**.
 
-Upstream: [palmier-io/palmier-pro](https://github.com/palmier-io/palmier-pro). The inherited source retains its [LICENSE](LICENSE).
+Requires **macOS 26 (Tahoe)** and an **Apple Silicon Mac**.
+
+## Upstream project
+
+Visit [palmier-io/palmier-pro](https://github.com/palmier-io/palmier-pro) for more about Palmier Pro. The source included here retains its [GPLv3 license](LICENSE).
