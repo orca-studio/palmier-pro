@@ -12,6 +12,13 @@ swift test
 
 Use `swift build --traits BundledSpeech` for changes that touch MLX, speech analysis, transcription, or bundled speech resources.
 
+## Repository workflow
+
+- `upstream` is `palmier-io/palmier-pro`; fetch upstream changes without pushing to it.
+- `fork/main` mirrors upstream; `dev/dev` in `orca-studio/palmier-pro-dev` owns development and builds.
+- Create `fork/release` from `fork/main`, retaining its source baseline. Subsequent commits change release materials only; do not merge development source into it.
+- Follow `docs/Releasing.md` for source tags, packaging, artifact publication, and appcast updates.
+
 ## Agents
 
 - Do not preserve backward compatibility. Remove obsolete paths instead of adding compatibility layers, fallbacks, or migrations.
