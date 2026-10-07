@@ -1,9 +1,23 @@
-<?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
-    <channel>
-        <title>Palmier Pro</title>
-        <link>https://raw.githubusercontent.com/orca-studio/palmier-pro/release/appcast.xml</link>
-        <description>Updates for Palmier Pro</description>
-        <language>en</language>
-    </channel>
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+  <channel>
+    <title>Palmier Pro</title>
+    <link>https://raw.githubusercontent.com/orca-studio/palmier-pro/release/appcast.xml</link>
+    <item>
+      <title>Version 0.1.0</title>
+      <pubDate>Wed, 07 Oct 2026 05:16:51 +0000</pubDate>
+      <sparkle:version>1</sparkle:version>
+      <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <link>https://github.com/orca-studio/palmier-pro/releases/tag/v0.1.0</link>
+      <description>PalmierPro 0.1.0
+
+Source: https://github.com/orca-studio/palmier-pro-dev/tree/v0.1.0
+
+Source commit: `bc69788bc319fd406cf9fddf431b37bffc00265f`
+Build: 1
+</description>
+      <enclosure url="https://github.com/orca-studio/palmier-pro/releases/download/v0.1.0/PalmierPro-0.1.0.dmg" sparkle:edSignature="g+Q97psT5KHb+sHY2ShbJVMOtjwTWBUJvdM9G2QwgXH2qMUFiQaaKHL7RVfSU2RMFA7idnGF4+cz9KswZa5HDQ==" length="45235199" type="application/octet-stream" />
+    </item>
+  </channel>
 </rss>
